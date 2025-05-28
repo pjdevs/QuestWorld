@@ -1,0 +1,24 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "InteractionPlugin",
+	"Description": "InteractionPlugin provide an interfaces, actors and components to allow networked interaction with actors",
+	"Category": "Interaction",
+	"CreatedBy": "pjdevs",
+	"CreatedByURL": "https://github.com/pjdevs",
+	"DocsURL": "https://github.com/pjdevs/InteractionPlugin",
+	"MarketplaceURL": "",
+	"SupportURL": "",
+	"CanContainContent": true,
+	"IsBetaVersion": false,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "InteractionPlugin",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	]
+}
