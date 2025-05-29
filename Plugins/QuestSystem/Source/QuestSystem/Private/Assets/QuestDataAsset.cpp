@@ -2,7 +2,7 @@
 
 #include "PrimaryAssetTypes.h"
 
-bool UQuestDataAsset::IsCompleted(UWorld* World, APlayerController* PlayerController) const
+bool UQuestDataAsset::IsCompleted(UWorld* World) const
 {
     bool bCompleted = false;
 
@@ -11,7 +11,7 @@ bool UQuestDataAsset::IsCompleted(UWorld* World, APlayerController* PlayerContro
     	if (Objectives[i] == nullptr)
     		continue;
 
-    	bCompleted = bCompleted || Objectives[i]->IsSatisfied(World, PlayerController);
+    	bCompleted = bCompleted || Objectives[i]->IsSatisfied(World);
     }
 
     return bCompleted;

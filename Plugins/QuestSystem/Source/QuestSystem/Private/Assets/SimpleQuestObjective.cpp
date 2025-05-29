@@ -3,7 +3,7 @@
 
 #include "Assets/SimpleQuestObjective.h"
 
-bool USimpleQuestObjective::IsSatisfied_Implementation(UWorld* World, APlayerController* Player)
+bool USimpleQuestObjective::IsSatisfied_Implementation(UWorld* World)
 {
-	return Player->Tags.Contains(TagToCheck);
+	return false; // UGameplayS ->Tags.Contains(TagToCheck);
 }

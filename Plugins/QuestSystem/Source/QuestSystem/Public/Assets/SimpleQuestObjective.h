@@ -15,7 +15,7 @@ class QUESTSYSTEM_API USimpleQuestObjective : public UQuestObjective
 	GENERATED_BODY()
 
 protected:
-	virtual bool IsSatisfied_Implementation(UWorld* World, APlayerController* Player) override;
+	virtual bool IsSatisfied_Implementation(UWorld* World) override;
 
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "Quest", meta = (AllowPrivateAccess = "true"))
