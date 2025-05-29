@@ -30,7 +30,7 @@ class AQuestWorldCharacter : public ACharacter
 	UCameraComponent* FollowCamera;
 
 	/** Interaction component */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Interaction, meta = (AllowPrivateAccess = "true"))
 	UIPInteractorComponent* Interactor;
 	
 	/** MappingContext */
@@ -66,11 +66,15 @@ protected:
 	void Look(const FInputActionValue& Value);
 
 	/** Called for interacting input */
-	void Interact(const FInputActionValue& InputActionValue);
+	void Interact(const FInputActionValue& Value);
 
 
 protected:
-	bool DoInteractionTrace(float Distance, ECollisionChannel InteractionTraceChannel, TArray<FHitResult>& HitResults) const;
+	bool DoInteractionTrace(
+		float Distance,
+		ECollisionChannel InteractionTraceChannel,
+		TArray<FHitResult>& HitResults
+	) const;
 
 	virtual void NotifyControllerChanged() override;
 

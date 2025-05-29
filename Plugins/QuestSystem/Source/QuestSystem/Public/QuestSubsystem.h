@@ -21,13 +21,13 @@ public:
 	void LoadQuests(const FQuestLoadedDynamicDelegate CompletionDelegate) const;
 
 	UFUNCTION(BlueprintCallable)
-	void StartQuest(const FName QuestId, APlayerController* PlayerController) const;
+	void StartQuest(const FPrimaryAssetId& QuestId) const;
 
 	UFUNCTION(BlueprintCallable)
-	TArray<FName> GetActiveQuests() const;
+	TArray<FPrimaryAssetId> GetActiveQuests() const;
 
 	UFUNCTION(BlueprintCallable)
-	TArray<FName> GetCompletedQuests() const;
+	TArray<FPrimaryAssetId> GetCompletedQuests() const;
 
 private:
 	UPROPERTY()

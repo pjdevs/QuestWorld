@@ -30,7 +30,7 @@ void UQuestServiceImpl::LoadQuests(FQuestLoadedDelegate CompletionDelegate)
 	);
 }
 
-void UQuestServiceImpl::StartQuest(const FName& QuestId, UWorld* World, APlayerController* PlayerController)
+void UQuestServiceImpl::StartQuest(const FPrimaryAssetId& QuestId, UWorld* World)
 {
 	UE_LOG(LogTemp, Display, TEXT("Starting Quest %s."), *QuestId.ToString());
 
@@ -42,25 +42,21 @@ void UQuestServiceImpl::StartQuest(const FName& QuestId, UWorld* World, APlayerC
 		return;
 	}
 	
-	const FActiveQuest ActiveQuest(QuestId);
-	// TODO Fill other quest data
-
+	const FActiveQuest ActiveQuest(QuestId, *QuestDataAssetPtr, World);
 	ActiveQuestsById.Add(QuestId, ActiveQuest);
-
-	const UQuestDataAsset* QuestDataAsset = *QuestDataAssetPtr;
-
-	if (QuestDataAsset->IsCompleted(World, PlayerController)) // TODO Move this to active quest
+	
+	if (ActiveQuest.IsCompleted())
 	{
 		CompleteQuest(QuestId);
 		return;
 	}
-	
+
 	UE_LOG(LogTemp, Display, TEXT("Quest started."));
 }
 
-TArray<FName> UQuestServiceImpl::GetActiveQuests()
+TArray<FPrimaryAssetId> UQuestServiceImpl::GetActiveQuests()
 {
-	TArray<FName> QuestIds;
+	TArray<FPrimaryAssetId> QuestIds;
 
 	for (auto& Quest : ActiveQuestsById)
 	{
@@ -70,12 +66,12 @@ TArray<FName> UQuestServiceImpl::GetActiveQuests()
 	return QuestIds;
 }
 
-TArray<FName> UQuestServiceImpl::GetCompletedQuests()
+TArray<FPrimaryAssetId> UQuestServiceImpl::GetCompletedQuests()
 {
 	return CompletedQuestIds;
 }
 
-void UQuestServiceImpl::CompleteQuest(const FName& QuestId)
+void UQuestServiceImpl::CompleteQuest(const FPrimaryAssetId& QuestId)
 {
 	if (!QuestAssetsById.Contains(QuestId) || CompletedQuestIds.Contains(QuestId))
 		return;
@@ -101,7 +97,7 @@ void UQuestServiceImpl::OnQuestsLoaded(const FQuestLoadedDelegate& CompletionDel
 		UObject* LoadedObj = AssetManager.GetPrimaryAssetObject(AssetId);
 		if (UQuestDataAsset* Quest = Cast<UQuestDataAsset>(LoadedObj))
 		{
-			QuestAssetsById.Add(Quest->GetQuestId(), Quest);
+			QuestAssetsById.Add(AssetId, Quest);
 			UE_LOG(LogTemp, Log, TEXT("Loaded Quest: %s"), *Quest->GetName());
 		}
 	}

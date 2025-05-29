@@ -23,20 +23,20 @@ void UQuestSubsystem::LoadQuests(const FQuestLoadedDynamicDelegate CompletionDel
 	}));
 }
 
-void UQuestSubsystem::StartQuest(const FName QuestId, APlayerController* PlayerController) const
+void UQuestSubsystem::StartQuest(const FPrimaryAssetId& QuestId) const
 {
 	if (UWorld* World = GetWorld())
 	{
-		QuestService->StartQuest(QuestId, World, PlayerController);
+		QuestService->StartQuest(QuestId, World);
 	}
 }
 
-TArray<FName> UQuestSubsystem::GetActiveQuests() const
+TArray<FPrimaryAssetId> UQuestSubsystem::GetActiveQuests() const
 {
 	return QuestService->GetActiveQuests();
 }
 
-TArray<FName> UQuestSubsystem::GetCompletedQuests() const
+TArray<FPrimaryAssetId> UQuestSubsystem::GetCompletedQuests() const
 {
 	return QuestService->GetCompletedQuests();
 }

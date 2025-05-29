@@ -8,7 +8,7 @@ AIPInteractiveActor::AIPInteractiveActor()
 {
 	bReplicates = true;
 
-	InteractionTrigger = CreateDefaultSubobject<UBoxComponent>(TEXT("Inetraction Trigger"));
+	InteractionTrigger = CreateDefaultSubobject<UBoxComponent>(TEXT("Intraction Trigger"));
 	InteractionTrigger->SetCollisionProfileName(TEXT("Trigger"));
 	RootComponent = InteractionTrigger;
 
@@ -22,8 +22,10 @@ void AIPInteractiveActor::HandleTriggerBeginOverlap(UPrimitiveComponent* Primiti
 	UPrimitiveComponent* PrimitiveComponent1, int I, bool bArg, const FHitResult& HitResult)
 {
 	if (!Actor) return;
+
 	auto Interactor = Cast<UIPInteractorComponent>(Actor->GetComponentByClass(UIPInteractorComponent::StaticClass()));
 	if (!Interactor) return;
+
 	PossibleInteractors.Add(Interactor);
 	Interactor->AddInteractive(this);
 

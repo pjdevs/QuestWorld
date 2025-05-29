@@ -17,15 +17,13 @@ class QUESTSYSTEM_API UQuestDataAsset : public UPrimaryDataAsset
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditDefaultsOnly, Category = "Quest", meta = (AllowPrivateAccess = "true"))
-	FName QuestId;
-
 	UPROPERTY(EditDefaultsOnly, Instanced, Category = "Quest", meta = (AllowPrivateAccess = "true"))
-	TArray<UQuestObjective*> Objectives;
+	TArray<TObjectPtr<UQuestObjective>> Objectives;
 
 public:
-	const FName& GetQuestId() const { return QuestId; }
-	bool IsCompleted(UWorld* World, APlayerController* PlayerController) const;
+	const TArray<TObjectPtr<UQuestObjective>>& GetQuestObjectives() const { return Objectives; }
+	
+	bool IsCompleted(UWorld* World) const;
 	
 	virtual FPrimaryAssetId GetPrimaryAssetId() const override;
 };
