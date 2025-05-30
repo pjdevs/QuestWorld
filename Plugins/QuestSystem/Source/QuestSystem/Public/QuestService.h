@@ -11,6 +11,7 @@ class UBaseQuestEvent;
 class UQuestDataAsset;
 
 DECLARE_DELEGATE(FQuestLoadedDelegate);
+DECLARE_DELEGATE_OneParam(FQuestCompletedDelegate, FPrimaryAssetId);
 
 // Do not modify
 UINTERFACE()
@@ -37,6 +38,8 @@ public:
 	virtual FQuestDescription GetQuestDescription(const FPrimaryAssetId& QuestId) const = 0;
 	virtual TArray<FQuestDescription> GetActiveQuestDescriptions() const = 0;
 	virtual TArray<FQuestDescription> GetCompletedQuestDescriptions() const = 0;
+
+	virtual void SetQuestCompletedDelegate(const FQuestCompletedDelegate& InQuestCompletedDelegate) = 0;
 };
 
 /**
@@ -60,16 +63,20 @@ public:
 	virtual TArray<FQuestDescription> GetCompletedQuestDescriptions() const override;
 	virtual FQuestDescription GetQuestDescription(const FPrimaryAssetId& QuestId) const override;
 
+	virtual void SetQuestCompletedDelegate(const FQuestCompletedDelegate& InQuestCompletedDelegate) override;
+
 protected:
 	void CompleteQuest(const FPrimaryAssetId& QuestId);
 	void OnQuestsLoaded(const FQuestLoadedDelegate& CompletionDelegate);
 	
 private:
+	FPrimaryAssetType QuestAssetType;
+
 	UPROPERTY()
 	TMap<FPrimaryAssetId, TObjectPtr<UQuestDataAsset>> QuestAssetsById;
 
 	TMap<FPrimaryAssetId, FActiveQuest> ActiveQuestsById;
 	TArray<FPrimaryAssetId> CompletedQuestIds;
 
-	FPrimaryAssetType QuestAssetType;
+	FQuestCompletedDelegate QuestCompletedDelegate;
 };

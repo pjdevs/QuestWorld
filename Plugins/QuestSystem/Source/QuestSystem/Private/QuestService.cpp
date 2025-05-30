@@ -182,6 +182,11 @@ FQuestDescription UQuestServiceImpl::GetQuestDescription(const FPrimaryAssetId& 
 	};
 }
 
+void UQuestServiceImpl::SetQuestCompletedDelegate(const FQuestCompletedDelegate& InQuestCompletedDelegate)
+{
+	QuestCompletedDelegate = InQuestCompletedDelegate;
+}
+
 void UQuestServiceImpl::CompleteQuest(const FPrimaryAssetId& QuestId)
 {
 	if (!QuestAssetsById.Contains(QuestId) || CompletedQuestIds.Contains(QuestId))
@@ -195,6 +200,8 @@ void UQuestServiceImpl::CompleteQuest(const FPrimaryAssetId& QuestId)
 	CompletedQuestIds.Add(QuestId);
 
 	UE_LOG(LogTemp, Display, TEXT("Quest %s completed."), *QuestId.ToString());
+
+	bool _ = QuestCompletedDelegate.ExecuteIfBound(QuestId);
 }
 
 void UQuestServiceImpl::OnQuestsLoaded(const FQuestLoadedDelegate& CompletionDelegate)
