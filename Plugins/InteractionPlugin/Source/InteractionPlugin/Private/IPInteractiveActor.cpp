@@ -8,7 +8,7 @@ AIPInteractiveActor::AIPInteractiveActor()
 {
 	bReplicates = true;
 
-	InteractionTrigger = CreateDefaultSubobject<UBoxComponent>(TEXT("Intraction Trigger"));
+	InteractionTrigger = CreateDefaultSubobject<UBoxComponent>(TEXT("Interaction Trigger"));
 	InteractionTrigger->SetCollisionProfileName(TEXT("Trigger"));
 	RootComponent = InteractionTrigger;
 

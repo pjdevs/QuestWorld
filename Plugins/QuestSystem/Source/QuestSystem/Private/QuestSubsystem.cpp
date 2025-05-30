@@ -15,7 +15,7 @@ void UQuestSubsystem::Deinitialize()
 	
 }
 
-void UQuestSubsystem::LoadQuests(const FQuestLoadedDynamicDelegate CompletionDelegate) const
+void UQuestSubsystem::LoadQuests(const FQuestLoadedDynamicDelegate CompletionDelegate)
 {
 	return QuestService->LoadQuests(FQuestLoadedDelegate::CreateLambda([CompletionDelegate]
 	{
@@ -23,7 +23,7 @@ void UQuestSubsystem::LoadQuests(const FQuestLoadedDynamicDelegate CompletionDel
 	}));
 }
 
-void UQuestSubsystem::StartQuest(const FPrimaryAssetId& QuestId) const
+void UQuestSubsystem::StartQuest(const FPrimaryAssetId& QuestId)
 {
 	if (UWorld* World = GetWorld())
 	{
@@ -39,4 +39,12 @@ TArray<FPrimaryAssetId> UQuestSubsystem::GetActiveQuests() const
 TArray<FPrimaryAssetId> UQuestSubsystem::GetCompletedQuests() const
 {
 	return QuestService->GetCompletedQuests();
+}
+
+void UQuestSubsystem::SubmitQuestEvent(UBaseQuestEvent* Event)
+{
+	if (UWorld* World = GetWorld())
+	{
+		QuestService->SubmitQuestEvent(World, Event);
+	}
 }

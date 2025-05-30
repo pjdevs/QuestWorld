@@ -16,14 +16,13 @@ struct QUESTSYSTEM_API FActiveQuest
 {
 	GENERATED_BODY()
 	
+	FActiveQuest() = default; // Needed for creating TArray etc. Will see if we use TUniquePtr or so later
 	FActiveQuest(const FPrimaryAssetId& QuestId, UQuestDataAsset* QuestDataAsset, UWorld* World);
 	~FActiveQuest();
 
 	const FPrimaryAssetId& GetQuestId() const { return QuestId; }
-	const FActiveQuestObjective& GetCurrentQuestObjective() const { return Objectives[CurrentObjectiveIndex]; }
 	bool IsCompleted() const { return bQuestCompleted; }
-
-	void OnQuestEvent(const FName& EventType, AActor* EventActor, UWorld* World);
+	void OnQuestEvent(UWorld* World, UBaseQuestEvent* Event);
 	
 private:
 	UPROPERTY()
@@ -35,6 +34,5 @@ private:
 	UPROPERTY()
 	TArray<FActiveQuestObjective> Objectives;
 
-	int32 CurrentObjectiveIndex;
 	bool bQuestCompleted;
 };

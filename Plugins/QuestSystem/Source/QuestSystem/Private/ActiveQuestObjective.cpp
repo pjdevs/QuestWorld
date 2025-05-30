@@ -6,24 +6,23 @@
 #include "Assets/QuestObjective.h"
 
 FActiveQuestObjective::FActiveQuestObjective(UQuestObjective* ObjectiveAsset, UWorld* World)
-	: ObjectiveAsset(ObjectiveAsset), bObjectiveCompleted(false)
+	: ObjectiveAsset(ObjectiveAsset), CurrentProgress(0)
 {
 	ensureMsgf(World != nullptr, TEXT("World should not be null"));
 	ensureMsgf(ObjectiveAsset != nullptr, TEXT("ObjectiveAsset should not be null"));
 
 	if (ObjectiveAsset->IsRetroCompletable())
 	{
-		ReEvaluateQuestObjective(World);
+		CurrentProgress = ObjectiveAsset->GetCompletion(World);
 	}
 }
 
-void FActiveQuestObjective::OnQuestEvent(const FName& EventType, AActor* EventActor, UWorld* World)
+bool FActiveQuestObjective::IsObjectiveCompleted() const
 {
-	// TODO Only reevaluate if event type matching
-	ReEvaluateQuestObjective(World);
+	return CurrentProgress >= ObjectiveAsset->GetTargetValue();
 }
 
-void FActiveQuestObjective::ReEvaluateQuestObjective(UWorld* World)
+void FActiveQuestObjective::OnQuestEvent(UWorld* World, UBaseQuestEvent* Event)
 {
-	bObjectiveCompleted = ObjectiveAsset->IsSatisfied(World);
+	CurrentProgress += ObjectiveAsset->TriggerProgress(World, Event);
 }

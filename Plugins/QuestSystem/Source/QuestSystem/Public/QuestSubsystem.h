@@ -6,6 +6,7 @@
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "QuestSubsystem.generated.h"
 
+class UBaseQuestEvent;
 DECLARE_DYNAMIC_DELEGATE(FQuestLoadedDynamicDelegate);
 
 UCLASS()
@@ -17,18 +18,21 @@ public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	virtual void Deinitialize() override;
 
-	UFUNCTION(BlueprintCallable)
-	void LoadQuests(const FQuestLoadedDynamicDelegate CompletionDelegate) const;
+	UFUNCTION(BlueprintCallable, Category = Quest)
+	void LoadQuests(const FQuestLoadedDynamicDelegate CompletionDelegate);
 
-	UFUNCTION(BlueprintCallable)
-	void StartQuest(const FPrimaryAssetId& QuestId) const;
+	UFUNCTION(BlueprintCallable, Category = Quest)
+	void StartQuest(const FPrimaryAssetId& QuestId);
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = Quest)
 	TArray<FPrimaryAssetId> GetActiveQuests() const;
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = Quest)
 	TArray<FPrimaryAssetId> GetCompletedQuests() const;
 
+	UFUNCTION(BlueprintCallable, Category = Quest)
+	void SubmitQuestEvent(UBaseQuestEvent* Event);
+	
 private:
 	UPROPERTY()
 	TScriptInterface<IQuestService> QuestService;

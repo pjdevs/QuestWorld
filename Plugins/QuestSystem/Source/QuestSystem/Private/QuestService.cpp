@@ -34,6 +34,18 @@ void UQuestServiceImpl::StartQuest(const FPrimaryAssetId& QuestId, UWorld* World
 {
 	UE_LOG(LogTemp, Display, TEXT("Starting Quest %s."), *QuestId.ToString());
 
+	if (CompletedQuestIds.Contains(QuestId))
+	{
+		UE_LOG(LogTemp, Display, TEXT("Quest already completed."));
+		return;
+	}
+	
+	if (ActiveQuestsById.Contains(QuestId))
+	{
+		UE_LOG(LogTemp, Display, TEXT("Quest already started."));
+		return;
+	}
+
 	const TObjectPtr<UQuestDataAsset>* QuestDataAssetPtr = QuestAssetsById.Find(QuestId);
 
 	if (QuestDataAssetPtr == nullptr)
@@ -69,6 +81,27 @@ TArray<FPrimaryAssetId> UQuestServiceImpl::GetActiveQuests()
 TArray<FPrimaryAssetId> UQuestServiceImpl::GetCompletedQuests()
 {
 	return CompletedQuestIds;
+}
+
+void UQuestServiceImpl::SubmitQuestEvent(UWorld* World, UBaseQuestEvent* Event)
+{
+	TArray<FPrimaryAssetId> QuestToCompleteIds;
+	
+	for (auto& Tuple : ActiveQuestsById)
+	{
+		FActiveQuest& ActiveQuest = Tuple.Value;
+		ActiveQuest.OnQuestEvent(World, Event);
+		
+		if (ActiveQuest.IsCompleted())
+		{
+			QuestToCompleteIds.Add(Tuple.Key);
+		}
+	}
+
+	for (auto& QuestId : QuestToCompleteIds)
+	{
+		CompleteQuest(QuestId);
+	}
 }
 
 void UQuestServiceImpl::CompleteQuest(const FPrimaryAssetId& QuestId)

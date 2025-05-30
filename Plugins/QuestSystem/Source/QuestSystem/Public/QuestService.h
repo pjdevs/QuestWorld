@@ -6,6 +6,7 @@
 #include "ActiveQuest.h"
 #include "QuestService.generated.h"
 
+class UBaseQuestEvent;
 class UQuestDataAsset;
 
 DECLARE_DELEGATE(FQuestLoadedDelegate);
@@ -30,6 +31,7 @@ public:
 	virtual void StartQuest(const FPrimaryAssetId& QuestId, UWorld* World) = 0;
 	virtual TArray<FPrimaryAssetId> GetActiveQuests() = 0;
 	virtual TArray<FPrimaryAssetId> GetCompletedQuests() = 0;
+	virtual void SubmitQuestEvent(UWorld* World, UBaseQuestEvent* Event) = 0;
 };
 
 /**
@@ -47,6 +49,7 @@ public:
 	virtual void StartQuest(const FPrimaryAssetId& QuestId, UWorld* World) override;
 	virtual TArray<FPrimaryAssetId> GetActiveQuests() override;
 	virtual TArray<FPrimaryAssetId> GetCompletedQuests() override;
+	virtual void SubmitQuestEvent(UWorld* World, UBaseQuestEvent* Event) override;
 
 protected:
 	void CompleteQuest(const FPrimaryAssetId& QuestId);

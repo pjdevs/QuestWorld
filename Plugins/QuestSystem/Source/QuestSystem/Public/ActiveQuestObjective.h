@@ -6,6 +6,7 @@
 #include "ActiveQuestObjective.generated.h"
 
 
+class UBaseQuestEvent;
 class UQuestObjective;
 
 USTRUCT()
@@ -13,17 +14,15 @@ struct QUESTSYSTEM_API FActiveQuestObjective
 {
 	GENERATED_BODY()
 
-	explicit FActiveQuestObjective(UQuestObjective* ObjectiveAsset, UWorld* World);
+	FActiveQuestObjective() = default; // Needed for creating TArray etc. Will see if we use TUniquePtr or so later
+	FActiveQuestObjective(UQuestObjective* ObjectiveAsset, UWorld* World);
 
-	bool IsObjectiveCompleted() const { return bObjectiveCompleted; }
-	void OnQuestEvent(const FName& EventType, AActor* EventActor, UWorld* World);
+	bool IsObjectiveCompleted() const;
+	void OnQuestEvent(UWorld* World, UBaseQuestEvent* Event);
 
-private:
-	void ReEvaluateQuestObjective(UWorld* World);
-	
 private:
 	UPROPERTY()
 	TObjectPtr<UQuestObjective> ObjectiveAsset;
 
-	bool bObjectiveCompleted;
+	int CurrentProgress;
 };

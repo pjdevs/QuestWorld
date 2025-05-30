@@ -8,43 +8,40 @@
 
 
 FActiveQuest::FActiveQuest(const FPrimaryAssetId& QuestId, UQuestDataAsset* QuestDataAsset, UWorld* World)
-	: QuestId(QuestId), QuestDataAsset(QuestDataAsset), CurrentObjectiveIndex(0), bQuestCompleted(false)
+	: QuestId(QuestId), QuestDataAsset(QuestDataAsset), bQuestCompleted(false)
 {
-	// TODO Activate objectives one by one
+	bool bAllObjectivesCompleted = true; 
 	
 	for (auto& ObjectiveAsset : QuestDataAsset->GetQuestObjectives())
 	{
 		FActiveQuestObjective ActiveQuestObjective(ObjectiveAsset, World);
 		Objectives.Add(ActiveQuestObjective);
+
+		bAllObjectivesCompleted = bAllObjectivesCompleted && ActiveQuestObjective.IsObjectiveCompleted();
 	}
+
+	bQuestCompleted = bAllObjectivesCompleted;
 }
 
 FActiveQuest::~FActiveQuest()
 {
 }
 
-void FActiveQuest::OnQuestEvent(const FName& EventType, AActor* EventActor, UWorld* World)
+void FActiveQuest::OnQuestEvent(UWorld* World, UBaseQuestEvent* Event)
 {
-	if (CurrentObjectiveIndex < 0 || CurrentObjectiveIndex >= Objectives.Num()) 
+	if (bQuestCompleted)
 		return;
 	
-	while (CurrentObjectiveIndex < Objectives.Num())
+	bool bAllObjectivesCompleted = true; 
+	
+	for (auto& ActiveQuestObjective : Objectives)
 	{
-		FActiveQuestObjective& ActiveQuestObjective = Objectives[CurrentObjectiveIndex];
-		ActiveQuestObjective.OnQuestEvent(EventType, EventActor, World);
-
 		if (ActiveQuestObjective.IsObjectiveCompleted())
-		{
-			CurrentObjectiveIndex++;
-		}
-		else
-		{
-			break;
-		}
+			continue;
+		
+		ActiveQuestObjective.OnQuestEvent(World, Event);
+		bAllObjectivesCompleted = bAllObjectivesCompleted && ActiveQuestObjective.IsObjectiveCompleted();
 	}
 
-	if (CurrentObjectiveIndex >= Objectives.Num())
-	{
-		bQuestCompleted = true;
-	}
+	bQuestCompleted = bAllObjectivesCompleted;
 }

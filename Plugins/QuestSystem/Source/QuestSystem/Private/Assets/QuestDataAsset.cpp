@@ -11,7 +11,7 @@ bool UQuestDataAsset::IsCompleted(UWorld* World) const
     	if (Objectives[i] == nullptr)
     		continue;
 
-    	bCompleted = bCompleted || Objectives[i]->IsSatisfied(World);
+    	bCompleted = bCompleted || Objectives[i]->GetCompletion(World);
     }
 
     return bCompleted;
