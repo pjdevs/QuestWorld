@@ -4,6 +4,7 @@
 
 #include "ActiveQuest.h"
 #include "PrimaryAssetTypes.h"
+#include "QuestDescription.h"
 #include "Assets/QuestDataAsset.h"
 #include "Engine/AssetManager.h"
 
@@ -66,7 +67,7 @@ void UQuestServiceImpl::StartQuest(const FPrimaryAssetId& QuestId, UWorld* World
 	UE_LOG(LogTemp, Display, TEXT("Quest started."));
 }
 
-TArray<FPrimaryAssetId> UQuestServiceImpl::GetActiveQuests()
+TArray<FPrimaryAssetId> UQuestServiceImpl::GetActiveQuests() const
 {
 	TArray<FPrimaryAssetId> QuestIds;
 
@@ -78,7 +79,7 @@ TArray<FPrimaryAssetId> UQuestServiceImpl::GetActiveQuests()
 	return QuestIds;
 }
 
-TArray<FPrimaryAssetId> UQuestServiceImpl::GetCompletedQuests()
+TArray<FPrimaryAssetId> UQuestServiceImpl::GetCompletedQuests() const
 {
 	return CompletedQuestIds;
 }
@@ -102,6 +103,81 @@ void UQuestServiceImpl::SubmitQuestEvent(UWorld* World, UBaseQuestEvent* Event)
 	{
 		CompleteQuest(QuestId);
 	}
+}
+
+TArray<FQuestDescription> UQuestServiceImpl::GetActiveQuestDescriptions() const
+{
+	TArray<FQuestDescription> QuestsDescriptions;
+
+	for (auto& IdAndQuest : ActiveQuestsById)
+	{
+		QuestsDescriptions.Add(GetQuestDescription(IdAndQuest.Key));
+	}
+	
+	return QuestsDescriptions;
+}
+
+TArray<FQuestDescription> UQuestServiceImpl::GetCompletedQuestDescriptions() const
+{
+	TArray<FQuestDescription> QuestsDescriptions;
+
+	for (const FPrimaryAssetId& QuestId : CompletedQuestIds)
+	{
+		QuestsDescriptions.Add(GetQuestDescription(QuestId));
+	}
+	
+	return QuestsDescriptions;
+}
+
+FQuestDescription UQuestServiceImpl::GetQuestDescription(const FPrimaryAssetId& QuestId) const
+{
+	const TObjectPtr<UQuestDataAsset>* QuestDataAssetPtr = QuestAssetsById.Find(QuestId);
+
+	if (QuestDataAssetPtr == nullptr)
+	{
+		UE_LOG(LogTemp, Display, TEXT("Cannot get description of quest %s: QuestDataAsset not found."), *QuestId.ToString());
+		return FQuestDescription{};
+	}
+
+	const UQuestDataAsset* QuestDataAsset = *QuestDataAssetPtr;
+	const TArray<TObjectPtr<UQuestObjective>>& QuestObjectiveAssets = QuestDataAsset->GetQuestObjectives();
+	const int QuestObjectiveNumber = QuestObjectiveAssets.Num();
+	const bool bIsQuestActive = ActiveQuestsById.Contains(QuestId);
+	const TArray<FActiveQuestObjective>* ActiveObjectives = nullptr;
+	TArray<FQuestObjectiveDescription> QuestObjectiveDescriptions;
+
+	if (bIsQuestActive)
+	{
+		const FActiveQuest* ActiveQuest = ActiveQuestsById.Find(QuestId);
+		ActiveObjectives = &ActiveQuest->GetObjectives();
+	}
+
+	for (int i = 0; i < QuestObjectiveNumber; ++i)
+	{
+		const FActiveQuestObjective* ActiveObjective = bIsQuestActive
+			? &(*ActiveObjectives)[i]
+			: nullptr;
+		const TObjectPtr<UQuestObjective>& ObjectiveAsset = QuestObjectiveAssets[i];
+		
+		QuestObjectiveDescriptions.Add(FQuestObjectiveDescription
+		{
+			ObjectiveAsset->GetObjectiveDescription(),
+			bIsQuestActive
+				? ActiveObjective->GetCurrentProgress()
+				: ObjectiveAsset->GetTargetValue(),
+			ObjectiveAsset->GetTargetValue(),
+			bIsQuestActive
+		});
+	}
+
+	return FQuestDescription
+	{
+		QuestId,
+		QuestDataAsset->GetTitle(),
+		QuestDataAsset->GetDescription(),
+		QuestObjectiveDescriptions,
+		false
+	};
 }
 
 void UQuestServiceImpl::CompleteQuest(const FPrimaryAssetId& QuestId)

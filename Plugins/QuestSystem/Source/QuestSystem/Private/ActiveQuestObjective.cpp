@@ -2,7 +2,6 @@
 
 
 #include "ActiveQuestObjective.h"
-
 #include "Assets/QuestObjective.h"
 
 FActiveQuestObjective::FActiveQuestObjective(UQuestObjective* ObjectiveAsset, UWorld* World)
@@ -15,11 +14,6 @@ FActiveQuestObjective::FActiveQuestObjective(UQuestObjective* ObjectiveAsset, UW
 	{
 		CurrentProgress = ObjectiveAsset->GetCompletion(World);
 	}
-}
-
-bool FActiveQuestObjective::IsObjectiveCompleted() const
-{
-	return CurrentProgress >= ObjectiveAsset->GetTargetValue();
 }
 
 void FActiveQuestObjective::OnQuestEvent(UWorld* World, UBaseQuestEvent* Event)

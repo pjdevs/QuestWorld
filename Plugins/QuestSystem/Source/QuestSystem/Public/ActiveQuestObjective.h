@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Assets/QuestObjective.h"
 #include "ActiveQuestObjective.generated.h"
 
 
@@ -17,7 +18,8 @@ struct QUESTSYSTEM_API FActiveQuestObjective
 	FActiveQuestObjective() = default; // Needed for creating TArray etc. Will see if we use TUniquePtr or so later
 	FActiveQuestObjective(UQuestObjective* ObjectiveAsset, UWorld* World);
 
-	bool IsObjectiveCompleted() const;
+	int GetCurrentProgress() const { return CurrentProgress; }
+	bool IsObjectiveCompleted() const { return CurrentProgress >= ObjectiveAsset->GetTargetValue(); }
 	void OnQuestEvent(UWorld* World, UBaseQuestEvent* Event);
 
 private:

@@ -25,10 +25,10 @@ public:
 	void StartQuest(const FPrimaryAssetId& QuestId);
 
 	UFUNCTION(BlueprintCallable, Category = Quest)
-	TArray<FPrimaryAssetId> GetActiveQuests() const;
+	TArray<FQuestDescription> GetActiveQuests() const;
 
 	UFUNCTION(BlueprintCallable, Category = Quest)
-	TArray<FPrimaryAssetId> GetCompletedQuests() const;
+	TArray<FQuestDescription> GetCompletedQuests() const;
 
 	UFUNCTION(BlueprintCallable, Category = Quest)
 	void SubmitQuestEvent(UBaseQuestEvent* Event);

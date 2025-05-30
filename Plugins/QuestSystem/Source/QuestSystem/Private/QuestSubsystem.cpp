@@ -1,6 +1,8 @@
 ﻿// Copyright pjdevs. All Rights Reserved.
 
 #include "QuestSubsystem.h"
+
+#include "QuestDescription.h"
 #include "QuestService.h"
 
 void UQuestSubsystem::Initialize(FSubsystemCollectionBase& Collection)
@@ -31,14 +33,14 @@ void UQuestSubsystem::StartQuest(const FPrimaryAssetId& QuestId)
 	}
 }
 
-TArray<FPrimaryAssetId> UQuestSubsystem::GetActiveQuests() const
+TArray<FQuestDescription> UQuestSubsystem::GetActiveQuests() const
 {
-	return QuestService->GetActiveQuests();
+	return QuestService->GetActiveQuestDescriptions();
 }
 
-TArray<FPrimaryAssetId> UQuestSubsystem::GetCompletedQuests() const
+TArray<FQuestDescription> UQuestSubsystem::GetCompletedQuests() const
 {
-	return QuestService->GetCompletedQuests();
+	return QuestService->GetCompletedQuestDescriptions();
 }
 
 void UQuestSubsystem::SubmitQuestEvent(UBaseQuestEvent* Event)

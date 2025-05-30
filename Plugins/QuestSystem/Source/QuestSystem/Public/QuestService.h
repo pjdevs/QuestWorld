@@ -6,6 +6,7 @@
 #include "ActiveQuest.h"
 #include "QuestService.generated.h"
 
+struct FQuestDescription;
 class UBaseQuestEvent;
 class UQuestDataAsset;
 
@@ -29,9 +30,13 @@ class QUESTSYSTEM_API IQuestService
 public:
 	virtual void LoadQuests(FQuestLoadedDelegate CompletionDelegate = FQuestLoadedDelegate()) = 0;
 	virtual void StartQuest(const FPrimaryAssetId& QuestId, UWorld* World) = 0;
-	virtual TArray<FPrimaryAssetId> GetActiveQuests() = 0;
-	virtual TArray<FPrimaryAssetId> GetCompletedQuests() = 0;
+	virtual TArray<FPrimaryAssetId> GetActiveQuests() const = 0;
+	virtual TArray<FPrimaryAssetId> GetCompletedQuests() const = 0;
 	virtual void SubmitQuestEvent(UWorld* World, UBaseQuestEvent* Event) = 0;
+
+	virtual FQuestDescription GetQuestDescription(const FPrimaryAssetId& QuestId) const = 0;
+	virtual TArray<FQuestDescription> GetActiveQuestDescriptions() const = 0;
+	virtual TArray<FQuestDescription> GetCompletedQuestDescriptions() const = 0;
 };
 
 /**
@@ -47,9 +52,13 @@ public:
 
 	virtual void LoadQuests(FQuestLoadedDelegate CompletionDelegate) override;
 	virtual void StartQuest(const FPrimaryAssetId& QuestId, UWorld* World) override;
-	virtual TArray<FPrimaryAssetId> GetActiveQuests() override;
-	virtual TArray<FPrimaryAssetId> GetCompletedQuests() override;
+	virtual TArray<FPrimaryAssetId> GetActiveQuests() const override;
+	virtual TArray<FPrimaryAssetId> GetCompletedQuests() const override;
 	virtual void SubmitQuestEvent(UWorld* World, UBaseQuestEvent* Event) override;
+
+	virtual TArray<FQuestDescription> GetActiveQuestDescriptions() const override;
+	virtual TArray<FQuestDescription> GetCompletedQuestDescriptions() const override;
+	virtual FQuestDescription GetQuestDescription(const FPrimaryAssetId& QuestId) const override;
 
 protected:
 	void CompleteQuest(const FPrimaryAssetId& QuestId);

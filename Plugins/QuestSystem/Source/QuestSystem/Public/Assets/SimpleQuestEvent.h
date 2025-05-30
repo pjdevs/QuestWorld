@@ -16,9 +16,9 @@ class QUESTSYSTEM_API USimpleQuestEvent : public UBaseQuestEvent
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Quest)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Quest, meta = (ExposeOnSpawn = "true"))
 	FName TagAdded;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Quest)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Quest, meta = (ExposeOnSpawn = "true"))
 	APlayerController* AffectedPlayerController;
 };

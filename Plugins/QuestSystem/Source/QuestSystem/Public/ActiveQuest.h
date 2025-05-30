@@ -21,6 +21,7 @@ struct QUESTSYSTEM_API FActiveQuest
 	~FActiveQuest();
 
 	const FPrimaryAssetId& GetQuestId() const { return QuestId; }
+	const TArray<FActiveQuestObjective>& GetObjectives() const { return Objectives; }
 	bool IsCompleted() const { return bQuestCompleted; }
 	void OnQuestEvent(UWorld* World, UBaseQuestEvent* Event);
 	
