@@ -166,7 +166,9 @@ FQuestDescription UQuestServiceImpl::GetQuestDescription(const FPrimaryAssetId& 
 				? ActiveObjective->GetCurrentProgress()
 				: ObjectiveAsset->GetTargetValue(),
 			ObjectiveAsset->GetTargetValue(),
-			!bIsQuestActive
+			bIsQuestActive
+				? ActiveObjective->IsObjectiveCompleted()
+				: true
 		});
 	}
 
@@ -176,7 +178,7 @@ FQuestDescription UQuestServiceImpl::GetQuestDescription(const FPrimaryAssetId& 
 		QuestDataAsset->GetTitle(),
 		QuestDataAsset->GetDescription(),
 		QuestObjectiveDescriptions,
-		false
+		!bIsQuestActive
 	};
 }
 
