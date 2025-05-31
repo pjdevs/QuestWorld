@@ -8,7 +8,7 @@
 
 class UBaseQuestEvent;
 DECLARE_DYNAMIC_DELEGATE(FQuestLoadedDynamicDelegate);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FQuestCompletedMulticastDelegate, FPrimaryAssetId, CompletedQuestId);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FQuestEventMulticastDelegate, const FQuestDescription&, Quest);
 
 UCLASS()
 class UQuestSubsystem : public UGameInstanceSubsystem
@@ -35,7 +35,10 @@ public:
 	void SubmitQuestEvent(UBaseQuestEvent* Event);
 
 	UPROPERTY(BlueprintAssignable, Category = Quest)
-	FQuestCompletedMulticastDelegate QuestCompletedDelegate;
+	FQuestEventMulticastDelegate QuestStartedDelegate;
+	
+	UPROPERTY(BlueprintAssignable, Category = Quest)
+	FQuestEventMulticastDelegate QuestCompletedDelegate;
 	
 private:
 	UPROPERTY()

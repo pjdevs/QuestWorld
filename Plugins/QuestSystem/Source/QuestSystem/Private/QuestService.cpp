@@ -58,6 +58,8 @@ void UQuestServiceImpl::StartQuest(const FPrimaryAssetId& QuestId, UWorld* World
 	const FActiveQuest ActiveQuest(QuestId, *QuestDataAssetPtr, World);
 	ActiveQuestsById.Add(QuestId, ActiveQuest);
 	
+	bool _ = QuestStartedDelegate.ExecuteIfBound(GetQuestDescription(QuestId));
+	
 	if (ActiveQuest.IsCompleted())
 	{
 		CompleteQuest(QuestId);
@@ -182,9 +184,14 @@ FQuestDescription UQuestServiceImpl::GetQuestDescription(const FPrimaryAssetId& 
 	};
 }
 
-void UQuestServiceImpl::SetQuestCompletedDelegate(const FQuestCompletedDelegate& InQuestCompletedDelegate)
+void UQuestServiceImpl::SetQuestStartedDelegate(const FQuestEventDelegate& QuestEventDelegate)
 {
-	QuestCompletedDelegate = InQuestCompletedDelegate;
+	QuestStartedDelegate = QuestEventDelegate;
+}
+
+void UQuestServiceImpl::SetQuestCompletedDelegate(const FQuestEventDelegate& QuestEventDelegate)
+{
+	QuestCompletedDelegate = QuestEventDelegate;
 }
 
 void UQuestServiceImpl::CompleteQuest(const FPrimaryAssetId& QuestId)
@@ -201,7 +208,7 @@ void UQuestServiceImpl::CompleteQuest(const FPrimaryAssetId& QuestId)
 
 	UE_LOG(LogTemp, Display, TEXT("Quest %s completed."), *QuestId.ToString());
 
-	bool _ = QuestCompletedDelegate.ExecuteIfBound(QuestId);
+	bool _ = QuestCompletedDelegate.ExecuteIfBound(GetQuestDescription(QuestId));
 }
 
 void UQuestServiceImpl::OnQuestsLoaded(const FQuestLoadedDelegate& CompletionDelegate)

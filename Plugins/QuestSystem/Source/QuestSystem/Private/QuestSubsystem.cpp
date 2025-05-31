@@ -10,10 +10,16 @@ void UQuestSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	Super::Initialize(Collection);
 	
 	QuestService = NewObject<UQuestServiceImpl>(this);
-	QuestService->SetQuestCompletedDelegate(FQuestCompletedDelegate::CreateLambda(
-		[this](const FPrimaryAssetId& CompletedQuestId)
+	QuestService->SetQuestStartedDelegate(FQuestEventDelegate::CreateLambda(
+	[this](const FQuestDescription& StartedQuest)
+	{
+		QuestCompletedDelegate.Broadcast(StartedQuest);
+	}
+));
+	QuestService->SetQuestCompletedDelegate(FQuestEventDelegate::CreateLambda(
+		[this](const FQuestDescription& CompletedQuest)
 		{
-			QuestCompletedDelegate.Broadcast(CompletedQuestId);
+			QuestCompletedDelegate.Broadcast(CompletedQuest);
 		}
 	));
 }
