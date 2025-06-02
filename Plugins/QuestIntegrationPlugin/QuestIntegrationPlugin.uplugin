@@ -38,5 +38,8 @@
 			"Name": "DialogPlugin",
 			"Enabled": true
 		}
+	],
+	"AdditionalDefaultConfigFiles": [
+		"DefaultQuestIntegration.ini"
 	]
 }

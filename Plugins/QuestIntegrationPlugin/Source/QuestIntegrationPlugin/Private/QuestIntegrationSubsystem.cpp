@@ -10,33 +10,33 @@
 
 void UQuestIntegrationSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
+	if (!QuestIntegrationSettings.IsNull())
+	{
+		CurrentSettings = QuestIntegrationSettings.LoadSynchronous();
+	}
+	
 	UQuestSubsystem* QuestSubsystem = GetGameInstance()->GetSubsystem<UQuestSubsystem>();
 
 	QuestSubsystem->QuestStartedDelegate.AddDynamic(this, &UQuestIntegrationSubsystem::OnQuestStarted);
 	QuestSubsystem->QuestCompletedDelegate.AddDynamic(this, &UQuestIntegrationSubsystem::OnQuestCompleted);
 }
 
-void UQuestIntegrationSubsystem::SetQuestIntegrationSettings(UQuestIntegrationSettings* Settings)
-{
-	QuestIntegrationSettings = Settings;
-}
-
 void UQuestIntegrationSubsystem::OnQuestStarted(const FQuestDescription& Quest)
 {
-	if (QuestIntegrationSettings == nullptr)
+	if (CurrentSettings == nullptr)
 		return;
 	
 	UNotificationSubsystem* NotificationSubsystem = GetGameInstance()->GetSubsystem<UNotificationSubsystem>();
 
-	FText Message = FText::Format(QuestIntegrationSettings->QuestStartedFormat, Quest.Title);
+	FText Message = FText::Format(CurrentSettings->QuestStartedFormat, Quest.Title);
 	
 	NotificationSubsystem->QueueNotification(FGameNotification
 	{
-		QuestIntegrationSettings->QuestMessageWidgetClass,
+		CurrentSettings->QuestMessageWidgetClass,
 		FName("Quest"),
 		Message,
 		0,
-		QuestIntegrationSettings->QuestMessageDuration,
+		CurrentSettings->QuestMessageDuration,
 		nullptr,
 		nullptr,
 		nullptr
@@ -45,18 +45,18 @@ void UQuestIntegrationSubsystem::OnQuestStarted(const FQuestDescription& Quest)
 
 void UQuestIntegrationSubsystem::OnQuestCompleted(const FQuestDescription& Quest)
 {
-	if (QuestIntegrationSettings == nullptr)
+	if (CurrentSettings == nullptr)
 		return;
 
 	UNotificationSubsystem* NotificationSubsystem = GetGameInstance()->GetSubsystem<UNotificationSubsystem>();
 
     NotificationSubsystem->QueueNotification(FGameNotification
     {
-    	QuestIntegrationSettings->QuestMessageWidgetClass,
+    	CurrentSettings->QuestMessageWidgetClass,
     	FName("Quest"),
-    	FText::Format(QuestIntegrationSettings->QuestCompletedFormat, Quest.Title),
+    	FText::Format(CurrentSettings->QuestCompletedFormat, Quest.Title),
     	0,
-    	QuestIntegrationSettings->QuestMessageDuration,
+    	CurrentSettings->QuestMessageDuration,
     	nullptr,
     	nullptr,
     	nullptr

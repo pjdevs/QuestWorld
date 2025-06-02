@@ -13,23 +13,24 @@ class UBaseNotificationWidget;
 /**
  * 
  */
-UCLASS()
+UCLASS(Config=Game, DefaultConfig) // temp Game because cannot load custom ini
 class QUESTINTEGRATIONPLUGIN_API UQuestIntegrationSubsystem : public UGameInstanceSubsystem
 {
 	GENERATED_BODY()
 
-	UPROPERTY()
-	TObjectPtr<UQuestIntegrationSettings> QuestIntegrationSettings;
+	UPROPERTY(Config)
+	TSoftObjectPtr<UQuestIntegrationSettings> QuestIntegrationSettings;
 	
 public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 
-	UFUNCTION(BlueprintCallable)
-	void SetQuestIntegrationSettings(UQuestIntegrationSettings* Settings);
-	
 private:
 	UFUNCTION()
 	void OnQuestStarted(const FQuestDescription& Quest);
 	UFUNCTION()
 	void OnQuestCompleted(const FQuestDescription& Quest);
+
+private:
+	UPROPERTY()
+	TObjectPtr<UQuestIntegrationSettings> CurrentSettings;
 };
