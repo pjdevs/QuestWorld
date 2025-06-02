@@ -23,7 +23,7 @@ public:
 	void LoadQuests(const FQuestLoadedDynamicDelegate CompletionDelegate);
 
 	UFUNCTION(BlueprintCallable, Category = Quest)
-	void StartQuest(const FPrimaryAssetId& QuestId);
+	void StartQuest(FPrimaryAssetId QuestId);
 
 	UFUNCTION(BlueprintCallable, Category = Quest)
 	TArray<FQuestDescription> GetActiveQuests() const;

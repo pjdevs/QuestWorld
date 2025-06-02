@@ -37,7 +37,7 @@ void UQuestSubsystem::LoadQuests(const FQuestLoadedDynamicDelegate CompletionDel
 	}));
 }
 
-void UQuestSubsystem::StartQuest(const FPrimaryAssetId& QuestId)
+void UQuestSubsystem::StartQuest(FPrimaryAssetId QuestId)
 {
 	if (UWorld* World = GetWorld())
 	{
