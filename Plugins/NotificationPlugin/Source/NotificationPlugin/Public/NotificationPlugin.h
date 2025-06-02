@@ -4,7 +4,7 @@
 
 #include "Modules/ModuleManager.h"
 
-class FNotificationPluginModule : public IModuleInterface
+class FNotificationPluginModule final : public IModuleInterface
 {
 public:
 

@@ -11,7 +11,7 @@ DECLARE_DYNAMIC_DELEGATE(FQuestLoadedDynamicDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FQuestEventMulticastDelegate, const FQuestDescription&, Quest);
 
 UCLASS()
-class UQuestSubsystem : public UGameInstanceSubsystem
+class QUESTSYSTEM_API UQuestSubsystem : public UGameInstanceSubsystem
 {
 	GENERATED_BODY()
 

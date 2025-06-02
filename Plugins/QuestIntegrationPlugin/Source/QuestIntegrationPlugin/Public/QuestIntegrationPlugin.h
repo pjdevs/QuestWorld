@@ -4,7 +4,7 @@
 
 #include "Modules/ModuleManager.h"
 
-class FQuestIntegrationPluginModule : public IModuleInterface
+class FQuestIntegrationPluginModule final : public IModuleInterface
 {
 public:
 

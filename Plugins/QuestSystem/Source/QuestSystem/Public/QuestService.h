@@ -47,7 +47,7 @@ public:
  * 
  */
 UCLASS()
-class UQuestServiceImpl final : public UObject, public IQuestService
+class QUESTSYSTEM_API UQuestServiceImpl final : public UObject, public IQuestService
 {
 	GENERATED_BODY()
 	
