@@ -3,14 +3,14 @@
 
 #include "ChoiceDialogNode.h"
 
-bool UChoiceDialogNode::IsAvailable() const
+bool UChoiceDialogNode::IsAvailable(UWorld* World) const
 {
 	bool bHasAvailableChoices = false;
 
 	for (auto& ChildNode : GetNextDialogs())
 	{
-		bHasAvailableChoices |= ChildNode->IsAvailable();
+		bHasAvailableChoices |= ChildNode->IsAvailable(World);
 	}
 
-	return bHasAvailableChoices && Super::IsAvailable();
+	return bHasAvailableChoices && Super::IsAvailable(World);
 }

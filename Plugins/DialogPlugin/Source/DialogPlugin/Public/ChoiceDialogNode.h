@@ -19,5 +19,5 @@ class DIALOGPLUGIN_API UChoiceDialogNode : public UDialogNode
 
 public:
 	const TArray<FText>& GetChoices() const { return DialogChoices; }
-	virtual bool IsAvailable() const override;
+	virtual bool IsAvailable(UWorld* World) const override;
 };
