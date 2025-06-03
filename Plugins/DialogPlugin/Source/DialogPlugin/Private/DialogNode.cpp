@@ -10,7 +10,7 @@ bool UDialogNode::IsAvailable() const
 
 	for (const auto& Condition : Conditions)
 	{
-		bIsAvailable = bIsAvailable && Condition->IsSatisfied();
+		bIsAvailable &= Condition->IsSatisfied();
 	}
 
 	return bIsAvailable;

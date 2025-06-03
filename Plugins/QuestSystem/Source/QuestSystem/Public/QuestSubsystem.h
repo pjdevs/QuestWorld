@@ -7,6 +7,7 @@
 #include "QuestSubsystem.generated.h"
 
 class UBaseQuestEvent;
+
 DECLARE_DYNAMIC_DELEGATE(FQuestLoadedDynamicDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FQuestEventMulticastDelegate, const FQuestDescription&, Quest);
 
@@ -32,6 +33,12 @@ public:
 	TArray<FQuestDescription> GetCompletedQuests() const;
 
 	UFUNCTION(BlueprintCallable, Category = Quest)
+	bool IsQuestCompleted(FPrimaryAssetId QuestId) const;
+
+	UFUNCTION(BlueprintCallable, Category = Quest)
+	bool IsQuestActive(const FPrimaryAssetId& QuestId) const;
+	
+	UFUNCTION(BlueprintCallable, Category = Quest)
 	void SubmitQuestEvent(UBaseQuestEvent* Event);
 
 	UPROPERTY(BlueprintAssignable, Category = Quest)
@@ -39,6 +46,8 @@ public:
 	
 	UPROPERTY(BlueprintAssignable, Category = Quest)
 	FQuestEventMulticastDelegate QuestCompletedDelegate;
+
+	static UQuestSubsystem* GetFromWorld(const UWorld* World);
 	
 private:
 	UPROPERTY()

@@ -26,6 +26,7 @@ public:
 
 private:
 	void ExecuteCurrentDialogNode();
+	void TryGoToChildNode(int NodeIndex);
 	void EndDialog();
 	
 	void OnLineDisplayed();
@@ -37,4 +38,6 @@ private:
 	
 	UPROPERTY()
 	TObjectPtr<UDialogWidget> DisplayedDialogWidget;
+
+	TArray<int> AvailableChoiceIndexes;
 };

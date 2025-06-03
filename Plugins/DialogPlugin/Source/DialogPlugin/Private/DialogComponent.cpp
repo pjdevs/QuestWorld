@@ -19,12 +19,46 @@ void UDialogComponent::StartDialog(UDialogDataAsset* DialogAsset)
 		return;
 	
 	DisplayedDialogWidget = Cast<UDialogWidget>(CreateWidget(OwnerController, DialogWidgetClass));
-	DisplayedDialogWidget->AddToViewport();
 	DisplayedDialogWidget->DisplayLineFinishedDelegate.BindUObject(this, &UDialogComponent::OnLineDisplayed);
 	DisplayedDialogWidget->DisplayChoicesFinishedDelegate.BindUObject(this, &UDialogComponent::OnChoicesDisplayed);
+	DisplayedDialogWidget->AddToViewport();
+	DisplayedDialogWidget->SetCharacterName(DialogAsset->GetCharacterName());
 
 	CurrentNode = DialogAsset->GetDialogRoot();
 	ExecuteCurrentDialogNode();
+}
+
+TArray<FText> SetAvailableChoiceIndexes(
+	const UChoiceDialogNode* ChoiceDialogNode,
+	TArray<int> AvailableIndexes
+)
+{
+	const TArray<FText>& AllChoices = ChoiceDialogNode->GetChoices();
+	TArray<FText> AvailableChoices;
+
+	if (AllChoices.Num() != ChoiceDialogNode->GetNextDialogs().Num())
+	{
+		UE_LOG(LogTemp, Error, TEXT("Choice node should have same number of choices and child nodes"));
+		return AvailableChoices;
+	}
+	
+	AvailableIndexes.Empty();
+
+	auto& Children = ChoiceDialogNode->GetNextDialogs();
+
+	for (int i = 0; i < AllChoices.Num(); i++)
+	{
+		const UDialogNode* Child = Children[i];
+		const FText& Choice = AllChoices[i];
+			
+		if (!Child->IsAvailable())
+			continue;
+		
+		AvailableChoices.Add(Choice);
+		AvailableIndexes.Add(i);
+	}
+
+	return AvailableChoices;
 }
 
 void UDialogComponent::ExecuteCurrentDialogNode()
@@ -43,12 +77,38 @@ void UDialogComponent::ExecuteCurrentDialogNode()
 	}
 	else if (const UChoiceDialogNode* ChoiceDialogNode = Cast<UChoiceDialogNode>(CurrentNode))
 	{
-		DisplayedDialogWidget->DisplayChoices(ChoiceDialogNode->GetChoices());
+		TArray<FText> AvailableChoices = SetAvailableChoiceIndexes(ChoiceDialogNode, AvailableChoiceIndexes);
+
+		if (AvailableChoices.Num() <= 0)
+		{
+			UE_LOG(LogTemp, Error, TEXT("Available choice node should have at least one available choice."));
+			EndDialog();
+			return;
+		}
+		
+		DisplayedDialogWidget->DisplayChoices(AvailableChoices);
 	}
 	else
 	{
-		EndDialog();
+		TryGoToChildNode(0);
 	}
+}
+
+void UDialogComponent::TryGoToChildNode(int NodeIndex)
+{
+	if (CurrentNode)
+	{
+		const auto& Choices = CurrentNode->GetNextDialogs();
+
+		if (Choices.Num() > 0 && NodeIndex >= 0 && NodeIndex < Choices.Num())
+		{
+			CurrentNode = Choices[NodeIndex];
+			ExecuteCurrentDialogNode();
+			return;
+		}
+	}
+
+	EndDialog();
 }
 
 void UDialogComponent::EndDialog()
@@ -66,30 +126,17 @@ void UDialogComponent::EndDialog()
 
 void UDialogComponent::OnLineDisplayed()
 {
-	if (CurrentNode && CurrentNode->GetNextDialogs().Num() > 0)
-	{
-		CurrentNode = CurrentNode->GetNextDialogs()[0];
-		ExecuteCurrentDialogNode();
-	}
-	else
-	{
-		EndDialog();
-	}
+	TryGoToChildNode(0);
 }
 
 void UDialogComponent::OnChoicesDisplayed(int ChoiceIndex)
 {
-	if (CurrentNode)
+	if (ChoiceIndex >= 0 && ChoiceIndex < AvailableChoiceIndexes.Num())
 	{
-		const auto& Choices = CurrentNode->GetNextDialogs();
-
-		if (Choices.Num() > 0 && ChoiceIndex >= 0 && ChoiceIndex < Choices.Num())
-		{
-			CurrentNode = Choices[ChoiceIndex];
-			ExecuteCurrentDialogNode();
-			return;
-		}
+		EndDialog();
+		return;
 	}
 
-	EndDialog();
+	const int RealChoiceIndex = AvailableChoiceIndexes[ChoiceIndex];
+	TryGoToChildNode(RealChoiceIndex);
 }

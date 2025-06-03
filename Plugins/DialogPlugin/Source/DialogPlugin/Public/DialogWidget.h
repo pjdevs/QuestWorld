@@ -19,6 +19,9 @@ class DIALOGPLUGIN_API UDialogWidget : public UUserWidget
 
 public:
 	UFUNCTION(BlueprintImplementableEvent)
+	void SetCharacterName(const FText& Text);
+	
+	UFUNCTION(BlueprintImplementableEvent)
 	void DisplayLine(const FText& Text);
 
 	UFUNCTION(BlueprintImplementableEvent)

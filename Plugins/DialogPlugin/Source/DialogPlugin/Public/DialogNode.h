@@ -29,7 +29,7 @@ class DIALOGPLUGIN_API UDialogNode : public UObject
 public:
 	const TArray<TObjectPtr<UDialogNode>>& GetNextDialogs() const { return NextDialogs; }
 
-	bool IsAvailable() const;
+	virtual bool IsAvailable() const;
 	void Trigger();
 };
 

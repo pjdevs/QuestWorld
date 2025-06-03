@@ -184,6 +184,16 @@ FQuestDescription UQuestServiceImpl::GetQuestDescription(const FPrimaryAssetId& 
 	};
 }
 
+bool UQuestServiceImpl::IsQuestCompleted(const FPrimaryAssetId& QuestId) const
+{
+	return CompletedQuestIds.Contains(QuestId);
+}
+
+bool UQuestServiceImpl::IsQuestActive(const FPrimaryAssetId& QuestId) const
+{
+	return ActiveQuestsById.Contains(QuestId);
+}
+
 void UQuestServiceImpl::SetQuestStartedDelegate(const FQuestEventDelegate& QuestEventDelegate)
 {
 	QuestStartedDelegate = QuestEventDelegate;

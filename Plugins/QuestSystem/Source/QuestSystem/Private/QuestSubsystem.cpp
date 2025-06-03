@@ -55,10 +55,33 @@ TArray<FQuestDescription> UQuestSubsystem::GetCompletedQuests() const
 	return QuestService->GetCompletedQuestDescriptions();
 }
 
+bool UQuestSubsystem::IsQuestCompleted(FPrimaryAssetId QuestId) const
+{
+	return QuestService->IsQuestCompleted(QuestId);
+}
+
+bool UQuestSubsystem::IsQuestActive(const FPrimaryAssetId& QuestId) const
+{
+	return QuestService->IsQuestActive(QuestId);
+}
+
 void UQuestSubsystem::SubmitQuestEvent(UBaseQuestEvent* Event)
 {
 	if (UWorld* World = GetWorld())
 	{
 		QuestService->SubmitQuestEvent(World, Event);
 	}
+}
+
+UQuestSubsystem* UQuestSubsystem::GetFromWorld(const UWorld* World)
+{
+	if (World)
+	{
+		if (const UGameInstance* GameInstance = World->GetGameInstance())
+		{
+			return GameInstance->GetSubsystem<UQuestSubsystem>();
+		}
+	}
+
+	return nullptr;
 }

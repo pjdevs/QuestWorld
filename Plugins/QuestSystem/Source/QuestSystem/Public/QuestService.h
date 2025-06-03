@@ -4,9 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "ActiveQuest.h"
+#include "QuestDescription.h"
 #include "QuestService.generated.h"
 
-struct FQuestDescription;
 class UBaseQuestEvent;
 class UQuestDataAsset;
 
@@ -38,6 +38,8 @@ public:
 	virtual FQuestDescription GetQuestDescription(const FPrimaryAssetId& QuestId) const = 0;
 	virtual TArray<FQuestDescription> GetActiveQuestDescriptions() const = 0;
 	virtual TArray<FQuestDescription> GetCompletedQuestDescriptions() const = 0;
+	virtual bool IsQuestCompleted(const FPrimaryAssetId& QuestId) const = 0;
+	virtual bool IsQuestActive(const FPrimaryAssetId& QuestId) const = 0;
 
 	virtual void SetQuestStartedDelegate(const FQuestEventDelegate& QuestEventDelegate) = 0;
 	virtual void SetQuestCompletedDelegate(const FQuestEventDelegate& QuestEventDelegate) = 0;
@@ -63,6 +65,8 @@ public:
 	virtual TArray<FQuestDescription> GetActiveQuestDescriptions() const override;
 	virtual TArray<FQuestDescription> GetCompletedQuestDescriptions() const override;
 	virtual FQuestDescription GetQuestDescription(const FPrimaryAssetId& QuestId) const override;
+	virtual bool IsQuestCompleted(const FPrimaryAssetId& QuestId) const override;
+	virtual bool IsQuestActive(const FPrimaryAssetId& QuestId) const;
 
 	virtual void SetQuestStartedDelegate(const FQuestEventDelegate& QuestEventDelegate) override;
 	virtual void SetQuestCompletedDelegate(const FQuestEventDelegate& QuestEventDelegate) override;

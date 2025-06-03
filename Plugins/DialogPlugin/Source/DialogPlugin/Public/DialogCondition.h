@@ -9,7 +9,7 @@
 /**
  * 
  */
-UCLASS()
+UCLASS(Abstract, Blueprintable, EditInlineNew, DefaultToInstanced)
 class DIALOGPLUGIN_API UDialogCondition : public UObject
 {
 	GENERATED_BODY()
