@@ -18,5 +18,5 @@ class QUESTINTEGRATIONPLUGIN_API UStartQuestDialogTrigger : public UDialogTrigge
 	FPrimaryAssetId QuestToStartId;
 
 public:
-	virtual void Execute_Implementation() override;
+	virtual void Execute(UWorld* World) override;
 };

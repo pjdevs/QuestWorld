@@ -4,22 +4,22 @@
 #include "DialogTrigger.h"
 
 
-bool UDialogNode::IsAvailable() const
+bool UDialogNode::IsAvailable(UWorld* World) const
 {
 	bool bIsAvailable = true;
 
 	for (const auto& Condition : Conditions)
 	{
-		bIsAvailable &= Condition->IsSatisfied();
+		bIsAvailable &= Condition->IsSatisfied(World);
 	}
 
 	return bIsAvailable;
 }
 
-void UDialogNode::Trigger()
+void UDialogNode::Trigger(UWorld* World)
 {
 	for (const auto& Trigger : Triggers)
 	{
-		Trigger->Execute();
+		Trigger->Execute(World);
 	}
 }

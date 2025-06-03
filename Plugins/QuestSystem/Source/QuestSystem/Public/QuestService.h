@@ -66,7 +66,7 @@ public:
 	virtual TArray<FQuestDescription> GetCompletedQuestDescriptions() const override;
 	virtual FQuestDescription GetQuestDescription(const FPrimaryAssetId& QuestId) const override;
 	virtual bool IsQuestCompleted(const FPrimaryAssetId& QuestId) const override;
-	virtual bool IsQuestActive(const FPrimaryAssetId& QuestId) const;
+	virtual bool IsQuestActive(const FPrimaryAssetId& QuestId) const override;
 
 	virtual void SetQuestStartedDelegate(const FQuestEventDelegate& QuestEventDelegate) override;
 	virtual void SetQuestCompletedDelegate(const FQuestEventDelegate& QuestEventDelegate) override;

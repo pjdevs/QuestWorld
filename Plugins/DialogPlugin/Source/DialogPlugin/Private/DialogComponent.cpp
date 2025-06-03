@@ -29,6 +29,7 @@ void UDialogComponent::StartDialog(UDialogDataAsset* DialogAsset)
 }
 
 TArray<FText> SetAvailableChoiceIndexes(
+	UWorld* World,
 	const UChoiceDialogNode* ChoiceDialogNode,
 	TArray<int> AvailableIndexes
 )
@@ -51,7 +52,7 @@ TArray<FText> SetAvailableChoiceIndexes(
 		const UDialogNode* Child = Children[i];
 		const FText& Choice = AllChoices[i];
 			
-		if (!Child->IsAvailable())
+		if (!Child->IsAvailable(World))
 			continue;
 		
 		AvailableChoices.Add(Choice);
@@ -63,13 +64,21 @@ TArray<FText> SetAvailableChoiceIndexes(
 
 void UDialogComponent::ExecuteCurrentDialogNode()
 {
-	if (!CurrentNode || !CurrentNode->IsAvailable())
+	UWorld* World = GetWorld();
+
+	if (!World)
+	{
+		UE_LOG(LogTemp, Error, TEXT("No world while dialog"));
+		return;
+	}
+	
+	if (!CurrentNode || !CurrentNode->IsAvailable(GetWorld()))
 	{
 		EndDialog();
 		return;
 	}
 
-	CurrentNode->Trigger();
+	CurrentNode->Trigger(World);
 
 	if (const USingleDialogNode* SingleDialogNode = Cast<USingleDialogNode>(CurrentNode))
 	{
@@ -77,7 +86,7 @@ void UDialogComponent::ExecuteCurrentDialogNode()
 	}
 	else if (const UChoiceDialogNode* ChoiceDialogNode = Cast<UChoiceDialogNode>(CurrentNode))
 	{
-		TArray<FText> AvailableChoices = SetAvailableChoiceIndexes(ChoiceDialogNode, AvailableChoiceIndexes);
+		TArray<FText> AvailableChoices = SetAvailableChoiceIndexes(World, ChoiceDialogNode, AvailableChoiceIndexes);
 
 		if (AvailableChoices.Num() <= 0)
 		{

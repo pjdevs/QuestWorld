@@ -5,9 +5,9 @@
 
 #include "QuestSubsystem.h"
 
-void UStartQuestDialogTrigger::Execute_Implementation()
+void UStartQuestDialogTrigger::Execute(UWorld* World)
 {
-	if (UQuestSubsystem* QuestSubsystem = UQuestSubsystem::GetFromWorld(GetWorld()))
+	if (UQuestSubsystem* QuestSubsystem = UQuestSubsystem::GetFromWorld(World))
 	{
 		QuestSubsystem->StartQuest(QuestToStartId);
 	}		

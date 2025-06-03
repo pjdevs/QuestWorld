@@ -15,10 +15,6 @@ class DIALOGPLUGIN_API UDialogCondition : public UObject
 	GENERATED_BODY()
 
 public:
-	UFUNCTION(BlueprintImplementableEvent, Category = Dialog)
-	bool IsSatisfied();
-
-protected:
-	virtual bool IsSatisfied_Implementation()
-	PURE_VIRTUAL(UDialogCondition::IsSatisfied_Implementation, return false;)
+	// UFUNCTION(BlueprintImplementableEvent, Category = Dialog)
+	virtual bool IsSatisfied(UWorld* World) { return true; }
 };

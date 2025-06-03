@@ -32,5 +32,5 @@ class QUESTINTEGRATIONPLUGIN_API UQuestDialogCondition : public UDialogCondition
 	EQuestConditionBehavior Behavior;
 
 public:
-	virtual bool IsSatisfied_Implementation() override;	
+	virtual bool IsSatisfied(UWorld* World) override;	
 };

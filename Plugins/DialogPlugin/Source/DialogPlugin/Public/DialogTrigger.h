@@ -15,10 +15,10 @@ class DIALOGPLUGIN_API UDialogTrigger : public UObject
 	GENERATED_BODY()
 
 public:
-	UFUNCTION(BlueprintNativeEvent, Category = Dialog)
-	void Execute();
+	// UFUNCTION(BlueprintNativeEvent, Category = Dialog)
+	virtual void Execute(UWorld* World);
 
-protected:
-	virtual void Execute_Implementation()
-	PURE_VIRTUAL(UDialogTrigger::Execute_Implementation, );
+// protected:
+// 	virtual void Execute_Implementation()
+// 	PURE_VIRTUAL(UDialogTrigger::Execute_Implementation, );
 };
