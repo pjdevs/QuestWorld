@@ -140,7 +140,7 @@ void UDialogComponent::OnLineDisplayed()
 
 void UDialogComponent::OnChoicesDisplayed(int ChoiceIndex)
 {
-	if (ChoiceIndex >= 0 && ChoiceIndex < AvailableChoiceIndexes.Num())
+	if (ChoiceIndex < 0 || ChoiceIndex >= AvailableChoiceIndexes.Num())
 	{
 		EndDialog();
 		return;
