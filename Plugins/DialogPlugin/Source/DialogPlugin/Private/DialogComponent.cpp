@@ -31,7 +31,7 @@ void UDialogComponent::StartDialog(UDialogDataAsset* DialogAsset)
 TArray<FText> SetAvailableChoiceIndexes(
 	UWorld* World,
 	const UChoiceDialogNode* ChoiceDialogNode,
-	TArray<int> AvailableIndexes
+	TArray<int>& AvailableIndexes
 )
 {
 	const TArray<FText>& AllChoices = ChoiceDialogNode->GetChoices();
