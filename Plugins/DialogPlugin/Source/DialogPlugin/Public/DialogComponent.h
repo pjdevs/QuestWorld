@@ -21,17 +21,14 @@ class DIALOGPLUGIN_API UDialogComponent : public UActorComponent
 	TSubclassOf<UDialogWidget> DialogWidgetClass;
 	
 public:
-	UDialogComponent();
-	
+	UFUNCTION(BlueprintCallable, Category = Dialog)
 	void StartDialog(UDialogDataAsset* DialogAsset);
 
 private:
 	void ExecuteCurrentDialogNode();
 	void EndDialog();
-
-	UFUNCTION()
+	
 	void OnLineDisplayed();
-	UFUNCTION()
 	void OnChoicesDisplayed(int ChoiceIndex);
 
 private:
@@ -40,10 +37,4 @@ private:
 	
 	UPROPERTY()
 	TObjectPtr<UDialogWidget> DisplayedDialogWidget;
-
-	UPROPERTY()
-	FDisplayLineFinishedDelegate DisplayLineFinishedDelegate;
-
-	UPROPERTY()
-	FDisplayChoicesFinishedDelegate DisplayChoicesFinishedDelegate;
 };

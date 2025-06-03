@@ -6,21 +6,31 @@
 #include "Blueprint/UserWidget.h"
 #include "DialogWidget.generated.h"
 
-DECLARE_DYNAMIC_DELEGATE(FDisplayLineFinishedDelegate);
-DECLARE_DYNAMIC_DELEGATE_OneParam(FDisplayChoicesFinishedDelegate, int, ChoiceIndex);
+DECLARE_DELEGATE(FDisplayLineFinishedDelegate);
+DECLARE_DELEGATE_OneParam(FDisplayChoicesFinishedDelegate, int);
 
 /**
  * 
  */
-UCLASS()
+UCLASS(Abstract)
 class DIALOGPLUGIN_API UDialogWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
 public:
 	UFUNCTION(BlueprintImplementableEvent)
-	void DisplayLine(const FText& Text, const FDisplayLineFinishedDelegate& Delegate);
+	void DisplayLine(const FText& Text);
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void DisplayChoices(const TArray<FText>& Choices, const FDisplayChoicesFinishedDelegate& Delegate);
+	void DisplayChoices(const TArray<FText>& Choices);
+
+	UFUNCTION(BlueprintCallable)
+	void DisplayLineFinished();
+	
+	UFUNCTION(BlueprintCallable)
+	void DisplayChoicesFinished(int ChoiceIndex);
+	
+	FDisplayLineFinishedDelegate DisplayLineFinishedDelegate;
+
+	FDisplayChoicesFinishedDelegate DisplayChoicesFinishedDelegate;
 };

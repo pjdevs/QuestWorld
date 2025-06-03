@@ -11,17 +11,18 @@
 #include "Blueprint/UserWidget.h"
 
 
-UDialogComponent::UDialogComponent()
-{
-	DisplayLineFinishedDelegate.BindDynamic(this, &UDialogComponent::OnLineDisplayed);
-	DisplayChoicesFinishedDelegate.BindDynamic(this, &UDialogComponent::OnChoicesDisplayed);
-}
-
 void UDialogComponent::StartDialog(UDialogDataAsset* DialogAsset)
 {
-	DisplayedDialogWidget = Cast<UDialogWidget>(CreateWidget(GetOwner(), DialogWidgetClass));
-	DisplayedDialogWidget->AddToViewport();
+	APlayerController* OwnerController = Cast<APlayerController>(GetOwner());
+
+	if (!OwnerController)
+		return;
 	
+	DisplayedDialogWidget = Cast<UDialogWidget>(CreateWidget(OwnerController, DialogWidgetClass));
+	DisplayedDialogWidget->AddToViewport();
+	DisplayedDialogWidget->DisplayLineFinishedDelegate.BindUObject(this, &UDialogComponent::OnLineDisplayed);
+	DisplayedDialogWidget->DisplayChoicesFinishedDelegate.BindUObject(this, &UDialogComponent::OnChoicesDisplayed);
+
 	CurrentNode = DialogAsset->GetDialogRoot();
 	ExecuteCurrentDialogNode();
 }
@@ -34,13 +35,15 @@ void UDialogComponent::ExecuteCurrentDialogNode()
 		return;
 	}
 
+	CurrentNode->Trigger();
+
 	if (const USingleDialogNode* SingleDialogNode = Cast<USingleDialogNode>(CurrentNode))
 	{
-		DisplayedDialogWidget->DisplayLine(SingleDialogNode->GetLine(), DisplayLineFinishedDelegate);
+		DisplayedDialogWidget->DisplayLine(SingleDialogNode->GetLine());
 	}
 	else if (const UChoiceDialogNode* ChoiceDialogNode = Cast<UChoiceDialogNode>(CurrentNode))
 	{
-		DisplayedDialogWidget->DisplayChoices(ChoiceDialogNode->GetChoices(), DisplayChoicesFinishedDelegate);
+		DisplayedDialogWidget->DisplayChoices(ChoiceDialogNode->GetChoices());
 	}
 	else
 	{
@@ -54,6 +57,8 @@ void UDialogComponent::EndDialog()
 	
 	if (DisplayedDialogWidget)
 	{
+		DisplayedDialogWidget->DisplayLineFinishedDelegate.Unbind();
+		DisplayedDialogWidget->DisplayChoicesFinishedDelegate.Unbind();
 		DisplayedDialogWidget->RemoveFromParent();
 		DisplayedDialogWidget = nullptr;
 	}
