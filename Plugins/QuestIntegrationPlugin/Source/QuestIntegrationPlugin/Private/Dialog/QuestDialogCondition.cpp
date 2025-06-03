@@ -11,11 +11,11 @@ bool UQuestDialogCondition::IsSatisfied_Implementation()
 	{
 		switch (Behavior)
 		{
-			case EQuestConditionBehavior::QuestNotStartNorCompleted:
+		case EQuestConditionBehavior::QuestNotStartNorCompleted:
 				return !QuestSubsystem->IsQuestCompleted(QuestId) && !QuestSubsystem->IsQuestActive(QuestId);
-			case EQuestConditionBehavior::QuestStarted:
+		case EQuestConditionBehavior::QuestStarted:
 				return QuestSubsystem->IsQuestActive(QuestId);
-			case EQuestConditionBehavior::QuestCompleted:
+		case EQuestConditionBehavior::QuestCompleted:
 				return QuestSubsystem->IsQuestCompleted(QuestId);
 		}
 	}

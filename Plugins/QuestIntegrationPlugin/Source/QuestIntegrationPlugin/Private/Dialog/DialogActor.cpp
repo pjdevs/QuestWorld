@@ -17,12 +17,19 @@ void ADialogActor::DoInteract(AActor* InteractionInstigator)
 	if (!DialogAsset)
 		return;
 
-	UDialogComponent* DialogComponent = Cast<UDialogComponent>(
-		InteractionInstigator->GetComponentByClass(UDialogComponent::StaticClass())
-	);
-
-	if (DialogComponent)
+	if (const APawn* InteractorPawn = Cast<APawn>(InteractionInstigator))
 	{
-		DialogComponent->StartDialog(DialogAsset);
+		if (const APlayerController* Controller = Cast<APlayerController>(InteractorPawn->GetController()))
+		{
+			UDialogComponent* DialogComponent = Cast<UDialogComponent>(
+				Controller->GetComponentByClass(UDialogComponent::StaticClass())
+			);
+
+			if (DialogComponent)
+			{
+				DialogComponent->StartDialog(DialogAsset);
+			}
+		}
 	}
+	
 }

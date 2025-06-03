@@ -5,11 +5,11 @@
 
 bool UChoiceDialogNode::IsAvailable() const
 {
-	bool bHasAvailableChoices = true;
+	bool bHasAvailableChoices = false;
 
 	for (auto& ChildNode : GetNextDialogs())
 	{
-		bHasAvailableChoices &= ChildNode->IsAvailable();
+		bHasAvailableChoices |= ChildNode->IsAvailable();
 	}
 
 	return bHasAvailableChoices && Super::IsAvailable();
