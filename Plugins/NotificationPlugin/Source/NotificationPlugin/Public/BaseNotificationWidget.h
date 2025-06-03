@@ -18,6 +18,7 @@ class NOTIFICATIONPLUGIN_API UBaseNotificationWidget : public UUserWidget
 	GENERATED_BODY()
 
 public:
+	// TODO Check if we can pass a delegate here and avoid calling another function (even if equivalent)
 	UFUNCTION(BlueprintImplementableEvent, Category = Notification)
 	void SetNotification(const FGameNotification& Notification);
 
