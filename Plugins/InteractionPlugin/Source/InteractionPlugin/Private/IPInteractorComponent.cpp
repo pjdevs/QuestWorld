@@ -32,16 +32,30 @@ void UIPInteractorComponent::Interact()
 	
 	auto* Interactive = Cast<IIPInteractive>(MostRelevantActor);
 	
-	if (!Interactive) return;
+	if (!Interactive)
+	{
+		return;
+	}
 
 	Interactive->Interact(GetOwner());
 }
 
 void UIPInteractorComponent::AddInteractive(IIPInteractive* Interactive)
 {
-	if (!Interactive) return;
-	if (!Interactive->CanBeInteracted(GetOwner())) return;
-	if (PossibleInteractives.Contains(Interactive)) return;
+	if (!Interactive)
+	{
+		return;
+	}
+
+	if (!Interactive->CanBeInteracted(GetOwner()))
+	{
+		return;
+	}
+
+	if (PossibleInteractives.Contains(Interactive))
+	{
+		return;
+	}
 
 	PossibleInteractives.Add(Interactive);
 	RecomputeInteractiveRelevancy();
@@ -49,7 +63,11 @@ void UIPInteractorComponent::AddInteractive(IIPInteractive* Interactive)
 
 void UIPInteractorComponent::RemoveInteractive(IIPInteractive* Interactive)
 {
-	if (!Interactive) return;
+	if (!Interactive)
+	{
+		return;
+	}
+
 	PossibleInteractives.Remove(Interactive);
 	RecomputeInteractiveRelevancy();
 }
@@ -66,27 +84,53 @@ void UIPInteractorComponent::Server_Interact_Implementation()
 
 void UIPInteractorComponent::RecomputeInteractiveRelevancy()
 {
-	if (!ensureMsgf(InteractionTraceDelegate.IsBound(), TEXT("InteractionLineSweepDelegate was not boud. Did you forget to call SetInteractionLineSweepDelegate?"))) return;
+	if (!ensureMsgf(
+		InteractionTraceDelegate.IsBound(),
+		TEXT("InteractionTraceDelegate was not bound. Did you forget to call SetInteractionTraceDelegate?"))
+	)
+	{
+		return;
+	}
 
-	const auto* PreviousMostRelevantActor = MostRelevantActor;
+	const AActor* PreviousMostRelevantActor = MostRelevantActor;
 	MostRelevantActor = PossibleInteractives.IsEmpty() ? nullptr : Cast<AActor>(PossibleInteractives[0]);
-	
-	if (TArray<FHitResult> Results; InteractionTraceDelegate.Execute(InteractionDistance, InteractionTraceChannel, Results))
+
+	if (
+		TArray<FHitResult> Results;
+		InteractionTraceDelegate.Execute(InteractionDistance, InteractionTraceChannel, Results)
+	)
 	{
 		for (const auto& Result : Results)
 		{
-			if (!Result.GetActor()) continue;
-			if (!Result.GetActor()->Implements<UIPInteractive>()) break; // Make walls etc block interaction
-			const auto* InteractiveActorHit = Cast<IIPInteractive>(Result.GetActor());
-			const bool ExistInList = PossibleInteractives.ContainsByPredicate([&](const IIPInteractive* Interactive)
+			if (!Result.GetActor())
 			{
-				return Interactive == InteractiveActorHit;
-			});
+				continue;
+			}
 
-			if (!ExistInList) break; // Take only first it into account
+			// Make walls etc. block interaction
+			if (!Result.GetActor()->Implements<UIPInteractive>())
+			{
+				break; 
+			}
+
+			const auto* InteractiveActorHit = Cast<IIPInteractive>(Result.GetActor());
+			const bool ActorExistsInList = PossibleInteractives.ContainsByPredicate(
+				[&](const IIPInteractive* Interactive)
+				{
+					return Interactive == InteractiveActorHit;
+				}
+			);
+
+			// Take only first hit into account
+			if (!ActorExistsInList)
+			{
+				break; 
+			}
+
 			MostRelevantActor = Result.GetActor();
 
-			break; // Take only first it into account
+			// Take only first hit into account
+			break; 
 		}
 	}
 
@@ -102,9 +146,11 @@ void UIPInteractorComponent::RecomputeInteractiveRelevancy()
 
 	PossibleInteractives.Sort([&](const IIPInteractive& A, const IIPInteractive& B)
 	{
-		const auto OwnerLocation = GetOwner()->GetActorLocation();
-		return FVector::DistSquared(OwnerLocation, A.GetInteractiveLocation())
-			< FVector::DistSquared(OwnerLocation, B.GetInteractiveLocation());
+		const FVector OwnerLocation = GetOwner()->GetActorLocation();
+		const double DistanceToInteractiveA = FVector::DistSquared(OwnerLocation, A.GetInteractiveLocation());
+		const double DistanceToInteractiveB = FVector::DistSquared(OwnerLocation, B.GetInteractiveLocation());
+
+		return DistanceToInteractiveA < DistanceToInteractiveB;
 	});
 }
 
@@ -121,8 +167,16 @@ void UIPInteractorComponent::HideInteractionWidget_Client_Implementation()
 void UIPInteractorComponent::ShowInteractionWidget_Client_Implementation(AActor* Interactive)
 {
 	const auto* InteractiveActor = Cast<IIPInteractive>(Interactive);
-	if (!InteractiveActor) return;
-	if (InteractiveActor->IsAutoInteractive()) return;
+
+	if (!InteractiveActor)
+	{
+		return;
+	}
+
+	if (InteractiveActor->IsAutoInteractive())
+	{
+		return;
+	}
 
 	InteractionWidget = CreateWidget<UIPInteractionWidget>(GetWorld(), InteractionWidgetClass);
 	InteractionWidget->SetInteractionDescription(InteractiveActor->GetInteractionDescription());

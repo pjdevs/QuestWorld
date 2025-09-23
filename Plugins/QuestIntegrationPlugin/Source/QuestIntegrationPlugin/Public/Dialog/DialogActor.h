@@ -20,5 +20,5 @@ class QUESTINTEGRATIONPLUGIN_API ADialogActor : public AIPInteractiveActor
 public:
 	ADialogActor();
 	
-	virtual void DoInteract(AActor* InteractionInstigator) override;
+	virtual void DoInteraction_Implementation(AActor* InteractionInstigator) override;
 };

@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+	// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -15,7 +15,13 @@ class IIPInteractive;
  * @param TraceChannel The collision channel to use.
  * @param Hits The output hit results of the line sweep.
  */
-DECLARE_DELEGATE_RetVal_ThreeParams(bool, FInteractionTraceDelegate, float /*Distance*/, ECollisionChannel /*TraceChannel*/, TArray<FHitResult>& /*Hits*/)
+DECLARE_DELEGATE_RetVal_ThreeParams(
+	bool,
+	FInteractionTraceDelegate,
+	float /*Distance*/,
+	ECollisionChannel /*TraceChannel*/,
+	TArray<FHitResult>& /*Hits*/
+)
 
 /**
  * ActorComponent for handling replicated interactions with other interactive actors. 

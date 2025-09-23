@@ -12,16 +12,18 @@ ADialogActor::ADialogActor()
 	PrimaryActorTick.bCanEverTick = false;
 }
 
-void ADialogActor::DoInteract(AActor* InteractionInstigator)
+void ADialogActor::DoInteraction_Implementation(AActor* InteractionInstigator)
 {
 	if (!DialogAsset)
+	{
 		return;
+	}
 
 	if (const APawn* InteractorPawn = Cast<APawn>(InteractionInstigator))
 	{
 		if (const APlayerController* Controller = Cast<APlayerController>(InteractorPawn->GetController()))
 		{
-			UDialogComponent* DialogComponent = Cast<UDialogComponent>(
+			auto* DialogComponent = Cast<UDialogComponent>(
 				Controller->GetComponentByClass(UDialogComponent::StaticClass())
 			);
 
@@ -31,5 +33,4 @@ void ADialogActor::DoInteract(AActor* InteractionInstigator)
 			}
 		}
 	}
-	
 }

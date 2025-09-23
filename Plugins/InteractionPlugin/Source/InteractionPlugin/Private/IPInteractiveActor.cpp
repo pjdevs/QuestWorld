@@ -18,13 +18,29 @@ AIPInteractiveActor::AIPInteractiveActor()
 	AutoInteract = false;
 }
 
-void AIPInteractiveActor::HandleTriggerBeginOverlap(UPrimitiveComponent* PrimitiveComponent, AActor* Actor,
-	UPrimitiveComponent* PrimitiveComponent1, int I, bool bArg, const FHitResult& HitResult)
+void AIPInteractiveActor::HandleTriggerBeginOverlap(
+	UPrimitiveComponent* OverlappedComponent,
+	AActor* OtherActor,
+	UPrimitiveComponent* OtherComponent,
+	int32 OtherBodyIndex,
+	bool bFromSweep,
+	const FHitResult & SweepResult
+)
 {
-	if (!Actor) return;
+	if (!OtherActor)
+	{
+		return;
+	}
 
-	auto Interactor = Cast<UIPInteractorComponent>(Actor->GetComponentByClass(UIPInteractorComponent::StaticClass()));
-	if (!Interactor) return;
+	// Try to get the Interactor component from the other actor
+	auto* Interactor = Cast<UIPInteractorComponent>(
+		OtherActor->GetComponentByClass(UIPInteractorComponent::StaticClass())
+	);
+
+	if (!Interactor)
+	{
+		return;
+	}
 
 	PossibleInteractors.Add(Interactor);
 	Interactor->AddInteractive(this);
@@ -35,12 +51,28 @@ void AIPInteractiveActor::HandleTriggerBeginOverlap(UPrimitiveComponent* Primiti
 	}
 }
 
-void AIPInteractiveActor::HandleTriggerEndOverlap(UPrimitiveComponent* PrimitiveComponent, AActor* Actor,
-	UPrimitiveComponent* PrimitiveComponent1, int I)
+void AIPInteractiveActor::HandleTriggerEndOverlap(
+	UPrimitiveComponent* OverlappedComponent,
+	AActor* OtherActor,
+	UPrimitiveComponent* OtherComponent,
+	int32 OtherBodyIndex
+)
 {
-	if (!Actor) return;
-	auto Interactor = Cast<UIPInteractorComponent>(Actor->GetComponentByClass(UIPInteractorComponent::StaticClass()));
-	if (!Interactor) return;
+	if (!OtherActor)
+	{
+		return;
+	}
+
+	// Try to get the Interactor component from the other actor
+	auto* Interactor = Cast<UIPInteractorComponent>(
+		OtherActor->GetComponentByClass(UIPInteractorComponent::StaticClass())
+	);
+
+	if (!Interactor)
+	{
+		return;
+	}
+	
 	PossibleInteractors.Remove(Interactor);
 	Interactor->RemoveInteractive(this);
 }
@@ -55,26 +87,33 @@ void AIPInteractiveActor::PostInitializeComponents()
 
 void AIPInteractiveActor::Interact(AActor* InteractionInstigator)
 {
-	if (!HasAuthority()) return;
-	if (!CanBeInteracted(InteractionInstigator)) return;
+	if (!HasAuthority())
+	{
+		return;
+	}
+	
+	if (!CanBeInteracted(InteractionInstigator))
+	{
+		return;
+	}
 
-	DoInteract(InteractionInstigator);
-	BP_DoInteract(InteractionInstigator);
-	
+	DoInteraction(InteractionInstigator);
+
 	if (InteractMultipleTimes)
+	{
 		State = State == EIPInteractiveState::Interacted ? EIPInteractiveState::Ready : EIPInteractiveState::Interacted;
+	}
 	else
+	{
 		State = EIPInteractiveState::Interacted;
-	
+	}
+
 	OnRep_State();
 }
 
 bool AIPInteractiveActor::CanBeInteracted(AActor* InteractionInstigator)
 {
-	if (InteractMultipleTimes)
-		return true;
-	else
-		return State == EIPInteractiveState::Ready;
+	return InteractMultipleTimes || State == EIPInteractiveState::Ready;
 }
 
 FString AIPInteractiveActor::GetInteractionDescription() const
@@ -89,34 +128,27 @@ bool AIPInteractiveActor::IsAutoInteractive() const
 
 void AIPInteractiveActor::OnRep_State()
 {
-	if (State == EIPInteractiveState::Interacted || InteractMultipleTimes)
+	if (State != EIPInteractiveState::Interacted && !InteractMultipleTimes)
 	{
-		for (auto* Interactor : PossibleInteractors)
-		{
-			if (!InteractMultipleTimes || !CanBeInteracted(Interactor->GetOwner()))
-			{
-				Interactor->RemoveInteractive(this);
-			}
-		}
-		
-		DoFeedback();
-		BP_DoFeedback();
+		return;
 	}
+
+	for (auto* Interactor : PossibleInteractors)
+	{
+		if (!InteractMultipleTimes || !CanBeInteracted(Interactor->GetOwner()))
+		{
+			Interactor->RemoveInteractive(this);
+		}
+	}
+
+	DoFeedback();
 }
 
-void AIPInteractiveActor::DoInteract(AActor* InteractionInstigator)
+void AIPInteractiveActor::DoInteraction_Implementation(AActor* InteractionInstigator)
 {
 }
 
-void AIPInteractiveActor::BP_DoInteract_Implementation(AActor* InteractionInstigator)
-{
-}
-
-void AIPInteractiveActor::DoFeedback()
-{
-}
-
-void AIPInteractiveActor::BP_DoFeedback_Implementation()
+void AIPInteractiveActor::DoFeedback_Implementation()
 {
 }
 

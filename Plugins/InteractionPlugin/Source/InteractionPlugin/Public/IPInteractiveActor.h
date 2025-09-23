@@ -63,33 +63,37 @@ protected:
 
 	UFUNCTION()
 	void OnRep_State();
-
+	
 	/**
 	 * Action to execute on the server for interaction.
 	 */
-	virtual void DoInteract(AActor* InteractionInstigator);
-	/**
-	 * Action to execute on the server for interaction (Blueprint version).
-	 */
 	UFUNCTION(BlueprintNativeEvent)
-	void BP_DoInteract(AActor* InteractionInstigator);
-	virtual void BP_DoInteract_Implementation(AActor* InteractionInstigator);
+	void DoInteraction(AActor* InteractionInstigator);
+	virtual void DoInteraction_Implementation(AActor* InteractionInstigator);
 	
 	/**
 	 * Feeback to execute on the client for interaction.
 	 */
-	virtual void DoFeedback();
-	/**
-	 * Feeback to execute on the client for interaction (Blueprint version).
-	 */
 	UFUNCTION(BlueprintNativeEvent)
-	void BP_DoFeedback();
-	virtual void BP_DoFeedback_Implementation();
+	void DoFeedback();
+	virtual void DoFeedback_Implementation();
 	
 	UFUNCTION()
-	void HandleTriggerBeginOverlap(UPrimitiveComponent* PrimitiveComponent, AActor* Actor, UPrimitiveComponent* PrimitiveComponent1, int I, bool bArg, const FHitResult& HitResult);
+	void HandleTriggerBeginOverlap(
+		UPrimitiveComponent* OverlappedComponent,
+		AActor* OtherActor,
+		UPrimitiveComponent* OtherComponent,
+		int32 OtherBodyIndex,
+		bool bFromSweep,
+		const FHitResult & SweepResult
+	);
 	UFUNCTION()
-	void HandleTriggerEndOverlap(UPrimitiveComponent* PrimitiveComponent, AActor* Actor, UPrimitiveComponent* PrimitiveComponent1, int I);
+	void HandleTriggerEndOverlap(
+		UPrimitiveComponent* OverlappedComponent,
+		AActor* OtherActor,
+		UPrimitiveComponent* OtherComponent,
+		int32 OtherBodyIndex
+	);
 
 	virtual void PostInitializeComponents() override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
@@ -99,7 +103,7 @@ public:
 
 	virtual void Interact(AActor* InteractionInstigator) override;
 	virtual bool CanBeInteracted(AActor* InteractionInstigator) override;
-	virtual FVector GetInteractiveLocation() const override { return GetActorLocation(); };
+	FORCEINLINE virtual FVector GetInteractiveLocation() const override { return GetActorLocation(); }
 	virtual FString GetInteractionDescription() const override;
 	virtual bool IsAutoInteractive() const override;
 };
