@@ -7,6 +7,8 @@
 
 #include "ActionRichTextBlockDecorator.generated.h"
 
+class UInputMappingContext;
+class UInputAction;
 class UIPActionWidget;
 
 /**
@@ -23,4 +25,7 @@ protected:
 private:
 	UPROPERTY(EditDefaultsOnly, Category = Interaction, meta = (AllowPrivateAccess = true))
 	TSubclassOf<UIPActionWidget> ActionWidgetClass;
+
+	UPROPERTY(EditDefaultsOnly, Category = Interaction, meta = (AllowPrivateAccess = true))
+	TObjectPtr<UInputMappingContext> MappingContext;
 };

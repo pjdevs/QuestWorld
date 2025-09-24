@@ -27,7 +27,8 @@ public class InteractionPlugin : ModuleRules
 				"Core",
 				"UMG",
 				"Slate",
-				"SlateCore"
+				"SlateCore",
+				"EnhancedInput"
 				// ... add other public dependencies that you statically link with here ...
 			]
 		);

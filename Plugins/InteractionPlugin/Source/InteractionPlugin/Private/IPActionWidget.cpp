@@ -2,3 +2,10 @@
 
 
 #include "IPActionWidget.h"
+
+void UIPActionWidget::NativeConstruct()
+{
+	Super::NativeConstruct();
+
+	SetAction(InputAction);
+}
