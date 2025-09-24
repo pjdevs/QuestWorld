@@ -1,4 +1,4 @@
-	// Fill out your copyright notice in the Description page of Project Settings.
+// Copyright pjdevs. All Rights Reserved.
 
 #pragma once
 
@@ -30,46 +30,6 @@ UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class INTERACTIONPLUGIN_API UIPInteractorComponent : public UActorComponent
 {
 	GENERATED_BODY()
-	
-	/**
-	 * Distance to trace for interaction.
-	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Interaction, meta = (AllowPrivateAccess = true))
-	float InteractionDistance;
-
-	/**
-	 * Collision channel to use when interaction trace. 
-	 */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Interaction, meta = (AllowPrivateAccess = true))
-	TEnumAsByte<ECollisionChannel> InteractionTraceChannel;
-	
-	/**
-	 * The current most relevant actor to interact with.
-	 */
-	UPROPERTY(VisibleInstanceOnly, Category = Interaction, meta = (AllowPrivateAccess = true))
-	AActor* MostRelevantActor;
-
-	/**
-	 ** Widget to that interactor will use to add to his viewport and describe the interaction.
-	 */
-	UPROPERTY(EditDefaultsOnly, Category = Interaction, meta = (AllowPrivateAccess = true))
-	TSubclassOf<UIPInteractionWidget> InteractionWidgetClass;
-	
-	/**
-	 * Store the current widget for current possible interaction.
-	 */
-	UPROPERTY(VisibleInstanceOnly, Category = Interaction, meta = (AllowPrivateAccess = true))
-	UIPInteractionWidget* InteractionWidget;
-
-	/**
-	 * The list of all current possible interactives.
-	 */
-	TArray<IIPInteractive*> PossibleInteractives;
-
-	/**
-	 * Delegate which will execute the line sweep.
-	 */
-	FInteractionTraceDelegate InteractionTraceDelegate;
 	
 public:
 	// Sets default values for this component's properties
@@ -113,4 +73,45 @@ protected:
 	
 	UFUNCTION(Client, Reliable)
 	void HideInteractionWidget_Client();
+
+private:
+	/**
+	 * Distance to trace for interaction.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Interaction, meta = (AllowPrivateAccess = true))
+	float InteractionDistance;
+
+	/**
+	 * Collision channel to use when interaction trace. 
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Interaction, meta = (AllowPrivateAccess = true))
+	TEnumAsByte<ECollisionChannel> InteractionTraceChannel;
+	
+	/**
+	 * The current most relevant actor to interact with.
+	 */
+	UPROPERTY(VisibleInstanceOnly, Category = Interaction, meta = (AllowPrivateAccess = true))
+	AActor* MostRelevantActor;
+
+	/**
+	 ** Widget to that interactor will use to add to his viewport and describe the interaction.
+	 */
+	UPROPERTY(EditDefaultsOnly, Category = Interaction, meta = (AllowPrivateAccess = true))
+	TSubclassOf<UIPInteractionWidget> InteractionWidgetClass;
+	
+	/**
+	 * Store the current widget for current possible interaction.
+	 */
+	UPROPERTY(VisibleInstanceOnly, Category = Interaction, meta = (AllowPrivateAccess = true))
+	UIPInteractionWidget* InteractionWidget;
+
+	/**
+	 * The list of all current possible interactives.
+	 */
+	TArray<IIPInteractive*> PossibleInteractives;
+
+	/**
+	 * Delegate which will execute the line sweep.
+	 */
+	FInteractionTraceDelegate InteractionTraceDelegate;
 };

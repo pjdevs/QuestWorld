@@ -1,7 +1,6 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Copyright pjdevs. All Rights Reserved.
 
-
-#include "../Public/IPInteractiveActor.h"
+#include "IPInteractiveActor.h"
 #include "Net/UnrealNetwork.h"
 
 AIPInteractiveActor::AIPInteractiveActor()

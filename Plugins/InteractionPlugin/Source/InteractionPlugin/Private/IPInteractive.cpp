@@ -1,7 +1,6 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Copyright pjdevs. All Rights Reserved.
 
-
-#include "../Public/IPInteractive.h"
+#include "IPInteractive.h"
 
 
 // Add default functionality here for any IInteractive functions that are not pure virtual.
