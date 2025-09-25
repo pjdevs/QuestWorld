@@ -73,7 +73,7 @@ protected:
 	void ShowInteractionWidget_Client(AActor* Interactive);
 	
 	UFUNCTION(Client, Reliable)
-	void HideInteractionWidget_Client();
+	void HideInteractionWidget_Client(AActor* Interactive);
 
 private:
 	/**
@@ -106,6 +106,9 @@ private:
 	UPROPERTY(VisibleInstanceOnly, Category = Interaction, meta = (AllowPrivateAccess = true))
 	UIPInteractionWidget* InteractionWidget;
 
+	/**
+	 * Input Action used to interact, to show in interaction widget.
+	 */
 	UPROPERTY(EditDefaultsOnly, Category = Interaction, meta = (AllowPrivateAccess = true))
 	UInputAction* InteractionAction;
 	

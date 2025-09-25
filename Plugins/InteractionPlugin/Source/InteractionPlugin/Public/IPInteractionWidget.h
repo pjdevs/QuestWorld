@@ -16,5 +16,9 @@ class INTERACTIONPLUGIN_API UIPInteractionWidget : public UUserWidget
 
 public:
 	UFUNCTION(BlueprintImplementableEvent)
-	void SetInteractionDescription(const FString& InteractionDescription);
+	void SetInteractionDescription(
+		const UInputAction* InteractionAction,
+		const FText& InteractiveName,
+		const FText& InteractionDescription
+	);
 };

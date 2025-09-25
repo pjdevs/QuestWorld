@@ -3,7 +3,8 @@
 #include "../Public/IPInteractorComponent.h"
 
 #include "IPInteractionWidget.h"
-#include "../Public/IPInteractive.h"
+#include "IPInteractive.h"
+#include "Components/WidgetComponent.h"
 #include "Blueprint/UserWidget.h"
 
 
@@ -18,7 +19,7 @@ void UIPInteractorComponent::OnComponentDestroyed(bool bDestroyingHierarchy)
 {
 	Super::OnComponentDestroyed(bDestroyingHierarchy);
 	
-	HideInteractionWidget_Client_Implementation();
+	HideInteractionWidget_Client_Implementation(MostRelevantActor);
 }
 
 void UIPInteractorComponent::Interact()
@@ -91,7 +92,7 @@ void UIPInteractorComponent::RecomputeInteractiveRelevancy()
 		return;
 	}
 
-	const AActor* PreviousMostRelevantActor = MostRelevantActor;
+	AActor* PreviousMostRelevantActor = MostRelevantActor;
 	MostRelevantActor = PossibleInteractives.IsEmpty() ? nullptr : Cast<AActor>(PossibleInteractives[0]);
 
 	if (
@@ -135,7 +136,7 @@ void UIPInteractorComponent::RecomputeInteractiveRelevancy()
 
 	if (GetOwner()->HasAuthority() && MostRelevantActor != PreviousMostRelevantActor)
 	{
-		HideInteractionWidget_Client();
+		HideInteractionWidget_Client(PreviousMostRelevantActor);
 
 		if (MostRelevantActor)
 		{
@@ -153,8 +154,18 @@ void UIPInteractorComponent::RecomputeInteractiveRelevancy()
 	});
 }
 
-void UIPInteractorComponent::HideInteractionWidget_Client_Implementation()
+void UIPInteractorComponent::HideInteractionWidget_Client_Implementation(AActor* Interactive)
 {
+	if (const IIPInteractive* InteractiveActor = Cast<IIPInteractive>(Interactive))
+	{
+		UWidgetComponent* WidgetComponent = InteractiveActor->GetWorldSpaceInteractionWidgetSlot();
+
+		if (WidgetComponent != nullptr)
+		{
+			WidgetComponent->SetWidget(nullptr);
+		}
+	}
+	
 	if (InteractionWidget)
 	{
 		InteractionWidget->RemoveFromParent();
@@ -177,10 +188,26 @@ void UIPInteractorComponent::ShowInteractionWidget_Client_Implementation(AActor*
 		return;
 	}
 
+	UWidgetComponent* WidgetComponent = InteractiveActor->GetWorldSpaceInteractionWidgetSlot();
+	const bool bSupportsWorldInteractionWidget = WidgetComponent != nullptr;
 	InteractionWidget = CreateWidget<UIPInteractionWidget>(GetWorld(), InteractionWidgetClass);
-	InteractionWidget->SetInteractionDescription(InteractiveActor->GetInteractionDescription());
-	
-	if (InteractionWidget)
+
+	if (!InteractionWidget)
+	{
+		return;
+	}
+
+	InteractionWidget->SetInteractionDescription(
+		InteractionAction,
+		InteractiveActor->GetInteractiveName(),
+		InteractiveActor->GetInteractionDescription()
+	);
+
+	if (bSupportsWorldInteractionWidget)
+	{
+		WidgetComponent->SetWidget(InteractionWidget);
+	}
+	else
 	{
 		InteractionWidget->AddToViewport();
 	}

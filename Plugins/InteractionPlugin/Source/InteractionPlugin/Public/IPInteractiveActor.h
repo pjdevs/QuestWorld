@@ -30,7 +30,9 @@ public:
 	virtual void Interact(AActor* InteractionInstigator) override;
 	virtual bool CanBeInteracted(AActor* InteractionInstigator) override;
 	FORCEINLINE virtual FVector GetInteractiveLocation() const override { return GetActorLocation(); }
-	virtual FString GetInteractionDescription() const override;
+	virtual UWidgetComponent* GetWorldSpaceInteractionWidgetSlot() const override;
+	virtual FText GetInteractiveName() const override;
+	virtual FText GetInteractionDescription() const override;
 	virtual bool IsAutoInteractive() const override;
 
 	virtual void PostInitializeComponents() override;
@@ -50,6 +52,13 @@ protected:
 	UFUNCTION(BlueprintNativeEvent)
 	void DoFeedback();
 	virtual void DoFeedback_Implementation();
+
+	/**
+	 * Function to get the interaction widget of the actor if any.
+	 */
+	UFUNCTION(BlueprintNativeEvent)
+	UWidgetComponent* GetInteractionWidget() const;
+	virtual UWidgetComponent* GetInteractionWidget_Implementation() const;
 	
 	UFUNCTION()
 	void HandleTriggerBeginOverlap(
@@ -74,7 +83,7 @@ private:
 	
 protected:
 	/**
-	 * @brief Trigger component used for interaction.
+	 * Trigger component used for interaction.
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Interaction, meta = (AllowPrivateAccess = true))
 	UBoxComponent* InteractionTrigger;
@@ -86,10 +95,16 @@ protected:
 	bool bInteractMultipleTimes;
 
 	/**
+	 * Name of the interactive actor to show in the interaction widget.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Interaction, meta = (AllowPrivateAccess = true))
+	FText InteractiveName;
+	
+	/**
 	 * Description of the interaction to show in the interaction widget.
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Interaction, meta = (AllowPrivateAccess = true))
-	FString InteractionDescription;
+	FText InteractionDescription;
 
 	/**
 	 * Whether to auto interact with the first interactor entering trigger area.

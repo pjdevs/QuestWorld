@@ -1,6 +1,8 @@
 // Copyright pjdevs. All Rights Reserved.
 
 #include "IPInteractiveActor.h"
+
+#include "Components/WidgetComponent.h"
 #include "Net/UnrealNetwork.h"
 
 AIPInteractiveActor::AIPInteractiveActor()
@@ -13,7 +15,8 @@ AIPInteractiveActor::AIPInteractiveActor()
 
 	State = EIPInteractiveState::Ready;
 	bInteractMultipleTimes = true;
-	InteractionDescription = "Interact";
+	InteractiveName = FText::FromString("Interactive Actor");
+	InteractionDescription = FText::FromString("Interact");
 	bAutoInteract = false;
 }
 
@@ -115,7 +118,17 @@ bool AIPInteractiveActor::CanBeInteracted(AActor* InteractionInstigator)
 	return bInteractMultipleTimes || State == EIPInteractiveState::Ready;
 }
 
-FString AIPInteractiveActor::GetInteractionDescription() const
+UWidgetComponent* AIPInteractiveActor::GetWorldSpaceInteractionWidgetSlot() const
+{
+	return GetInteractionWidget();
+}
+
+FText AIPInteractiveActor::GetInteractiveName() const
+{
+	return InteractiveName;
+}
+
+FText AIPInteractiveActor::GetInteractionDescription() const
 {
 	return InteractionDescription;
 }
@@ -149,6 +162,11 @@ void AIPInteractiveActor::DoInteraction_Implementation(AActor* InteractionInstig
 
 void AIPInteractiveActor::DoFeedback_Implementation()
 {
+}
+
+UWidgetComponent* AIPInteractiveActor::GetInteractionWidget_Implementation() const
+{
+	return nullptr;
 }
 
 void AIPInteractiveActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

@@ -6,6 +6,8 @@
 #include "UObject/Interface.h"
 #include "IPInteractive.generated.h"
 
+class UWidgetComponent;
+
 // This class does not need to be modified.
 UINTERFACE(NotBlueprintable)
 class UIPInteractive : public UInterface
@@ -35,11 +37,21 @@ public:
 	 * Get interactive's location. 
 	 */
 	virtual FVector GetInteractiveLocation() const = 0;
+
+	/**
+	 * World space widget component if supported. 
+	 */
+	virtual UWidgetComponent* GetWorldSpaceInteractionWidgetSlot() const = 0;
+
+	/**
+	 * Get the description of the interaction the show in the interaction widget.
+	 */
+	virtual FText GetInteractiveName() const = 0;
 	
 	/**
 	 * Get the description of the interaction the show in the interaction widget.
 	 */
-	virtual FString GetInteractionDescription() const = 0;
+	virtual FText GetInteractionDescription() const = 0;
 
 	/**
 	 * Whether this interactive is auto interactive.
