@@ -12,9 +12,9 @@ AIPInteractiveActor::AIPInteractiveActor()
 	RootComponent = InteractionTrigger;
 
 	State = EIPInteractiveState::Ready;
-	InteractMultipleTimes = true;
+	bInteractMultipleTimes = true;
 	InteractionDescription = "Interact";
-	AutoInteract = false;
+	bAutoInteract = false;
 }
 
 void AIPInteractiveActor::HandleTriggerBeginOverlap(
@@ -44,7 +44,7 @@ void AIPInteractiveActor::HandleTriggerBeginOverlap(
 	PossibleInteractors.Add(Interactor);
 	Interactor->AddInteractive(this);
 
-	if (AutoInteract)
+	if (bAutoInteract)
 	{
 		Interactor->Interact();
 	}
@@ -98,7 +98,7 @@ void AIPInteractiveActor::Interact(AActor* InteractionInstigator)
 
 	DoInteraction(InteractionInstigator);
 
-	if (InteractMultipleTimes)
+	if (bInteractMultipleTimes)
 	{
 		State = State == EIPInteractiveState::Interacted ? EIPInteractiveState::Ready : EIPInteractiveState::Interacted;
 	}
@@ -112,7 +112,7 @@ void AIPInteractiveActor::Interact(AActor* InteractionInstigator)
 
 bool AIPInteractiveActor::CanBeInteracted(AActor* InteractionInstigator)
 {
-	return InteractMultipleTimes || State == EIPInteractiveState::Ready;
+	return bInteractMultipleTimes || State == EIPInteractiveState::Ready;
 }
 
 FString AIPInteractiveActor::GetInteractionDescription() const
@@ -122,19 +122,19 @@ FString AIPInteractiveActor::GetInteractionDescription() const
 
 bool AIPInteractiveActor::IsAutoInteractive() const
 {
-	return AutoInteract;
+	return bAutoInteract;
 }
 
 void AIPInteractiveActor::OnRep_State()
 {
-	if (State != EIPInteractiveState::Interacted && !InteractMultipleTimes)
+	if (State != EIPInteractiveState::Interacted && !bInteractMultipleTimes)
 	{
 		return;
 	}
 
 	for (auto* Interactor : PossibleInteractors)
 	{
-		if (!InteractMultipleTimes || !CanBeInteracted(Interactor->GetOwner()))
+		if (!bInteractMultipleTimes || !CanBeInteracted(Interactor->GetOwner()))
 		{
 			Interactor->RemoveInteractive(this);
 		}

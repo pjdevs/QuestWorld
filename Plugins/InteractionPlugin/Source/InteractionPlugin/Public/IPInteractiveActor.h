@@ -23,47 +23,20 @@ UCLASS(Abstract)
 class INTERACTIONPLUGIN_API AIPInteractiveActor : public AActor, public IIPInteractive
 {
 	GENERATED_BODY()
+	
+public:
+	AIPInteractiveActor();
 
+	virtual void Interact(AActor* InteractionInstigator) override;
+	virtual bool CanBeInteracted(AActor* InteractionInstigator) override;
+	FORCEINLINE virtual FVector GetInteractiveLocation() const override { return GetActorLocation(); }
+	virtual FString GetInteractionDescription() const override;
+	virtual bool IsAutoInteractive() const override;
+
+	virtual void PostInitializeComponents() override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	
 protected:
-	/**
-	 * @brief Trigger component used for interaction.
-	 */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Interaction, meta = (AllowPrivateAccess = true))
-	UBoxComponent* InteractionTrigger;
-
-	/**
-	 ** Whether this actor can be interacted one time or multiple times.
-	 */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Interaction, meta = (AllowPrivateAccess = true))
-	bool InteractMultipleTimes;
-
-	/**
-	 ** Description of the interaction to show in the interaction widget.
-	 */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Interaction, meta = (AllowPrivateAccess = true))
-	FString InteractionDescription;
-
-	/**
-	 ** Whether to auto interact with the first interactor entering trigger area.
-	 */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Interaction, meta = (AllowPrivateAccess = true))
-	bool AutoInteract;
-	
-	/**
-	 * Interaction state of the actor.
-	 */
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadWrite, Category = Interaction, ReplicatedUsing=OnRep_State, meta = (AllowPrivateAccess = true))
-	EIPInteractiveState State;
-
-	/**
-	 * The array of possible interactors.
-	 */
-	UPROPERTY(VisibleInstanceOnly, Category = Interaction, meta = (AllowPrivateAccess = true))
-	TArray<UIPInteractorComponent*> PossibleInteractors;
-
-	UFUNCTION()
-	void OnRep_State();
-	
 	/**
 	 * Action to execute on the server for interaction.
 	 */
@@ -72,7 +45,7 @@ protected:
 	virtual void DoInteraction_Implementation(AActor* InteractionInstigator);
 	
 	/**
-	 * Feeback to execute on the client for interaction.
+	 * Feedback to execute on the client for interaction.
 	 */
 	UFUNCTION(BlueprintNativeEvent)
 	void DoFeedback();
@@ -95,15 +68,44 @@ protected:
 		int32 OtherBodyIndex
 	);
 
-	virtual void PostInitializeComponents() override;
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+private:
+	UFUNCTION()
+	void OnRep_State();
 	
-public:
-	AIPInteractiveActor();
+protected:
+	/**
+	 * @brief Trigger component used for interaction.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Interaction, meta = (AllowPrivateAccess = true))
+	UBoxComponent* InteractionTrigger;
 
-	virtual void Interact(AActor* InteractionInstigator) override;
-	virtual bool CanBeInteracted(AActor* InteractionInstigator) override;
-	FORCEINLINE virtual FVector GetInteractiveLocation() const override { return GetActorLocation(); }
-	virtual FString GetInteractionDescription() const override;
-	virtual bool IsAutoInteractive() const override;
+	/**
+	 * Whether this actor can be interacted one time or multiple times.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Interaction, meta = (AllowPrivateAccess = true))
+	bool bInteractMultipleTimes;
+
+	/**
+	 * Description of the interaction to show in the interaction widget.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Interaction, meta = (AllowPrivateAccess = true))
+	FString InteractionDescription;
+
+	/**
+	 * Whether to auto interact with the first interactor entering trigger area.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Interaction, meta = (AllowPrivateAccess = true))
+	bool bAutoInteract;
+	
+	/**
+	 * Interaction state of the actor.
+	 */
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadWrite, Category = Interaction, ReplicatedUsing=OnRep_State, meta = (AllowPrivateAccess = true))
+	EIPInteractiveState State;
+
+	/**
+	 * The array of possible interactors.
+	 */
+	UPROPERTY(VisibleInstanceOnly, Category = Interaction, meta = (AllowPrivateAccess = true))
+	TArray<UIPInteractorComponent*> PossibleInteractors;
 };

@@ -36,12 +36,12 @@ public:
 	 */
 	virtual FVector GetInteractiveLocation() const = 0;
 	
-	/*
+	/**
 	 * Get the description of the interaction the show in the interaction widget.
 	 */
 	virtual FString GetInteractionDescription() const = 0;
 
-	/*
+	/**
 	 * Whether this interactive is auto interactive.
 	 */
 	virtual bool IsAutoInteractive() const = 0;

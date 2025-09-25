@@ -6,6 +6,7 @@
 #include "Components/ActorComponent.h"
 #include "IPInteractorComponent.generated.h"
 
+class UInputAction;
 class UIPInteractionWidget;
 class IIPInteractive;
 
@@ -105,6 +106,10 @@ private:
 	UPROPERTY(VisibleInstanceOnly, Category = Interaction, meta = (AllowPrivateAccess = true))
 	UIPInteractionWidget* InteractionWidget;
 
+	UPROPERTY(EditDefaultsOnly, Category = Interaction, meta = (AllowPrivateAccess = true))
+	UInputAction* InteractionAction;
+	
+private:
 	/**
 	 * The list of all current possible interactives.
 	 */
