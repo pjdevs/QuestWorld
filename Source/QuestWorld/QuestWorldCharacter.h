@@ -55,8 +55,6 @@ class AQuestWorldCharacter : public ACharacter
 
 public:
 	AQuestWorldCharacter();
-	
-	virtual void PostInitializeComponents() override;
 
 protected:
 	/** Called for movement input */
@@ -70,12 +68,6 @@ protected:
 
 
 protected:
-	bool DoInteractionTrace(
-		float Distance,
-		ECollisionChannel InteractionTraceChannel,
-		TArray<FHitResult>& HitResults
-	) const;
-
 	virtual void NotifyControllerChanged() override;
 
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;

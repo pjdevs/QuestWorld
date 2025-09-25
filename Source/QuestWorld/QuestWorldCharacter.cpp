@@ -59,14 +59,6 @@ AQuestWorldCharacter::AQuestWorldCharacter()
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 }
 
-void AQuestWorldCharacter::PostInitializeComponents()
-{
-	Super::PostInitializeComponents();
-
-	Interactor->SetInteractionTraceDelegate(
-		FInteractionTraceDelegate::CreateUObject(this, &AQuestWorldCharacter::DoInteractionTrace));
-}
-
 //////////////////////////////////////////////////////////////////////////
 // Input
 
@@ -160,36 +152,4 @@ void AQuestWorldCharacter::Look(const FInputActionValue& Value)
 void AQuestWorldCharacter::Interact(const FInputActionValue& Value)
 {
 	Interactor->Interact();
-}
-
-bool AQuestWorldCharacter::DoInteractionTrace(
-	float Distance,
-	ECollisionChannel InteractionTraceChannel,
-    TArray<FHitResult>& HitResults
-) const
-{
-	const UWorld* World = GetWorld();
-	if (!World) return false;
-
-	FVector EyesLocation;
-	FRotator EyesRotation;
-	GetActorEyesViewPoint(EyesLocation, EyesRotation);
-	const FVector TraceStart = EyesLocation;
-	const FVector TraceEnd = TraceStart + Distance * EyesRotation.Vector();
-
-	// Debug
-	// World->DebugDrawTraceTag = "DebugInteractionsTraceTag";
-	// FCollisionQueryParams CollisionParams;
-	// CollisionParams.TraceTag = "DebugInteractionsTraceTag";
-	// CollisionParams.bDebugQuery = true;
-	//
-	const FCollisionShape Sphere = FCollisionShape::MakeSphere(50.0f);
-	return World->SweepMultiByChannel(
-		HitResults,
-		TraceStart,
-		TraceEnd,
-		FQuat::Identity,
-		InteractionTraceChannel,
-		Sphere
-	);
 }

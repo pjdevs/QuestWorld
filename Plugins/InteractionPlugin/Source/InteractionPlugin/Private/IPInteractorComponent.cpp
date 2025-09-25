@@ -10,7 +10,7 @@
 
 UIPInteractorComponent::UIPInteractorComponent()
 {
-	PrimaryComponentTick.bCanEverTick = false;
+	PrimaryComponentTick.bCanEverTick = true;
 	InteractionDistance = 100.0f;
 	InteractionTraceChannel = ECC_Visibility;
 }
@@ -20,6 +20,20 @@ void UIPInteractorComponent::OnComponentDestroyed(bool bDestroyingHierarchy)
 	Super::OnComponentDestroyed(bDestroyingHierarchy);
 	
 	HideInteractionWidget_Client_Implementation(MostRelevantActor);
+}
+
+void UIPInteractorComponent::TickComponent(
+	float DeltaTime,
+	ELevelTick TickType,
+	FActorComponentTickFunction* ThisTickFunction
+)
+{
+	if (PossibleInteractives.IsEmpty())
+	{
+		return;
+	}
+
+	RecomputeInteractiveRelevancy();	
 }
 
 void UIPInteractorComponent::Interact()
@@ -72,11 +86,6 @@ void UIPInteractorComponent::RemoveInteractive(IIPInteractive* Interactive)
 	RecomputeInteractiveRelevancy();
 }
 
-void UIPInteractorComponent::SetInteractionTraceDelegate(FInteractionTraceDelegate Delegate)
-{
-	InteractionTraceDelegate = Delegate;
-}
-
 void UIPInteractorComponent::Server_Interact_Implementation()
 {
 	Interact();
@@ -84,74 +93,71 @@ void UIPInteractorComponent::Server_Interact_Implementation()
 
 void UIPInteractorComponent::RecomputeInteractiveRelevancy()
 {
-	if (!ensureMsgf(
-		InteractionTraceDelegate.IsBound(),
-		TEXT("InteractionTraceDelegate was not bound. Did you forget to call SetInteractionTraceDelegate?"))
-	)
-	{
-		return;
-	}
-
 	AActor* PreviousMostRelevantActor = MostRelevantActor;
-	MostRelevantActor = PossibleInteractives.IsEmpty() ? nullptr : Cast<AActor>(PossibleInteractives[0]);
 
-	if (
-		TArray<FHitResult> Results;
-		InteractionTraceDelegate.Execute(InteractionDistance, InteractionTraceChannel, Results)
-	)
+	if (PossibleInteractives.IsEmpty())
 	{
-		for (const auto& Result : Results)
+		MostRelevantActor = nullptr;
+	}
+	else
+	{
+		FVector EyesLocation;
+		FRotator EyesRotation;
+		GetOwner()->GetActorEyesViewPoint(EyesLocation, EyesRotation);
+
+		const FVector LookDirection = EyesRotation.Vector().GetSafeNormal();
+
+		auto ComputeInteractionScore = [&](const IIPInteractive& Target) -> TTuple<float, float>
 		{
-			if (!Result.GetActor())
+			FVector DirectionToTarget = Target.GetInteractiveLocation() - EyesLocation;
+			const float DistanceToTarget = DirectionToTarget.Length();
+			DirectionToTarget = DirectionToTarget.GetSafeNormal();
+			const float AlignmentFromTarget = FMath::Max(0.f, LookDirection.Dot(DirectionToTarget));
+			const float Score = AlignmentFromTarget / (1.f + DistanceToTarget * 0.01f);
+
+			return MakeTuple(AlignmentFromTarget, Score);
+		};
+
+		AActor* NewMostRelevantActor = nullptr;
+		float NewMostRelevantActorScore = 0.f;
+
+		for (auto&& Interactive : PossibleInteractives)
+		{
+			const TTuple<float, float> ScoreTuple = ComputeInteractionScore(*Interactive);
+			const float Alignment = ScoreTuple.Key;
+			const float Score = ScoreTuple.Value;
+
+			// TODO Compute real angle and expose value?
+			if (Alignment <= 0.f)
 			{
 				continue;
 			}
 
-			// Make walls etc. block interaction
-			if (!Result.GetActor()->Implements<UIPInteractive>())
+			if (Score > NewMostRelevantActorScore)
 			{
-				break; 
+				NewMostRelevantActor = Cast<AActor>(Interactive);
+				NewMostRelevantActorScore = Score;
 			}
-
-			const auto* InteractiveActorHit = Cast<IIPInteractive>(Result.GetActor());
-			const bool ActorExistsInList = PossibleInteractives.ContainsByPredicate(
-				[&](const IIPInteractive* Interactive)
-				{
-					return Interactive == InteractiveActorHit;
-				}
-			);
-
-			// Take only first hit into account
-			if (!ActorExistsInList)
-			{
-				break; 
-			}
-
-			MostRelevantActor = Result.GetActor();
-
-			// Take only first hit into account
-			break; 
 		}
+
+		MostRelevantActor = NewMostRelevantActor;
 	}
 
 	if (GetOwner()->HasAuthority() && MostRelevantActor != PreviousMostRelevantActor)
 	{
-		HideInteractionWidget_Client(PreviousMostRelevantActor);
-
-		if (MostRelevantActor)
-		{
-			ShowInteractionWidget_Client(MostRelevantActor);
-		}
+		OnMostRelevantActorChanged(PreviousMostRelevantActor, MostRelevantActor);
 	}
+}
 
-	PossibleInteractives.Sort([&](const IIPInteractive& A, const IIPInteractive& B)
+void UIPInteractorComponent::OnMostRelevantActorChanged(AActor* PreviousMostRelevantActor, AActor* NewMostRelevantActor)
+{
+	// Show hide interaction widgets
+	HideInteractionWidget_Client(PreviousMostRelevantActor);
+
+	if (NewMostRelevantActor)
 	{
-		const FVector OwnerLocation = GetOwner()->GetActorLocation();
-		const double DistanceToInteractiveA = FVector::DistSquared(OwnerLocation, A.GetInteractiveLocation());
-		const double DistanceToInteractiveB = FVector::DistSquared(OwnerLocation, B.GetInteractiveLocation());
-
-		return DistanceToInteractiveA < DistanceToInteractiveB;
-	});
+		ShowInteractionWidget_Client(NewMostRelevantActor);
+	}
 }
 
 void UIPInteractorComponent::HideInteractionWidget_Client_Implementation(AActor* Interactive)

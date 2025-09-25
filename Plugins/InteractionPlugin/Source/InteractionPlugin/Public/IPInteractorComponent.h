@@ -11,20 +11,6 @@ class UIPInteractionWidget;
 class IIPInteractive;
 
 /**
- * Delegate for executing a line sweep.
- * @param Distance The distance of the line sweep.
- * @param TraceChannel The collision channel to use.
- * @param Hits The output hit results of the line sweep.
- */
-DECLARE_DELEGATE_RetVal_ThreeParams(
-	bool,
-	FInteractionTraceDelegate,
-	float /*Distance*/,
-	ECollisionChannel /*TraceChannel*/,
-	TArray<FHitResult>& /*Hits*/
-)
-
-/**
  * ActorComponent for handling replicated interactions with other interactive actors. 
  */
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
@@ -37,6 +23,12 @@ public:
 	UIPInteractorComponent();
 	
 	virtual void OnComponentDestroyed(bool bDestroyingHierarchy) override;
+
+	virtual void TickComponent(
+		float DeltaTime,
+		ELevelTick TickType,
+		FActorComponentTickFunction* ThisTickFunction
+	) override;
 
 	/** Called for interact input */
 	UFUNCTION(BlueprintCallable)
@@ -52,11 +44,6 @@ public:
 	 */
 	void RemoveInteractive(IIPInteractive* Interactive);
 
-	/**
-	 * Set the delegate for executing the interaction line sweep.
-	 */
-	void SetInteractionTraceDelegate(FInteractionTraceDelegate Delegate);
-
 protected:
 	/**
 	 * Execute Interact on the server.
@@ -65,15 +52,29 @@ protected:
 	void Server_Interact();
 
 	/**
+	 * Show interaction widget on client.
+	 * @param Interactive The interactive actor with which component can interact.
+	 */
+	UFUNCTION(Client, Reliable)
+	void ShowInteractionWidget_Client(AActor* Interactive);
+
+	/**
+	 * Hide interaction widget on client.
+	 * @param Interactive The interactive actor with which component could interact be can't anymore.
+	 */
+	UFUNCTION(Client, Reliable)
+	void HideInteractionWidget_Client(AActor* Interactive);
+
+private:
+	/**
 	 * Execute the line sweep and update most relevant actor by distance.
 	 */
 	void RecomputeInteractiveRelevancy();
-	
-	UFUNCTION(Client, Reliable)
-	void ShowInteractionWidget_Client(AActor* Interactive);
-	
-	UFUNCTION(Client, Reliable)
-	void HideInteractionWidget_Client(AActor* Interactive);
+
+	/**
+	 * Called internally when has authority when most relevant actor changed (to show widgets etc).
+	 */
+	void OnMostRelevantActorChanged(AActor* PreviousMostRelevantActor, AActor* NewMostRelevantActor);
 
 private:
 	/**
@@ -117,9 +118,4 @@ private:
 	 * The list of all current possible interactives.
 	 */
 	TArray<IIPInteractive*> PossibleInteractives;
-
-	/**
-	 * Delegate which will execute the line sweep.
-	 */
-	FInteractionTraceDelegate InteractionTraceDelegate;
 };
