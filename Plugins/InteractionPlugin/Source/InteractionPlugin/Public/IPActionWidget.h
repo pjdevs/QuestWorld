@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "InputAction.h"
 #include "Blueprint/UserWidget.h"
 #include "IPActionWidget.generated.h"
 
@@ -17,12 +18,16 @@ class INTERACTIONPLUGIN_API UIPActionWidget : public UUserWidget
 	GENERATED_BODY()
 
 public:
-	UFUNCTION(BlueprintImplementableEvent, Category = Input)
-	void SetAction(const UInputAction* ActionName);
 
 	virtual void NativeConstruct() override;
 
+	void SetAction(const UInputAction* InInputAction);
+	
+protected: 
+	UFUNCTION(BlueprintImplementableEvent, Category = Input)
+	void SetActionVisual(const UInputAction* InInputAction);
+
 private:
 	UPROPERTY(EditDefaultsOnly, Category = Input, meta = (AllowPrivateAccess = true))
-	TObjectPtr<UInputAction> InputAction;
+	TObjectPtr<const UInputAction> InputAction;
 };

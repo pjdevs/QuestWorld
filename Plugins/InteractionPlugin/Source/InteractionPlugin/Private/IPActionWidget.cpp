@@ -7,5 +7,10 @@ void UIPActionWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	SetAction(InputAction);
+	SetActionVisual(InputAction);
+}
+
+void UIPActionWidget::SetAction(const UInputAction* InInputAction)
+{
+	InputAction = InInputAction;
 }
