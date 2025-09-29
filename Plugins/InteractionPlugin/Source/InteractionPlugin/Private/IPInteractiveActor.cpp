@@ -1,8 +1,8 @@
 // Copyright pjdevs. All Rights Reserved.
 
 #include "IPInteractiveActor.h"
-
 #include "Components/WidgetComponent.h"
+#include "Components/BoxComponent.h"
 #include "Net/UnrealNetwork.h"
 
 AIPInteractiveActor::AIPInteractiveActor()
@@ -13,6 +13,15 @@ AIPInteractiveActor::AIPInteractiveActor()
 	InteractionTrigger->SetCollisionProfileName(TEXT("Trigger"));
 	RootComponent = InteractionTrigger;
 
+	IndicationTrigger = CreateDefaultSubobject<UBoxComponent>(TEXT("Indication Trigger"));
+	IndicationTrigger->SetCollisionProfileName(TEXT("Trigger"));
+	IndicationTrigger->SetupAttachment(RootComponent);
+
+	WidgetComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("Widget Component"));
+	WidgetComponent->SetWidgetSpace(EWidgetSpace::Screen);
+	WidgetComponent->SetDrawAtDesiredSize(true);
+	WidgetComponent->SetupAttachment(RootComponent);
+
 	State = EIPInteractiveState::Ready;
 	bInteractMultipleTimes = true;
 	InteractiveName = FText::FromString("Interactive Actor");
@@ -20,7 +29,7 @@ AIPInteractiveActor::AIPInteractiveActor()
 	bAutoInteract = false;
 }
 
-void AIPInteractiveActor::HandleTriggerBeginOverlap(
+void AIPInteractiveActor::HandleInteractionTriggerBeginOverlap(
 	UPrimitiveComponent* OverlappedComponent,
 	AActor* OtherActor,
 	UPrimitiveComponent* OtherComponent,
@@ -44,16 +53,10 @@ void AIPInteractiveActor::HandleTriggerBeginOverlap(
 		return;
 	}
 
-	PossibleInteractors.Add(Interactor);
 	Interactor->AddInteractive(this);
-
-	if (bAutoInteract)
-	{
-		Interactor->Interact();
-	}
 }
 
-void AIPInteractiveActor::HandleTriggerEndOverlap(
+void AIPInteractiveActor::HandleInteractionTriggerEndOverlap(
 	UPrimitiveComponent* OverlappedComponent,
 	AActor* OtherActor,
 	UPrimitiveComponent* OtherComponent,
@@ -74,17 +77,73 @@ void AIPInteractiveActor::HandleTriggerEndOverlap(
 	{
 		return;
 	}
-	
-	PossibleInteractors.Remove(Interactor);
+
 	Interactor->RemoveInteractive(this);
+}
+
+void AIPInteractiveActor::HandleIndicationTriggerBeginOverlap(
+	UPrimitiveComponent* OverlappedComponent,
+	AActor* OtherActor,
+	UPrimitiveComponent* OtherComponent,
+	int32 OtherBodyIndex,
+	bool bFromSweep,
+	const FHitResult & SweepResult
+)
+{
+	if (!OtherActor)
+	{
+		return;
+	}
+
+	// Try to get the Interactor component from the other actor
+	auto* Interactor = Cast<UIPInteractorComponent>(
+		OtherActor->GetComponentByClass(UIPInteractorComponent::StaticClass())
+	);
+
+	if (!Interactor)
+	{
+		return;
+	}
+
+	IndicatedInteractors.Add(Interactor);
+	Interactor->AddInteractiveIndication(this);
+}
+
+void AIPInteractiveActor::HandleIndicationTriggerEndOverlap(
+	UPrimitiveComponent* OverlappedComponent,
+	AActor* OtherActor,
+	UPrimitiveComponent* OtherComponent,
+	int32 OtherBodyIndex
+)
+{
+	if (!OtherActor)
+	{
+		return;
+	}
+
+	// Try to get the Interactor component from the other actor
+	auto* Interactor = Cast<UIPInteractorComponent>(
+		OtherActor->GetComponentByClass(UIPInteractorComponent::StaticClass())
+	);
+
+	if (!Interactor)
+	{
+		return;
+	}
+
+	IndicatedInteractors.Remove(Interactor);
+	Interactor->RemoveInteractiveIndication(this);
 }
 
 void AIPInteractiveActor::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 
-	InteractionTrigger->OnComponentBeginOverlap.AddDynamic(this, &AIPInteractiveActor::HandleTriggerBeginOverlap);
-	InteractionTrigger->OnComponentEndOverlap.AddDynamic(this, &AIPInteractiveActor::HandleTriggerEndOverlap);
+	InteractionTrigger->OnComponentBeginOverlap.AddDynamic(this, &AIPInteractiveActor::HandleInteractionTriggerBeginOverlap);
+	InteractionTrigger->OnComponentEndOverlap.AddDynamic(this, &AIPInteractiveActor::HandleInteractionTriggerEndOverlap);
+
+	IndicationTrigger->OnComponentBeginOverlap.AddDynamic(this, &AIPInteractiveActor::HandleIndicationTriggerBeginOverlap);
+	IndicationTrigger->OnComponentEndOverlap.AddDynamic(this, &AIPInteractiveActor::HandleIndicationTriggerEndOverlap);
 }
 
 void AIPInteractiveActor::Interact(AActor* InteractionInstigator)
@@ -113,14 +172,39 @@ void AIPInteractiveActor::Interact(AActor* InteractionInstigator)
 	OnRep_State();
 }
 
-bool AIPInteractiveActor::CanBeInteracted(AActor* InteractionInstigator)
+bool AIPInteractiveActor::CanBeInteracted(AActor* InteractionInstigator) const
 {
-	return bInteractMultipleTimes || State == EIPInteractiveState::Ready;
+	return (bInteractMultipleTimes || State == EIPInteractiveState::Ready)
+		&& CanBeInteractedBy(InteractionInstigator);
 }
 
-UWidgetComponent* AIPInteractiveActor::GetWorldSpaceInteractionWidgetSlot() const
+FVector AIPInteractiveActor::GetInteractiveLocation() const
 {
-	return GetInteractionWidget();
+	const UWidgetComponent* InteractionWidget = GetWidgetComponent();
+
+	return InteractionWidget != nullptr
+		? InteractionWidget->GetComponentLocation()
+		: GetActorLocation();
+}
+
+UWidgetComponent* AIPInteractiveActor::GetWidgetComponent() const
+{
+	return WidgetComponent;
+}
+
+TSubclassOf<UIPInteractionWidget> AIPInteractiveActor::GetInteractionWidgetClass() const
+{
+	return InteractionWidgetClass;
+}
+
+TSubclassOf<UUserWidget> AIPInteractiveActor::GetIndicationWidgetClass() const
+{
+	return IndicationWidgetClass;
+}
+
+TSubclassOf<UUserWidget> AIPInteractiveActor::GetIndicationBlockedWidgetClass() const
+{
+	return IndicationBlockedWidgetClass;
 }
 
 FText AIPInteractiveActor::GetInteractiveName() const
@@ -145,12 +229,13 @@ void AIPInteractiveActor::OnRep_State()
 		return;
 	}
 
-	for (auto* Interactor : PossibleInteractors)
+	IndicatedInteractors.RemoveAll([](const TWeakObjectPtr<UIPInteractorComponent>& Interactor)
 	{
-		if (!bInteractMultipleTimes || !CanBeInteracted(Interactor->GetOwner()))
-		{
-			Interactor->RemoveInteractive(this);
-		}
+		return !Interactor.IsValid();
+	});
+	for (const TWeakObjectPtr<UIPInteractorComponent>& Interactor : IndicatedInteractors)
+	{
+		Interactor->OnInteractiveStateChanged(this);
 	}
 
 	DoFeedback();
@@ -164,9 +249,9 @@ void AIPInteractiveActor::DoFeedback_Implementation()
 {
 }
 
-UWidgetComponent* AIPInteractiveActor::GetInteractionWidget_Implementation() const
+bool AIPInteractiveActor::CanBeInteractedBy_Implementation(AActor* InteractionInstigator) const
 {
-	return nullptr;
+	return true;
 }
 
 void AIPInteractiveActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

@@ -6,6 +6,7 @@
 #include "UObject/Interface.h"
 #include "IPInteractive.generated.h"
 
+class UIPInteractionWidget;
 class UWidgetComponent;
 
 // This class does not need to be modified.
@@ -16,7 +17,7 @@ class UIPInteractive : public UInterface
 };
 
 /**
- * Interface for interactive objects.
+ * Interface for interactive objects. Can only be implemented by actors.
  */
 class INTERACTIONPLUGIN_API IIPInteractive
 {
@@ -31,7 +32,7 @@ public:
 	/**
 	 * Check whether the object can be interacted or not. 
 	 */
-	virtual bool CanBeInteracted(AActor* InteractionInstigator) = 0;
+	virtual bool CanBeInteracted(AActor* InteractionInstigator) const = 0;
 
 	/**
 	 * Get interactive's location. 
@@ -39,9 +40,24 @@ public:
 	virtual FVector GetInteractiveLocation() const = 0;
 
 	/**
-	 * World space widget component if supported. 
+	 * Get the in world widget component to display widgets inside. 
 	 */
-	virtual UWidgetComponent* GetWorldSpaceInteractionWidgetSlot() const = 0;
+	virtual UWidgetComponent* GetWidgetComponent() const = 0;
+
+	/**
+	 * The class of interaction widget to use. 
+	 */
+	virtual TSubclassOf<UIPInteractionWidget> GetInteractionWidgetClass() const = 0;
+
+	/**
+	 * The class if indication widget to use. 
+	 */
+	virtual TSubclassOf<UUserWidget> GetIndicationWidgetClass() const = 0;
+
+	/**
+	 * The class if indication widget to use when interaction is not possible. 
+	 */
+	virtual TSubclassOf<UUserWidget> GetIndicationBlockedWidgetClass() const = 0;
 
 	/**
 	 * Get the description of the interaction the show in the interaction widget.

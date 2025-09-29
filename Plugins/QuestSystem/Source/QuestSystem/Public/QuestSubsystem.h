@@ -36,7 +36,7 @@ public:
 	bool IsQuestCompleted(FPrimaryAssetId QuestId) const;
 
 	UFUNCTION(BlueprintCallable, Category = Quest)
-	bool IsQuestActive(const FPrimaryAssetId& QuestId) const;
+	bool IsQuestActive(FPrimaryAssetId QuestId) const;
 	
 	UFUNCTION(BlueprintCallable, Category = Quest)
 	void SubmitQuestEvent(UBaseQuestEvent* Event);

@@ -5,9 +5,9 @@
 #include "CoreMinimal.h"
 #include "IPInteractive.h"
 #include "IPInteractorComponent.h"
-#include "Components/BoxComponent.h"
-#include "UObject/Object.h"
 #include "IPInteractiveActor.generated.h"
+
+class UBoxComponent;
 
 UENUM()
 enum class EIPInteractiveState : uint8
@@ -28,9 +28,12 @@ public:
 	AIPInteractiveActor();
 
 	virtual void Interact(AActor* InteractionInstigator) override;
-	virtual bool CanBeInteracted(AActor* InteractionInstigator) override;
-	FORCEINLINE virtual FVector GetInteractiveLocation() const override { return GetActorLocation(); }
-	virtual UWidgetComponent* GetWorldSpaceInteractionWidgetSlot() const override;
+	virtual bool CanBeInteracted(AActor* InteractionInstigator) const override;
+	virtual FVector GetInteractiveLocation() const override;
+	virtual UWidgetComponent* GetWidgetComponent() const override;
+	virtual TSubclassOf<UIPInteractionWidget> GetInteractionWidgetClass() const override;
+	virtual TSubclassOf<UUserWidget> GetIndicationWidgetClass() const override;
+	virtual TSubclassOf<UUserWidget> GetIndicationBlockedWidgetClass() const override;
 	virtual FText GetInteractiveName() const override;
 	virtual FText GetInteractionDescription() const override;
 	virtual bool IsAutoInteractive() const override;
@@ -54,14 +57,14 @@ protected:
 	virtual void DoFeedback_Implementation();
 
 	/**
-	 * Function to get the interaction widget of the actor if any.
+	 * Blueprintable conditions in addition to core ones to decide whether this actor can be interacted or not.
 	 */
 	UFUNCTION(BlueprintNativeEvent)
-	UWidgetComponent* GetInteractionWidget() const;
-	virtual UWidgetComponent* GetInteractionWidget_Implementation() const;
-	
+	bool CanBeInteractedBy(AActor* InteractionInstigator) const;
+	virtual bool CanBeInteractedBy_Implementation(AActor* InteractionInstigator) const;
+
 	UFUNCTION()
-	void HandleTriggerBeginOverlap(
+	void HandleInteractionTriggerBeginOverlap(
 		UPrimitiveComponent* OverlappedComponent,
 		AActor* OtherActor,
 		UPrimitiveComponent* OtherComponent,
@@ -70,7 +73,24 @@ protected:
 		const FHitResult & SweepResult
 	);
 	UFUNCTION()
-	void HandleTriggerEndOverlap(
+	void HandleInteractionTriggerEndOverlap(
+		UPrimitiveComponent* OverlappedComponent,
+		AActor* OtherActor,
+		UPrimitiveComponent* OtherComponent,
+		int32 OtherBodyIndex
+	);
+
+	UFUNCTION()
+	void HandleIndicationTriggerBeginOverlap(
+		UPrimitiveComponent* OverlappedComponent,
+		AActor* OtherActor,
+		UPrimitiveComponent* OtherComponent,
+		int32 OtherBodyIndex,
+		bool bFromSweep,
+		const FHitResult & SweepResult
+	);
+	UFUNCTION()
+	void HandleIndicationTriggerEndOverlap(
 		UPrimitiveComponent* OverlappedComponent,
 		AActor* OtherActor,
 		UPrimitiveComponent* OtherComponent,
@@ -81,46 +101,77 @@ private:
 	UFUNCTION()
 	void OnRep_State();
 	
-protected:
+private:
 	/**
 	 * Trigger component used for interaction.
 	 */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Interaction, meta = (AllowPrivateAccess = true))
-	UBoxComponent* InteractionTrigger;
+	UPROPERTY(EditDefaultsOnly, Category = Interaction, meta = (AllowPrivateAccess = true))
+	TObjectPtr<UBoxComponent> InteractionTrigger;
 
+	/**
+	 * Trigger component showing indicator of possible interaction. Should be larger than InteractionTrigger!
+	 */
+	UPROPERTY(EditDefaultsOnly, Category = Interaction, meta = (AllowPrivateAccess = true))
+	TObjectPtr<UBoxComponent> IndicationTrigger;
+
+	/**
+	 * The widget component to display interaction widgets inside.
+	 */
+	UPROPERTY(EditDefaultsOnly, Category = Interaction, meta = (AllowPrivateAccess = true))
+	TObjectPtr<UWidgetComponent> WidgetComponent;
+	
+	/**
+	 * Class of the interaction widget.
+	 */
+	UPROPERTY(EditDefaultsOnly, Category = Interaction, meta = (AllowPrivateAccess = true))
+	TSubclassOf<UIPInteractionWidget> InteractionWidgetClass;
+
+	/**
+	 * Class of the indication widget.
+	 */
+	UPROPERTY(EditDefaultsOnly, Category = Interaction, meta = (AllowPrivateAccess = true))
+	TSubclassOf<UUserWidget> IndicationWidgetClass;
+
+	/**
+	 * Class of the indication widget when interaction is not possible.
+	 */
+	UPROPERTY(EditDefaultsOnly, Category = Interaction, meta = (AllowPrivateAccess = true))
+	TSubclassOf<UUserWidget> IndicationBlockedWidgetClass;
+	
 	/**
 	 * Whether this actor can be interacted one time or multiple times.
 	 */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Interaction, meta = (AllowPrivateAccess = true))
+	UPROPERTY(EditDefaultsOnly, Category = Interaction, meta = (AllowPrivateAccess = true))
 	bool bInteractMultipleTimes;
 
 	/**
 	 * Name of the interactive actor to show in the interaction widget.
 	 */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Interaction, meta = (AllowPrivateAccess = true))
+	UPROPERTY(EditDefaultsOnly, Category = Interaction, meta = (AllowPrivateAccess = true))
 	FText InteractiveName;
 	
 	/**
 	 * Description of the interaction to show in the interaction widget.
 	 */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Interaction, meta = (AllowPrivateAccess = true))
+	UPROPERTY(EditDefaultsOnly, Category = Interaction, meta = (AllowPrivateAccess = true))
 	FText InteractionDescription;
 
 	/**
 	 * Whether to auto interact with the first interactor entering trigger area.
 	 */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Interaction, meta = (AllowPrivateAccess = true))
+	UPROPERTY(EditDefaultsOnly, Category = Interaction, meta = (AllowPrivateAccess = true))
 	bool bAutoInteract;
-	
+
+private:
 	/**
 	 * Interaction state of the actor.
 	 */
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadWrite, Category = Interaction, ReplicatedUsing=OnRep_State, meta = (AllowPrivateAccess = true))
+	UPROPERTY(VisibleInstanceOnly, Category = Interaction, ReplicatedUsing=OnRep_State, meta = (AllowPrivateAccess = true))
 	EIPInteractiveState State;
 
 	/**
-	 * The array of possible interactors.
+	 * The array of possible interactors that have been indicated.
 	 */
 	UPROPERTY(VisibleInstanceOnly, Category = Interaction, meta = (AllowPrivateAccess = true))
-	TArray<UIPInteractorComponent*> PossibleInteractors;
+	TArray<TWeakObjectPtr<UIPInteractorComponent>> IndicatedInteractors;
 };

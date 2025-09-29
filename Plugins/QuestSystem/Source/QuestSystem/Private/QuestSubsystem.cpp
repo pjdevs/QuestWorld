@@ -60,7 +60,7 @@ bool UQuestSubsystem::IsQuestCompleted(FPrimaryAssetId QuestId) const
 	return QuestService->IsQuestCompleted(QuestId);
 }
 
-bool UQuestSubsystem::IsQuestActive(const FPrimaryAssetId& QuestId) const
+bool UQuestSubsystem::IsQuestActive(FPrimaryAssetId QuestId) const
 {
 	return QuestService->IsQuestActive(QuestId);
 }

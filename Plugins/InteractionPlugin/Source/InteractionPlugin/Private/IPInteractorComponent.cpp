@@ -1,7 +1,6 @@
 // Copyright pjdevs. All Rights Reserved.
 
-#include "../Public/IPInteractorComponent.h"
-
+#include "IPInteractorComponent.h"
 #include "IPInteractionWidget.h"
 #include "IPInteractive.h"
 #include "Components/WidgetComponent.h"
@@ -9,17 +8,19 @@
 
 
 UIPInteractorComponent::UIPInteractorComponent()
+	: MaxInteractionDistance(1000.f), MaxInteractionAngleDegrees(70.f)
 {
 	PrimaryComponentTick.bCanEverTick = true;
-	InteractionDistance = 100.0f;
-	InteractionTraceChannel = ECC_Visibility;
 }
 
 void UIPInteractorComponent::OnComponentDestroyed(bool bDestroyingHierarchy)
 {
 	Super::OnComponentDestroyed(bDestroyingHierarchy);
-	
-	HideInteractionWidget_Client_Implementation(MostRelevantActor);
+
+	if (MostRelevantActor.IsValid())
+	{
+		HideWidget_Client(MostRelevantActor.Get());
+	}
 }
 
 void UIPInteractorComponent::TickComponent(
@@ -86,6 +87,46 @@ void UIPInteractorComponent::RemoveInteractive(IIPInteractive* Interactive)
 	RecomputeInteractiveRelevancy();
 }
 
+void UIPInteractorComponent::AddInteractiveIndication(IIPInteractive* Interactive)
+{
+	if (!Interactive)
+	{
+		return;
+	}
+
+	IndicatedInteractives.Add(Interactive);
+	ShowIndicationWidget_Client(Cast<AActor>(Interactive));
+}
+
+void UIPInteractorComponent::RemoveInteractiveIndication(IIPInteractive* Interactive)
+{
+	if (!Interactive)
+	{
+		return;
+	}
+
+	IndicatedInteractives.Remove(Interactive);
+	HideWidget_Client(Cast<AActor>(Interactive));
+}
+
+void UIPInteractorComponent::OnInteractiveStateChanged(IIPInteractive* Interactive)
+{
+	if (PossibleInteractives.Contains(Interactive))
+	{
+		if (!Interactive->CanBeInteracted(GetOwner()))
+		{
+			PossibleInteractives.Remove(Interactive);
+		}
+
+		RecomputeInteractiveRelevancy();
+	}
+
+	if (IndicatedInteractives.Contains(Interactive) && !PossibleInteractives.Contains(Interactive))
+	{
+		ShowIndicationWidget_Client(Cast<AActor>(Interactive));
+	}
+}
+
 void UIPInteractorComponent::Server_Interact_Implementation()
 {
 	Interact();
@@ -93,128 +134,186 @@ void UIPInteractorComponent::Server_Interact_Implementation()
 
 void UIPInteractorComponent::RecomputeInteractiveRelevancy()
 {
-	AActor* PreviousMostRelevantActor = MostRelevantActor;
+	AActor* PreviousMostRelevantInteractive = MostRelevantActor.IsValid()
+		? MostRelevantActor.Get()
+		: nullptr;
 
-	if (PossibleInteractives.IsEmpty())
+	MostRelevantActor = PossibleInteractives.IsEmpty()
+		? nullptr
+		: FindNewMostRelevantActor();
+
+	if (GetOwner()->HasAuthority() && MostRelevantActor != PreviousMostRelevantInteractive)
 	{
-		MostRelevantActor = nullptr;
-	}
-	else
-	{
-		FVector EyesLocation;
-		FRotator EyesRotation;
-		GetOwner()->GetActorEyesViewPoint(EyesLocation, EyesRotation);
-
-		const FVector LookDirection = EyesRotation.Vector().GetSafeNormal();
-
-		auto ComputeInteractionScore = [&](const IIPInteractive& Target) -> TTuple<float, float>
-		{
-			FVector DirectionToTarget = Target.GetInteractiveLocation() - EyesLocation;
-			const float DistanceToTarget = DirectionToTarget.Length();
-			DirectionToTarget = DirectionToTarget.GetSafeNormal();
-			const float AlignmentFromTarget = FMath::Max(0.f, LookDirection.Dot(DirectionToTarget));
-			const float Score = AlignmentFromTarget / (1.f + DistanceToTarget * 0.01f);
-
-			return MakeTuple(AlignmentFromTarget, Score);
-		};
-
-		AActor* NewMostRelevantActor = nullptr;
-		float NewMostRelevantActorScore = 0.f;
-
-		for (auto&& Interactive : PossibleInteractives)
-		{
-			const TTuple<float, float> ScoreTuple = ComputeInteractionScore(*Interactive);
-			const float Alignment = ScoreTuple.Key;
-			const float Score = ScoreTuple.Value;
-
-			// TODO Compute real angle and expose value?
-			if (Alignment <= 0.f)
-			{
-				continue;
-			}
-
-			if (Score > NewMostRelevantActorScore)
-			{
-				NewMostRelevantActor = Cast<AActor>(Interactive);
-				NewMostRelevantActorScore = Score;
-			}
-		}
-
-		MostRelevantActor = NewMostRelevantActor;
-	}
-
-	if (GetOwner()->HasAuthority() && MostRelevantActor != PreviousMostRelevantActor)
-	{
-		OnMostRelevantActorChanged(PreviousMostRelevantActor, MostRelevantActor);
+		OnMostRelevantInteractiveChanged(PreviousMostRelevantInteractive, MostRelevantActor.Get());
 	}
 }
 
-void UIPInteractorComponent::OnMostRelevantActorChanged(AActor* PreviousMostRelevantActor, AActor* NewMostRelevantActor)
+AActor* UIPInteractorComponent::FindNewMostRelevantActor() const
+{
+	FVector EyesLocation;
+	FRotator EyesRotation;
+	GetOwner()->GetActorEyesViewPoint(EyesLocation, EyesRotation);
+	const FVector LookDirection = EyesRotation.Vector().GetSafeNormal();
+		
+	AActor* NewMostRelevantActor = nullptr;
+	float NewMostRelevantInteractiveScore = 0.f;
+
+	for (auto&& Interactive : PossibleInteractives)
+	{
+		const FInteractionScore Score = ComputeInteractionScore(*Interactive, EyesLocation, LookDirection);
+
+		// TODO Compute real angle and expose value?
+		if (Score.AngleFromTarget >= MaxInteractionAngleDegrees || Score.DistanceFromTarget >= MaxInteractionDistance)
+		{
+			continue;
+		}
+
+		if (Score.InteractionScore > NewMostRelevantInteractiveScore)
+		{
+			NewMostRelevantActor = Cast<AActor>(Interactive.Get());
+			NewMostRelevantInteractiveScore = Score.InteractionScore;
+		}
+	}
+
+	return NewMostRelevantActor;
+}
+
+void UIPInteractorComponent::OnMostRelevantInteractiveChanged(
+	AActor* PreviousMostRelevantActor,
+	AActor* NewMostRelevantActor
+)
 {
 	// Show hide interaction widgets
-	HideInteractionWidget_Client(PreviousMostRelevantActor);
+	if (PreviousMostRelevantActor)
+	{
+		ShowIndicationWidget_Client(PreviousMostRelevantActor);
+	}
 
 	if (NewMostRelevantActor)
 	{
-		ShowInteractionWidget_Client(NewMostRelevantActor);
-	}
-}
-
-void UIPInteractorComponent::HideInteractionWidget_Client_Implementation(AActor* Interactive)
-{
-	if (const IIPInteractive* InteractiveActor = Cast<IIPInteractive>(Interactive))
-	{
-		UWidgetComponent* WidgetComponent = InteractiveActor->GetWorldSpaceInteractionWidgetSlot();
-
-		if (WidgetComponent != nullptr)
+		if (const IIPInteractive* Interactive = Cast<IIPInteractive>(NewMostRelevantActor))
 		{
-			WidgetComponent->SetWidget(nullptr);
+			if (Interactive->IsAutoInteractive())
+			{
+				Interact();	
+			}
+			else
+			{
+				ShowInteractionWidget_Client(NewMostRelevantActor);
+			}
 		}
 	}
-	
-	if (InteractionWidget)
-	{
-		InteractionWidget->RemoveFromParent();
-	}
-
-	InteractionWidget = nullptr;
 }
 
-void UIPInteractorComponent::ShowInteractionWidget_Client_Implementation(AActor* Interactive)
+FInteractionScore UIPInteractorComponent::ComputeInteractionScore(
+	const IIPInteractive& Target,
+	const FVector& EyesLocation,
+	const FVector& LookDirection
+)
 {
-	const auto* InteractiveActor = Cast<IIPInteractive>(Interactive);
+	FVector DirectionToTarget = Target.GetInteractiveLocation() - EyesLocation;
+	const float DistanceToTarget = DirectionToTarget.Length();
+	DirectionToTarget = DirectionToTarget.GetSafeNormal();
+
+	const float AlignmentFromTarget = FMath::Max(0.f, LookDirection.Dot(DirectionToTarget));
+	const float AngleFromTarget = FMath::Acos(AlignmentFromTarget);
+
+	const float Score = AlignmentFromTarget / (1.f + DistanceToTarget * 0.01f);
+
+	return FInteractionScore
+	{
+		.InteractionScore = Score,
+		.AngleFromTarget = AngleFromTarget,
+		.DistanceFromTarget = DistanceToTarget
+	};
+}
+
+void UIPInteractorComponent::ShowInteractionWidget_Client_Implementation(AActor* InteractiveActor)
+{
+	const auto* Interactive = Cast<IIPInteractive>(InteractiveActor);
 
 	if (!InteractiveActor)
 	{
 		return;
 	}
 
-	if (InteractiveActor->IsAutoInteractive())
+	if (Interactive->IsAutoInteractive())
 	{
 		return;
 	}
 
-	UWidgetComponent* WidgetComponent = InteractiveActor->GetWorldSpaceInteractionWidgetSlot();
-	const bool bSupportsWorldInteractionWidget = WidgetComponent != nullptr;
-	InteractionWidget = CreateWidget<UIPInteractionWidget>(GetWorld(), InteractionWidgetClass);
+	UWidgetComponent* WidgetComponent = Interactive->GetWidgetComponent();
 
-	if (!InteractionWidget)
+	if (!WidgetComponent)
 	{
+		UE_LOG(LogTemp, Error, TEXT("No WidgetComponent found on interactive."));
 		return;
 	}
-
-	InteractionWidget->SetInteractionDescription(
-		InteractionAction,
-		InteractiveActor->GetInteractiveName(),
-		InteractiveActor->GetInteractionDescription()
+	
+	UIPInteractionWidget* WidgetInstance = CreateWidget<UIPInteractionWidget>(
+		GetWorld(),
+		Interactive->GetInteractionWidgetClass()
 	);
 
-	if (bSupportsWorldInteractionWidget)
+	if (!WidgetInstance)
 	{
-		WidgetComponent->SetWidget(InteractionWidget);
+		UE_LOG(LogTemp, Error, TEXT("Failed to create interaction widget."));
+		return;
 	}
-	else
+
+	WidgetInstance->SetInteractionDescription(
+		InteractionAction,
+		Interactive->GetInteractiveName(),
+		Interactive->GetInteractionDescription()
+	);
+
+	WidgetComponent->SetWidget(WidgetInstance);
+}
+
+void UIPInteractorComponent::ShowIndicationWidget_Client_Implementation(AActor* InteractiveActor)
+{
+	const auto* Interactive = Cast<IIPInteractive>(InteractiveActor);
+
+	if (!InteractiveActor)
 	{
-		InteractionWidget->AddToViewport();
+		return;
+	}
+
+	UWidgetComponent* WidgetComponent = Interactive->GetWidgetComponent();
+
+	if (!WidgetComponent)
+	{
+		UE_LOG(LogTemp, Error, TEXT("No WidgetComponent found on interactive."));
+		return;
+	}
+
+	const bool bCanBeInteracted = Interactive->CanBeInteracted(GetOwner());
+	TSubclassOf<UUserWidget> WidgetClass = bCanBeInteracted
+		? Interactive->GetIndicationWidgetClass()
+		: Interactive->GetIndicationBlockedWidgetClass();
+	UUserWidget* WidgetInstance = CreateWidget(GetWorld(), WidgetClass);
+
+	if (!WidgetInstance)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to create indication widget."));
+		return;
+	}
+
+	WidgetComponent->SetWidget(WidgetInstance);
+}
+
+void UIPInteractorComponent::HideWidget_Client_Implementation(AActor* InteractiveActor)
+{
+	if (const IIPInteractive* Interactive = Cast<IIPInteractive>(InteractiveActor))
+	{
+		if (UWidgetComponent* WidgetComponent = Interactive->GetWidgetComponent())
+		{
+			if (UUserWidget* WidgetInside = WidgetComponent->GetWidget())
+			{
+				WidgetInside->RemoveFromParent();
+			}
+
+			WidgetComponent->SetWidget(nullptr);
+		}
 	}
 }
