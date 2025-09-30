@@ -138,14 +138,28 @@ void UIPInteractorComponent::RecomputeInteractiveRelevancy()
 		? MostRelevantActor.Get()
 		: nullptr;
 
-	MostRelevantActor = PossibleInteractives.IsEmpty()
-		? nullptr
-		: FindNewMostRelevantActor();
+	if (PossibleInteractives.IsEmpty())
+	{
+		MostRelevantActor = nullptr;
+	}
+	else
+	{
+		PurgePossibleInteractives();
+		MostRelevantActor = FindNewMostRelevantActor();
+	}
 
 	if (GetOwner()->HasAuthority() && MostRelevantActor != PreviousMostRelevantInteractive)
 	{
 		OnMostRelevantInteractiveChanged(PreviousMostRelevantInteractive, MostRelevantActor.Get());
 	}
+}
+
+void UIPInteractorComponent::PurgePossibleInteractives()
+{
+	PossibleInteractives.RemoveAll([](const TWeakInterfacePtr<IIPInteractive>& Ptr)
+	{
+		return !Ptr.IsValid();
+	});
 }
 
 AActor* UIPInteractorComponent::FindNewMostRelevantActor() const
@@ -288,7 +302,7 @@ void UIPInteractorComponent::ShowIndicationWidget_Client_Implementation(AActor* 
 	}
 
 	const bool bCanBeInteracted = Interactive->CanBeInteracted(GetOwner());
-	TSubclassOf<UUserWidget> WidgetClass = bCanBeInteracted
+	const TSubclassOf<UUserWidget> WidgetClass = bCanBeInteracted
 		? Interactive->GetIndicationWidgetClass()
 		: Interactive->GetIndicationBlockedWidgetClass();
 	UUserWidget* WidgetInstance = CreateWidget(GetWorld(), WidgetClass);

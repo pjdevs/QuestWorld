@@ -103,6 +103,11 @@ private:
 	 * Recompute the relevancy of each interactive by checking look angle, distance etc.
 	 */
 	void RecomputeInteractiveRelevancy();
+
+	/**
+	 * Remove all possibly destroyed object that was in the possibly interactive array.
+	 */
+	void PurgePossibleInteractives();
 	
 	/**
 	 * Recompute the relevancy of each interactive by checking look angle, distance etc.
