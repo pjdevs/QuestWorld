@@ -7,6 +7,8 @@
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "QuestIntegrationSubsystem.generated.h"
 
+// TODO In this plugin, make a QuestStepCompleted/QuestObjectiveCompleted dialog condition?
+
 class UQuestIntegrationSettings;
 class UBaseNotificationWidget;
 

@@ -16,10 +16,10 @@ bool UDialogNode::IsAvailable(UWorld* World) const
 	return bIsAvailable;
 }
 
-void UDialogNode::Trigger(UWorld* World)
+void UDialogNode::Trigger(UWorld* World, AController* DialogController)
 {
 	for (const auto& Trigger : Triggers)
 	{
-		Trigger->Execute(World);
+		Trigger->Execute(World, DialogController);
 	}
 }

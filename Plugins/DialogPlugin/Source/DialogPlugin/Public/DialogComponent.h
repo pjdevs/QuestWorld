@@ -21,6 +21,8 @@ class DIALOGPLUGIN_API UDialogComponent : public UActorComponent
 	TSubclassOf<UDialogWidget> DialogWidgetClass;
 	
 public:
+	virtual void BeginPlay() override;
+	
 	UFUNCTION(BlueprintCallable, Category = Dialog)
 	void StartDialog(UDialogDataAsset* DialogAsset);
 
@@ -38,6 +40,9 @@ private:
 	
 	UPROPERTY()
 	TObjectPtr<UDialogWidget> DisplayedDialogWidget;
+
+	UPROPERTY()
+	TObjectPtr<AController> OwnerController;
 
 	TArray<int> AvailableChoiceIndexes;
 };

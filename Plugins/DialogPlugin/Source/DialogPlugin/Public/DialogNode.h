@@ -30,7 +30,7 @@ public:
 	const TArray<TObjectPtr<UDialogNode>>& GetNextDialogs() const { return NextDialogs; }
 
 	virtual bool IsAvailable(UWorld* World) const;
-	void Trigger(UWorld* World);
+	void Trigger(UWorld* World, AController* DialogController);
 };
 
 

@@ -16,7 +16,7 @@ class DIALOGPLUGIN_API UDialogTrigger : public UObject
 
 public:
 	// UFUNCTION(BlueprintNativeEvent, Category = Dialog)
-	virtual void Execute(UWorld* World);
+	virtual void Execute(UWorld* World, AController* DialogController);
 
 // protected:
 // 	virtual void Execute_Implementation()

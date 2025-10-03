@@ -16,7 +16,8 @@ public class QuestWorld : ModuleRules
 			"InputCore",
 			"EnhancedInput",
 			"InteractionPlugin",
-			"QuestSystem"
+			"QuestSystem",
+			"DialogPlugin"
 		});
 	}
 }

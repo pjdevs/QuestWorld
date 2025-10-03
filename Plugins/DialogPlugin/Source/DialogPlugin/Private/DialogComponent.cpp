@@ -10,15 +10,21 @@
 #include "SingleDialogNode.h"
 #include "Blueprint/UserWidget.h"
 
+// TODO One day rethink that also AI etc can dialog an we don't necessary have a widget
+
+void UDialogComponent::BeginPlay()
+{
+	OwnerController = Cast<AController>(GetOwner());
+}
 
 void UDialogComponent::StartDialog(UDialogDataAsset* DialogAsset)
 {
-	APlayerController* OwnerController = Cast<APlayerController>(GetOwner());
-
-	if (!OwnerController)
+	APlayerController* PlayerController = Cast<APlayerController>(OwnerController);
+	
+	if (!PlayerController)
 		return;
 	
-	DisplayedDialogWidget = Cast<UDialogWidget>(CreateWidget(OwnerController, DialogWidgetClass));
+	DisplayedDialogWidget = CreateWidget<UDialogWidget>(PlayerController, DialogWidgetClass);
 	DisplayedDialogWidget->DisplayLineFinishedDelegate.BindUObject(this, &UDialogComponent::OnLineDisplayed);
 	DisplayedDialogWidget->DisplayChoicesFinishedDelegate.BindUObject(this, &UDialogComponent::OnChoicesDisplayed);
 	DisplayedDialogWidget->AddToViewport();
@@ -78,7 +84,7 @@ void UDialogComponent::ExecuteCurrentDialogNode()
 		return;
 	}
 
-	CurrentNode->Trigger(World);
+	CurrentNode->Trigger(World, OwnerController);
 
 	if (const USingleDialogNode* SingleDialogNode = Cast<USingleDialogNode>(CurrentNode))
 	{
@@ -86,7 +92,7 @@ void UDialogComponent::ExecuteCurrentDialogNode()
 	}
 	else if (const UChoiceDialogNode* ChoiceDialogNode = Cast<UChoiceDialogNode>(CurrentNode))
 	{
-		TArray<FText> AvailableChoices = SetAvailableChoiceIndexes(World, ChoiceDialogNode, AvailableChoiceIndexes);
+		const TArray<FText> AvailableChoices = SetAvailableChoiceIndexes(World, ChoiceDialogNode, AvailableChoiceIndexes);
 
 		if (AvailableChoices.Num() <= 0)
 		{

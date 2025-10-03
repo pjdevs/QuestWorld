@@ -4,19 +4,20 @@
 
 #include "CoreMinimal.h"
 #include "DialogTrigger.h"
-#include "StartQuestDialogTrigger.generated.h"
+#include "ActionDialogTrigger.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class QUESTINTEGRATIONPLUGIN_API UStartQuestDialogTrigger : public UDialogTrigger
+class QUESTINTEGRATIONPLUGIN_API UActionDialogTrigger : public UDialogTrigger
 {
 	GENERATED_BODY()
-	
-	UPROPERTY(EditDefaultsOnly, Category = Dialog)
-	FPrimaryAssetId QuestToStartId;
 
 public:
 	virtual void Execute(UWorld* World, AController* DialogController) override;
+
+private:
+	UPROPERTY(EditDefaultsOnly, Category = Dialog)
+	FName ActionToTrigger;
 };
