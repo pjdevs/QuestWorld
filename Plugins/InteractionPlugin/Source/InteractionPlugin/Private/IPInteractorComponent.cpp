@@ -170,7 +170,10 @@ AActor* UIPInteractorComponent::FindNewMostRelevantActor() const
 	const FVector LookDirection = EyesRotation.Vector().GetSafeNormal();
 		
 	AActor* NewMostRelevantActor = nullptr;
-	float NewMostRelevantInteractiveScore = 0.f;
+	FInteractionScore NewMostRelevantInteractiveScore
+	{
+		.InteractionScore = 0.0f,
+	};
 
 	for (auto&& Interactive : PossibleInteractives)
 	{
@@ -182,10 +185,10 @@ AActor* UIPInteractorComponent::FindNewMostRelevantActor() const
 			continue;
 		}
 
-		if (Score.InteractionScore > NewMostRelevantInteractiveScore)
+		if (Score.InteractionScore > NewMostRelevantInteractiveScore.InteractionScore)
 		{
 			NewMostRelevantActor = Cast<AActor>(Interactive.Get());
-			NewMostRelevantInteractiveScore = Score.InteractionScore;
+			NewMostRelevantInteractiveScore = Score;
 		}
 	}
 
@@ -225,12 +228,14 @@ FInteractionScore UIPInteractorComponent::ComputeInteractionScore(
 	const FVector& LookDirection
 )
 {
-	FVector DirectionToTarget = Target.GetInteractiveLocation() - EyesLocation;
+	const FVector TargetLocation = Target.GetInteractiveLocation();
+	FVector DirectionToTarget = TargetLocation - EyesLocation;
 	const float DistanceToTarget = DirectionToTarget.Length();
 	DirectionToTarget = DirectionToTarget.GetSafeNormal();
 
 	const float AlignmentFromTarget = FMath::Max(0.f, LookDirection.Dot(DirectionToTarget));
-	const float AngleFromTarget = FMath::Acos(AlignmentFromTarget);
+	const float AngleFromTargetRadians = FMath::Acos(AlignmentFromTarget);
+	const float AngleFromTarget = FMath::RadiansToDegrees(AngleFromTargetRadians);
 
 	const float Score = AlignmentFromTarget / (1.f + DistanceToTarget * 0.01f);
 
@@ -238,7 +243,7 @@ FInteractionScore UIPInteractorComponent::ComputeInteractionScore(
 	{
 		.InteractionScore = Score,
 		.AngleFromTarget = AngleFromTarget,
-		.DistanceFromTarget = DistanceToTarget
+		.DistanceFromTarget = DistanceToTarget,
 	};
 }
 

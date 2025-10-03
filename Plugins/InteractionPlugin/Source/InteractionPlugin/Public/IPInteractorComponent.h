@@ -11,6 +11,9 @@ class UInputAction;
 class UIPInteractionWidget;
 class IIPInteractive;
 
+// TODO Add positioning between interactor and interactive into calculations.
+// Make a normal to the interactive and if angle with the normal is too high disable interaction etc.
+
 /**
  * Helper struct for representing information on the computed interaction score of an interactive.
  */
