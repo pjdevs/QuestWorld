@@ -19,6 +19,11 @@
 			"Name": "DialogPlugin",
 			"Type": "Runtime",
 			"LoadingPhase": "Default"
-		}
+		},
+        {
+          "Name": "DialogPluginEditor",
+          "Type": "Editor",
+          "LoadingPhase": "Default"
+        }
 	]
 }
