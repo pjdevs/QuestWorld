@@ -1,9 +1,13 @@
 ﻿// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "DialogPluginEditor.h"
+
+#include "DialogGraphAsset.h"
+#include "IAssetTools.h"
 #include "LevelEditor.h"
 #include "Graph/DialogEdGraphNode.h"
 #include "Graph/DialogGraphAssetEditor.h"
+#include "Graph/DialogGraphTypeActions.h"
 
 #define LOCTEXT_NAMESPACE "FDialogPluginModule"
 
@@ -11,6 +15,7 @@ class UDialogEdGraph;
 
 void FDialogPluginEditorModule::StartupModule()
 {
+	// Add a test menu
 	FLevelEditorModule& LevelEditorModule = 
 		FModuleManager::LoadModuleChecked<FLevelEditorModule>("LevelEditor");
 
@@ -23,6 +28,19 @@ void FDialogPluginEditorModule::StartupModule()
 	);
 
 	LevelEditorModule.GetMenuExtensibilityManager()->AddExtender(MenuExtender);
+
+	// Register custom actions types
+	IAssetTools& AssetToolsModule = IAssetTools::Get();
+
+	const EAssetTypeCategories::Type DialogAssetCategoryType = AssetToolsModule.RegisterAdvancedAssetCategory(
+		FName("Dialog"),
+		FText::FromString("Dialog")
+	);
+
+	const TSharedPtr<FDialogGraphTypeActions> DialogGraphAssetAction = MakeShareable(
+		new FDialogGraphTypeActions(DialogAssetCategoryType)
+	);
+	AssetToolsModule.RegisterAssetTypeActions(DialogGraphAssetAction.ToSharedRef());
 }
 
 void FDialogPluginEditorModule::ShutdownModule()

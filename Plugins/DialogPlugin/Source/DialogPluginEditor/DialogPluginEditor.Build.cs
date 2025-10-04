@@ -28,6 +28,7 @@ public class DialogPluginEditor : ModuleRules
 				"SlateCore",
 				"UnrealEd",
 				"GraphEditor",
+				"AssetTools",
 				"DialogPlugin"
 			}
 		);
