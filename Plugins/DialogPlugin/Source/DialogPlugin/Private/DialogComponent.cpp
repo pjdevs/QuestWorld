@@ -4,7 +4,7 @@
 #include "DialogComponent.h"
 
 #include "ChoiceDialogNode.h"
-#include "DialogDataAsset.h"
+#include "DialogGraphAsset.h"
 #include "DialogNode.h"
 #include "DialogWidget.h"
 #include "SingleDialogNode.h"
@@ -14,15 +14,24 @@
 
 void UDialogComponent::BeginPlay()
 {
+	Super::BeginPlay();
+
 	OwnerController = Cast<AController>(GetOwner());
 }
 
-void UDialogComponent::StartDialog(UDialogDataAsset* DialogAsset)
+void UDialogComponent::StartDialog(AActor* DialogActor, UDialogGraphAsset* DialogAsset)
 {
 	APlayerController* PlayerController = Cast<APlayerController>(OwnerController);
 	
 	if (!PlayerController)
 		return;
+
+	CurrentDialogActor = DialogActor;
+
+	if (APawn* Pawn = PlayerController->GetPawn())
+	{
+		Pawn->DisableInput(PlayerController);
+	}
 	
 	DisplayedDialogWidget = CreateWidget<UDialogWidget>(PlayerController, DialogWidgetClass);
 	DisplayedDialogWidget->DisplayLineFinishedDelegate.BindUObject(this, &UDialogComponent::OnLineDisplayed);
@@ -136,6 +145,14 @@ void UDialogComponent::EndDialog()
 		DisplayedDialogWidget->DisplayChoicesFinishedDelegate.Unbind();
 		DisplayedDialogWidget->RemoveFromParent();
 		DisplayedDialogWidget = nullptr;
+	}
+
+	if (APlayerController* PlayerController = Cast<APlayerController>(OwnerController))
+	{
+		if (APawn* Pawn = OwnerController->GetPawn())
+		{
+			Pawn->EnableInput(PlayerController);
+		}
 	}
 }
 

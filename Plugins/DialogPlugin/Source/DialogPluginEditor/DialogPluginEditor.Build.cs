@@ -40,6 +40,7 @@ public class DialogPluginEditor : ModuleRules
 				"Engine",
 				"UnrealEd",
 				"GraphEditor",
+				"PropertyEditor",
 			}
 		);
 

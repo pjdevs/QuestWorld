@@ -5,6 +5,7 @@
 #include "DialogGraphAsset.h"
 #include "Graph/DialogEdGraphNode.h"
 #include "Graph/DialogGraphAssetEditor.h"
+#include "Graph/DialogGraphEditorApplication.h"
 
 FDialogGraphTypeActions::FDialogGraphTypeActions(EAssetTypeCategories::Type InCategoryType)
 	: CategoryType(InCategoryType)
@@ -31,18 +32,23 @@ void FDialogGraphTypeActions::OpenAssetEditor(
 	TSharedPtr<IToolkitHost> EditWithinLevelEditor
 )
 {
+	EToolkitMode::Type Mode = EditWithinLevelEditor.IsValid() ? EToolkitMode::WorldCentric : EToolkitMode::Standalone;
+	
 	for (auto&& Object : InObjects)
 	{
 		if (UDialogGraphAsset* DialogGraphAsset = Cast<UDialogGraphAsset>(Object))
 		{
-			UDialogEdGraph* DialogGraph = CreateEdGraphFromAsset(DialogGraphAsset);
-			
-			const TSharedRef<FDialogGraphAssetEditor> EditorToolkit = MakeShareable(new FDialogGraphAssetEditor());
-			EditorToolkit->InitDialogGraphEditor(
-				EToolkitMode::Standalone,
-				EditWithinLevelEditor, 
-				DialogGraph
-			);
+			// UDialogEdGraph* DialogGraph = CreateEdGraphFromAsset(DialogGraphAsset);
+			//
+			// const TSharedRef<FDialogGraphAssetEditor> EditorToolkit = MakeShareable(new FDialogGraphAssetEditor());
+			// EditorToolkit->InitDialogGraphEditor(
+			// 	EToolkitMode::Standalone,
+			// 	EditWithinLevelEditor, 
+			// 	DialogGraph
+			// );
+
+			TSharedRef<FDialogGraphEditorApplication> Editor(new FDialogGraphEditorApplication());
+			Editor->InitEditor(Mode, EditWithinLevelEditor, DialogGraphAsset);
 		}
 	}
 }

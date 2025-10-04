@@ -10,21 +10,18 @@
 
 class UDialogNode;
 class UDialogWidget;
-class UDialogDataAsset;
+class UDialogGraphAsset;
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class DIALOGPLUGIN_API UDialogComponent : public UActorComponent
 {
 	GENERATED_BODY()
-
-	UPROPERTY(EditDefaultsOnly, Category = Dialog)
-	TSubclassOf<UDialogWidget> DialogWidgetClass;
 	
 public:
 	virtual void BeginPlay() override;
 	
 	UFUNCTION(BlueprintCallable, Category = Dialog)
-	void StartDialog(UDialogDataAsset* DialogAsset);
+	void StartDialog(AActor* DialogActor, UDialogGraphAsset* DialogAsset);
 
 private:
 	void ExecuteCurrentDialogNode();
@@ -35,6 +32,10 @@ private:
 	void OnChoicesDisplayed(int ChoiceIndex);
 
 private:
+	UPROPERTY(EditDefaultsOnly, Category = Dialog)
+	TSubclassOf<UDialogWidget> DialogWidgetClass;
+	
+private:
 	UPROPERTY()
 	TObjectPtr<UDialogNode> CurrentNode;
 	
@@ -43,6 +44,9 @@ private:
 
 	UPROPERTY()
 	TObjectPtr<AController> OwnerController;
+
+	UPROPERTY()
+	TObjectPtr<AActor> CurrentDialogActor;
 
 	TArray<int> AvailableChoiceIndexes;
 };

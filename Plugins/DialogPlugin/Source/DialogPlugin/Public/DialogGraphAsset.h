@@ -21,11 +21,10 @@ public:
 	UDialogNode* GetDialogRoot() { return DialogRoot; }
 	virtual FPrimaryAssetId GetPrimaryAssetId() const override;
 
-
 private:
-	UPROPERTY(EditDefaultsOnly, Category = Dialog, meta = (AllowPrivateAccess = true))
+	UPROPERTY(EditAnywhere, Category = Dialog, meta = (AllowPrivateAccess = true))
 	FText CharacterName;
 	
-	UPROPERTY(EditDefaultsOnly, Instanced, Category = Dialog, meta = (AllowPrivateAccess = true))
+	UPROPERTY(EditAnywhere, Instanced, Category = Dialog, meta = (AllowPrivateAccess = true))
 	TObjectPtr<UDialogNode> DialogRoot;
 };
