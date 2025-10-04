@@ -5,26 +5,21 @@
 #include "CoreMinimal.h"
 #include "WorkflowOrientedApp/WorkflowTabFactory.h"
 
-const FName DialogGraphEditorTabName = FName("DialogGraphEditorTab");
+const FName DialogGraphDetailsTabName = FName("DialogGraphDetailsTab");
 
-class UDialogGraphAsset;
-class UDialogEdGraph;
 class FDialogGraphEditorApplication;
 
 /**
  * 
  */
-class DIALOGPLUGINEDITOR_API FDialogGraphEditorTabFactory : public FWorkflowTabFactory
+class DIALOGPLUGINEDITOR_API FDialogGraphDetailsTabFactory : public FWorkflowTabFactory
 {
 public:
-	FDialogGraphEditorTabFactory(TSharedPtr<FDialogGraphEditorApplication> InOwnerApplication);
+	FDialogGraphDetailsTabFactory(TSharedPtr<FDialogGraphEditorApplication> InOwnerApplication);
 
 	virtual TSharedRef<SWidget> CreateTabBody(const FWorkflowTabSpawnInfo& Info) const override;
 	virtual FText GetTabToolTipText(const FWorkflowTabSpawnInfo& Info) const override;
 
-	static UDialogEdGraph* CreateEdGraphFromAsset(UDialogGraphAsset* DialogGraphAsset);
-
 private:
 	TWeakPtr<FDialogGraphEditorApplication> OwnerApplication;
-	TWeakObjectPtr<UDialogEdGraph> GraphBeingEdited;
 };

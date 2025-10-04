@@ -4,6 +4,7 @@
 #include "DialogComponent.h"
 
 #include "ChoiceDialogNode.h"
+#include "DialogEvents.h"
 #include "DialogGraphAsset.h"
 #include "DialogNode.h"
 #include "DialogWidget.h"
@@ -21,13 +22,29 @@ void UDialogComponent::BeginPlay()
 
 void UDialogComponent::StartDialog(AActor* DialogActor, UDialogGraphAsset* DialogAsset)
 {
+	// Check if dialog is already active
+	if (CurrentDialogActor)
+	{
+		return;
+	}
+	
+	// Check if the thing that component is attached on a player
 	APlayerController* PlayerController = Cast<APlayerController>(OwnerController);
 	
 	if (!PlayerController)
+	{
 		return;
+	}
 
+	// Start current actor which we dialog with and call start if implementing interface
 	CurrentDialogActor = DialogActor;
 
+	if (IDialogEvents* DialogEvents = Cast<IDialogEvents>(DialogActor))
+	{
+		DialogEvents->OnDialogStarted(OwnerController);
+	}
+
+	// Prevent player moving while dialog is active
 	if (APawn* Pawn = PlayerController->GetPawn())
 	{
 		Pawn->DisableInput(PlayerController);
@@ -147,6 +164,13 @@ void UDialogComponent::EndDialog()
 		DisplayedDialogWidget = nullptr;
 	}
 
+	if (IDialogEvents* DialogEvents = Cast<IDialogEvents>(CurrentDialogActor))
+	{
+		DialogEvents->OnDialogEnded(OwnerController);
+	}
+
+	CurrentDialogActor = nullptr;
+	
 	if (APlayerController* PlayerController = Cast<APlayerController>(OwnerController))
 	{
 		if (APawn* Pawn = OwnerController->GetPawn())

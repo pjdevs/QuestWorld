@@ -3,7 +3,7 @@
 
 #include "Graph/DialogGraphEditorTabFactory.h"
 #include "Graph/DialogGraphEditorApplication.h"
-#include "DialogGraphAsset.h"
+#include "Graph/DialogEdGraph.h"
 
 
 FDialogGraphEditorTabFactory::FDialogGraphEditorTabFactory(TSharedPtr<FDialogGraphEditorApplication> InOwnerApplication)
@@ -17,30 +17,15 @@ FDialogGraphEditorTabFactory::FDialogGraphEditorTabFactory(TSharedPtr<FDialogGra
 TSharedRef<SWidget> FDialogGraphEditorTabFactory::CreateTabBody(const FWorkflowTabSpawnInfo& Info) const
 {
 	const TSharedPtr<FDialogGraphEditorApplication> Application = OwnerApplication.Pin();
-	FPropertyEditorModule& PropertyEditorModule = FModuleManager::LoadModuleChecked<FPropertyEditorModule>("PropertyEditor");
-
-	FDetailsViewArgs DetailsViewArgs;
-	{
-		DetailsViewArgs.bAllowSearch = false;
-		DetailsViewArgs.bHideSelectionTip = true;
-		DetailsViewArgs.bLockable = false;
-		DetailsViewArgs.bSearchInitialKeyFocus = true;
-		DetailsViewArgs.bUpdatesFromSelection = false;
-		DetailsViewArgs.NotifyHook = nullptr;
-		DetailsViewArgs.bShowOptions = true;
-		DetailsViewArgs.bShowModifiedPropertiesOption = false;
-		DetailsViewArgs.bShowScrollBar = false;
-	}
-
-	const TSharedPtr<IDetailsView> DetailsView = PropertyEditorModule.CreateDetailView(DetailsViewArgs);
-	DetailsView->SetObject(Application->GetWorkingAsset());
 
 	return SNew(SVerticalBox)
-		 +  SVerticalBox::Slot()
+		 + SVerticalBox::Slot()
 			.FillHeight(1.0f)
 			.HAlign(HAlign_Fill)
 			[
-				DetailsView.ToSharedRef()	
+				SNew(SGraphEditor)
+					.IsEditable(true)
+					.GraphToEdit(Application->GetWorkingGraph())
 			];
 }
 

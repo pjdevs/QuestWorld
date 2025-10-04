@@ -229,15 +229,7 @@ void AIPInteractiveActor::OnRep_State()
 		return;
 	}
 
-	IndicatedInteractors.RemoveAll([](const TWeakObjectPtr<UIPInteractorComponent>& Interactor)
-	{
-		return !Interactor.IsValid();
-	});
-	for (const TWeakObjectPtr<UIPInteractorComponent>& Interactor : IndicatedInteractors)
-	{
-		Interactor->OnInteractiveStateChanged(this);
-	}
-
+	StateChanged();
 	DoFeedback();
 }
 
@@ -252,6 +244,19 @@ void AIPInteractiveActor::DoFeedback_Implementation()
 bool AIPInteractiveActor::CanBeInteractedBy_Implementation(AActor* InteractionInstigator) const
 {
 	return true;
+}
+
+void AIPInteractiveActor::StateChanged()
+{
+	IndicatedInteractors.RemoveAll([](const TWeakObjectPtr<UIPInteractorComponent>& Interactor)
+	{
+		return !Interactor.IsValid();
+	});
+
+	for (const TWeakObjectPtr<UIPInteractorComponent>& Interactor : IndicatedInteractors)
+	{
+		Interactor->OnInteractiveStateChanged(this);
+	}
 }
 
 void AIPInteractiveActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

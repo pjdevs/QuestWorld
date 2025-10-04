@@ -19,3 +19,19 @@ public:
 	virtual void GetContextMenuActions(UToolMenu* Menu, UGraphNodeContextMenuContext* Context) const override;
 	virtual const FPinConnectionResponse CanCreateConnection(const UEdGraphPin* A, const UEdGraphPin* B) const override;
 };
+
+USTRUCT()
+struct FAddDialogNodeAction : public FEdGraphSchemaAction
+{
+	GENERATED_BODY()
+
+public:
+	FAddDialogNodeAction();
+
+	virtual UEdGraphNode* PerformAction(
+		UEdGraph* ParentGraph,
+		UEdGraphPin* FromPin,
+		const FVector2f& Location,
+		bool bSelectNewNode = true
+	) override;
+};

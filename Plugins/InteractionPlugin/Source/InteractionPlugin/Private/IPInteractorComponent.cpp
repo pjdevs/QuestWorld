@@ -62,11 +62,6 @@ void UIPInteractorComponent::AddInteractive(IIPInteractive* Interactive)
 		return;
 	}
 
-	if (!Interactive->CanBeInteracted(GetOwner()))
-	{
-		return;
-	}
-
 	if (PossibleInteractives.Contains(Interactive))
 	{
 		return;
@@ -111,16 +106,7 @@ void UIPInteractorComponent::RemoveInteractiveIndication(IIPInteractive* Interac
 
 void UIPInteractorComponent::OnInteractiveStateChanged(IIPInteractive* Interactive)
 {
-	if (PossibleInteractives.Contains(Interactive))
-	{
-		if (!Interactive->CanBeInteracted(GetOwner()))
-		{
-			PossibleInteractives.Remove(Interactive);
-		}
-
-		RecomputeInteractiveRelevancy();
-	}
-
+	// update indication widget because can be interacted may have changed
 	if (IndicatedInteractives.Contains(Interactive) && !PossibleInteractives.Contains(Interactive))
 	{
 		ShowIndicationWidget_Client(Cast<AActor>(Interactive));
@@ -177,6 +163,11 @@ AActor* UIPInteractorComponent::FindNewMostRelevantActor() const
 
 	for (auto&& Interactive : PossibleInteractives)
 	{
+		if (!Interactive->CanBeInteracted(GetOwner()))
+		{
+			continue;
+		}
+		
 		const FInteractionScore Score = ComputeInteractionScore(*Interactive, EyesLocation, LookDirection);
 
 		// TODO Compute real angle and expose value?

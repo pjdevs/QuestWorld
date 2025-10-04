@@ -3,13 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "DialogEvents.h"
 #include "IPInteractiveActor.h"
 #include "DialogActor.generated.h"
 
 class UDialogGraphAsset;
 
 UCLASS()
-class QUESTINTEGRATIONPLUGIN_API ADialogActor : public AIPInteractiveActor
+class QUESTINTEGRATIONPLUGIN_API ADialogActor : public AIPInteractiveActor, public IDialogEvents
 {
 	GENERATED_BODY()
 
@@ -17,9 +18,16 @@ public:
 	ADialogActor();
 	
 	virtual void DoInteraction_Implementation(AActor* InteractionInstigator) override;
+	virtual bool CanBeInteracted(AActor* InteractionInstigator) const override;
+
+	virtual void OnDialogStarted(AController* DialogController) override;
+	virtual void OnDialogEnded(AController* DialogController) override;
 
 private:
 	// TODO Later handle soft ref etc in dialog like quest
 	UPROPERTY(EditDefaultsOnly, Category = Dialog)
 	TObjectPtr<UDialogGraphAsset> DialogAsset;
+
+private:
+	bool bIsInDialog;
 };

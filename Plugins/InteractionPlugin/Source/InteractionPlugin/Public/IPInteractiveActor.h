@@ -63,6 +63,14 @@ protected:
 	bool CanBeInteractedBy(AActor* InteractionInstigator) const;
 	virtual bool CanBeInteractedBy_Implementation(AActor* InteractionInstigator) const;
 
+	/**
+	 * Function that can be called  to notify interactors that state may have changed
+	 * (to update can be interacted condition etc.).
+	 * TODO Check network replication of this.
+	 */
+	UFUNCTION(BlueprintCallable)
+	void StateChanged();
+
 	UFUNCTION()
 	void HandleInteractionTriggerBeginOverlap(
 		UPrimitiveComponent* OverlappedComponent,

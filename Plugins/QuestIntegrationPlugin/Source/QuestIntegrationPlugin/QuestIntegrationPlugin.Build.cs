@@ -26,6 +26,7 @@ public class QuestIntegrationPlugin : ModuleRules
 			new string[]
 			{
 				"Core",
+				"DialogPlugin",
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);

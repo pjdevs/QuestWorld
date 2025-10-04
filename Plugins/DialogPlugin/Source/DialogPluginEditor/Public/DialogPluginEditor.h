@@ -12,8 +12,4 @@ public:
 	virtual void StartupModule() override;
 	virtual void ShutdownModule() override;
 
-protected:
-
-	void AddMenuEntry(FMenuBuilder& MenuBuilder);
-	void OpenTestGraphEditor();
 };

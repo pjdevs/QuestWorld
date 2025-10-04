@@ -7,7 +7,7 @@
 
 
 ADialogActor::ADialogActor()
-	: DialogAsset(nullptr)
+	: DialogAsset(nullptr), bIsInDialog(false)
 {
 	PrimaryActorTick.bCanEverTick = false;
 }
@@ -29,8 +29,24 @@ void ADialogActor::DoInteraction_Implementation(AActor* InteractionInstigator)
 
 			if (DialogComponent)
 			{
-				DialogComponent->StartDialog(DialogAsset);
+				DialogComponent->StartDialog(this, DialogAsset);
 			}
 		}
 	}
+}
+
+bool ADialogActor::CanBeInteracted(AActor* InteractionInstigator) const
+{
+	return Super::CanBeInteracted(InteractionInstigator) && !bIsInDialog;
+}
+
+void ADialogActor::OnDialogStarted(AController* DialogController)
+{
+	bIsInDialog = true;
+}
+
+void ADialogActor::OnDialogEnded(AController* DialogController)
+{
+	bIsInDialog = false;
+	StateChanged();
 }

@@ -5,7 +5,9 @@
 #include "CoreMinimal.h"
 #include "WorkflowOrientedApp/WorkflowCentricApplication.h"
 
+class UDialogEdGraph;
 class UDialogGraphAsset;
+
 /**
  * 
  */
@@ -21,7 +23,10 @@ public:
 	);
 
 	TObjectPtr<UDialogGraphAsset> GetWorkingAsset();
-	
+	TObjectPtr<UDialogEdGraph> GetWorkingGraph();
+
+	static UDialogEdGraph* CreateEdGraphFromAsset(UDialogGraphAsset* DialogGraphAsset);
+
 	// FAssetEditorToolkit interface
 	virtual FName GetToolkitFName() const override { return FName("DialogGraphEditorApplication"); }
 	virtual FText GetBaseToolkitName() const override { return FText::FromString("DialogGraphEditorApplication"); }
@@ -32,5 +37,6 @@ public:
 	virtual void OnToolkitHostingFinished(const TSharedRef<IToolkit>& Toolkit) override { }
 
 private:
-	TObjectPtr<UDialogGraphAsset> WorkingAsset;
+	TObjectPtr<UDialogGraphAsset> WorkingAsset = nullptr;
+	TObjectPtr<UDialogEdGraph> WorkingGraph = nullptr;
 };
