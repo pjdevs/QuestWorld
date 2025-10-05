@@ -2,7 +2,10 @@
 
 #pragma once
 
+#include "Graph/DialogGraphSlate.h"
 #include "Modules/ModuleManager.h"
+
+struct FDialogGraphPanelPinFactory;
 
 class FDialogPluginEditorModule : public IModuleInterface
 {
@@ -12,4 +15,7 @@ public:
 	virtual void StartupModule() override;
 	virtual void ShutdownModule() override;
 
+private:
+	TSharedPtr<FDialogGraphPanelPinFactory> DialogPinFactory;
+	TSharedPtr<FDialogNodeFactory> DialogNodeFactory;
 };

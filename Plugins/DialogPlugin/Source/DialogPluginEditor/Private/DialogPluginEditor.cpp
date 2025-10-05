@@ -3,6 +3,8 @@
 #include "DialogPluginEditor.h"
 #include "IAssetTools.h"
 #include "Graph/DialogGraphTypeActions.h"
+#include "EdGraphUtilities.h"
+#include "Graph/DialogGraphSlate.h"
 
 #define LOCTEXT_NAMESPACE "FDialogPluginModule"
 
@@ -10,6 +12,7 @@ class UDialogEdGraph;
 
 void FDialogPluginEditorModule::StartupModule()
 {
+	// Register custom dialog asset
 	IAssetTools& AssetToolsModule = IAssetTools::Get();
 
 	const EAssetTypeCategories::Type DialogAssetCategoryType = AssetToolsModule.RegisterAdvancedAssetCategory(
@@ -21,6 +24,14 @@ void FDialogPluginEditorModule::StartupModule()
 		new FDialogGraphTypeActions(DialogAssetCategoryType)
 	);
 	AssetToolsModule.RegisterAssetTypeActions(DialogGraphAssetAction.ToSharedRef());
+
+	// Make and register a dialog pin factory
+	DialogPinFactory = MakeShareable(new FDialogGraphPanelPinFactory());
+	FEdGraphUtilities::RegisterVisualPinFactory(DialogPinFactory);
+
+	// TODO Investigate custom visual
+	// DialogNodeFactory = MakeShareable(new FDialogNodeFactory());
+	// FEdGraphUtilities::RegisterVisualNodeFactory(DialogNodeFactory);
 }
 
 void FDialogPluginEditorModule::ShutdownModule()

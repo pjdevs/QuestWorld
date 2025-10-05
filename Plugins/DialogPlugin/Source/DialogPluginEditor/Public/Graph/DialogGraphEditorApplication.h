@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "WorkflowOrientedApp/WorkflowCentricApplication.h"
 
+class UDialogEdGraphNode;
+class UDialogNode;
 class UDialogEdGraph;
 class UDialogGraphAsset;
 
@@ -26,6 +28,15 @@ public:
 	TObjectPtr<UDialogEdGraph> GetWorkingGraph();
 
 	static UDialogEdGraph* CreateEdGraphFromAsset(UDialogGraphAsset* DialogGraphAsset);
+	static void CreateEdGraphNodesFromNode(
+		UDialogEdGraph* DialogEdGraph,
+		UDialogEdGraphNode* DialogParentGraphNode,
+		UDialogNode* DialogNode,
+		TMap<int, int>& MaxSiblingByDepth,
+		int Depth = 0,
+		int Sibling = 0,
+		int ChoiceIndex = 0
+	);
 
 	// FAssetEditorToolkit interface
 	virtual FName GetToolkitFName() const override { return FName("DialogGraphEditorApplication"); }

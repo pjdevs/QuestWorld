@@ -36,11 +36,11 @@ TSharedRef<SWidget> FDialogGraphDetailsTabFactory::CreateTabBody(const FWorkflow
 	DetailsView->SetObject(Application->GetWorkingAsset());
 
 	return SNew(SVerticalBox)
-		 +  SVerticalBox::Slot()
+		 + SVerticalBox::Slot()
 			.FillHeight(1.0f)
 			.HAlign(HAlign_Fill)
 			[
-				DetailsView.ToSharedRef()	
+				DetailsView.ToSharedRef()
 			];
 }
 

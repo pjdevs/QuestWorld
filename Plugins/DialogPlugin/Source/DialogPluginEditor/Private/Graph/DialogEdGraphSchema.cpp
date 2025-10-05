@@ -11,13 +11,23 @@ void UDialogEdGraphSchema::GetGraphContextActions(FGraphContextMenuBuilder& Cont
 	ContextMenuBuilder.AddAction(MakeShareable(new FAddDialogNodeAction()));
 }
 
-void UDialogEdGraphSchema::GetContextMenuActions(UToolMenu* Menu, UGraphNodeContextMenuContext* Context) const
-{
-	Super::GetContextMenuActions(Menu, Context);
-}
-
 const FPinConnectionResponse UDialogEdGraphSchema::CanCreateConnection(const UEdGraphPin* A, const UEdGraphPin* B) const
 {
+	if (A == nullptr || B == nullptr)
+	{
+		return FPinConnectionResponse(CONNECT_RESPONSE_DISALLOW, "One of node is missing");
+	}
+
+	if (A->Direction == B->Direction)
+	{
+		return FPinConnectionResponse(CONNECT_RESPONSE_DISALLOW, "Only output and inputs can be linked together");
+	}
+
+	if (B->Direction == EGPD_Input)
+	{
+		return FPinConnectionResponse(CONNECT_RESPONSE_BREAK_OTHERS_B, "Make a new dialog link");
+	}
+	
 	return FPinConnectionResponse(CONNECT_RESPONSE_MAKE, "Make a new dialog link");
 }
 
@@ -46,12 +56,19 @@ UEdGraphNode* FAddDialogNodeAction::PerformAction(
 	}
 	
 	UDialogEdGraphNode* DialogNode = NewObject<UDialogEdGraphNode>(ParentGraph);
+	DialogNode->CreateNewGuid();
 	DialogNode->NodePosX = Location.X;
 	DialogNode->NodePosY = Location.Y;
 	DialogNode->AllocateDefaultPins();
 
+	if (FromPin != nullptr)
+	{
+		DialogNode->GetSchema()->TryCreateConnection(FromPin, DialogNode->GetDialogInputPin());
+	}
+
 	DialogGraph->Modify();
 	DialogGraph->AddNode(DialogNode, true, bSelectNewNode);
+	DialogGraph->NotifyGraphChanged();
 
 	return DialogNode;
 }

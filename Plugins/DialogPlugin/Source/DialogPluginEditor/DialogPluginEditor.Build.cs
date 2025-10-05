@@ -41,6 +41,7 @@ public class DialogPluginEditor : ModuleRules
 				"UnrealEd",
 				"GraphEditor",
 				"PropertyEditor",
+				"ToolMenus"
 			}
 		);
 
