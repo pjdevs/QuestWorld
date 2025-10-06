@@ -145,13 +145,12 @@ void FDialogGraphEditorApplication::CreateEdGraphNodesFromNode(
 	}
 }
 
-UDialogGraphAsset* FDialogGraphEditorApplication::UpdateAssetFromEdGraph(
+void FDialogGraphEditorApplication::UpdateAssetFromEdGraph(
 	UDialogGraphAsset* DialogGraphAsset,
 	UDialogEdGraph* DialogEdGraph
 )
 {
 	// find root node
-
 	const TObjectPtr<UEdGraphNode>* RootNode = DialogEdGraph->Nodes.FindByPredicate([](const TObjectPtr<UEdGraphNode>& Node)
 	{
 		if (const UDialogEdGraphNode* DialogNode = Cast<UDialogEdGraphNode>(Node))
@@ -167,9 +166,10 @@ UDialogGraphAsset* FDialogGraphEditorApplication::UpdateAssetFromEdGraph(
 
 	if (RootNode == nullptr)
 	{
-		return nullptr;
+		return;
 	}
 
+	// Create child nodes
 	const UDialogEdGraphNode* RootDialogEdGraphNode = Cast<UDialogEdGraphNode>(*RootNode);
 	UDialogNode* RootDialogNode = CreateAssetNode(DialogGraphAsset, RootDialogEdGraphNode);
 
@@ -200,7 +200,7 @@ UDialogNode* FDialogGraphEditorApplication::CreateAssetNode(
 	const UDialogEdGraphNode* DialogEdGraphNode
 )
 {
-	UDialogNode* DialogNode;
+	UDialogNode* DialogNode = nullptr;
 	// TArray<UEdGraphPin*>& ChildLinkedPins = DialogEdGraphNode->GetDialogOutputPin()->LinkedTo;
 	//
 	// if (ChildLinkedPins.Num() > 1)

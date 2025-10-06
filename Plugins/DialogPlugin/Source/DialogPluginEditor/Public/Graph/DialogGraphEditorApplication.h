@@ -48,7 +48,7 @@ private:
 		int ChoiceIndex = 0
 	);
 
-	static UDialogGraphAsset* UpdateAssetFromEdGraph(UDialogGraphAsset* DialogGraphAsset, UDialogEdGraph* DialogEdGraph);
+	static void UpdateAssetFromEdGraph(UDialogGraphAsset* DialogGraphAsset, UDialogEdGraph* DialogEdGraph);
 	static void CreateAssetNodesFromEdNode(
 		UDialogGraphAsset* DialogGraphAsset,
 		UDialogNode* DialogNode,

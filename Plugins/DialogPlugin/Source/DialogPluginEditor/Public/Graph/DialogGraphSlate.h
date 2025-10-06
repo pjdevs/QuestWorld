@@ -65,7 +65,7 @@ public:
 			.HAlign(HAlign_Center)
 			.VAlign(VAlign_Center)
 			[
-				SNew(STextBlock).Text(Cast<UDialogEdGraphNode>(GraphNode)->GetLineText())
+				SNew(STextBlock).Text(Cast<UDialogEdGraphNode>(GraphNode)->DialogLineText)
 			];
 	}
 };
