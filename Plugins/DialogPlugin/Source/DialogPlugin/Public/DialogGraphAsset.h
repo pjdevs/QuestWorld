@@ -19,6 +19,9 @@ class DIALOGPLUGIN_API UDialogGraphAsset : public UObject
 public:
 	const FText& GetCharacterName() { return CharacterName; }
 	UDialogNode* GetDialogRoot() { return DialogRoot; }
+
+	void SetDialogRoot(UDialogNode* InDialogRoot) { DialogRoot = InDialogRoot; }
+
 	virtual FPrimaryAssetId GetPrimaryAssetId() const override;
 
 private:

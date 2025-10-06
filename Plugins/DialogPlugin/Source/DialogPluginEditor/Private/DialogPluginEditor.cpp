@@ -30,8 +30,8 @@ void FDialogPluginEditorModule::StartupModule()
 	FEdGraphUtilities::RegisterVisualPinFactory(DialogPinFactory);
 
 	// TODO Investigate custom visual
-	// DialogNodeFactory = MakeShareable(new FDialogNodeFactory());
-	// FEdGraphUtilities::RegisterVisualNodeFactory(DialogNodeFactory);
+	DialogNodeFactory = MakeShareable(new FDialogNodeFactory());
+	FEdGraphUtilities::RegisterVisualNodeFactory(DialogNodeFactory);
 }
 
 void FDialogPluginEditorModule::ShutdownModule()

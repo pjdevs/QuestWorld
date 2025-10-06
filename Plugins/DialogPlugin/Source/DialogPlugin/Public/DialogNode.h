@@ -17,6 +17,25 @@ class DIALOGPLUGIN_API UDialogNode : public UObject
 {
 	GENERATED_BODY()
 
+public:
+	const TArray<TObjectPtr<UDialogNode>>& GetNextDialogs() const { return NextDialogs; }
+	const TArray<TObjectPtr<UDialogCondition>>& GetConditions() const { return Conditions; }
+	const TArray<TObjectPtr<UDialogTrigger>>& GetTriggers() const { return Triggers; }
+
+	void AddNextDialog(UDialogNode* Dialog) { NextDialogs.Add(Dialog); }
+	void AddCondition(UDialogCondition* Condition) { Conditions.Add(Condition); }
+	void AddTrigger(UDialogTrigger* Trigger) { Triggers.Add(Trigger); }
+	
+	virtual bool IsAvailable(UWorld* World) const;
+	void Trigger(UWorld* World, AController* DialogController);
+
+public:
+#if WITH_EDITORONLY_DATA
+	UPROPERTY()
+	FVector2f EditorNodePosition;
+#endif
+
+private:
 	UPROPERTY(EditDefaultsOnly, Instanced, Category = Dialog, meta = (AllowPrivateAccess = true))
 	TArray<TObjectPtr<UDialogNode>> NextDialogs;
 
@@ -26,11 +45,6 @@ class DIALOGPLUGIN_API UDialogNode : public UObject
 	UPROPERTY(EditDefaultsOnly, Instanced, Category = Dialog, meta = (AllowPrivateAccess = true))
 	TArray<TObjectPtr<UDialogTrigger>> Triggers;
 
-public:
-	const TArray<TObjectPtr<UDialogNode>>& GetNextDialogs() const { return NextDialogs; }
-
-	virtual bool IsAvailable(UWorld* World) const;
-	void Trigger(UWorld* World, AController* DialogController);
 };
 
 

@@ -44,7 +44,7 @@ struct FDialogGraphPanelPinFactory : public FGraphPanelPinFactory
 	}
 };
 
-class SDialogGraphNode : public SGraphNodeK2Base
+class SDialogGraphNode : public SGraphNode
 {
 public:
 	SLATE_BEGIN_ARGS(SDialogGraphNode) {}
@@ -53,30 +53,21 @@ public:
 	void Construct(const FArguments& InArgs, UEdGraphNode* InNode)
 	{
 		GraphNode = InNode;
-		SGraphNodeK2Base::Construct(SGraphNodeK2Base::FArguments());
+		SGraphNode::Construct();
+		UpdateGraphNode();
 	}
 
 	virtual void UpdateGraphNode() override
 	{
-		SGraphNodeK2Base::UpdateGraphNode();
+		SGraphNode::UpdateGraphNode();
 
-		// GetOrAddSlot(ENodeZone::Center)
-		// 	.HAlign(HAlign_Center)
-		// 	[
-		// 		SAssignNew(DialogLineTextBlock, STextBlock)
-		// 			.Text(FText::FromString("Super test text from start !"))
-		// 			.Justification(ETextJustify::Center)
-		// 			.ColorAndOpacity(FLinearColor::Yellow)
-		// 	];
-		//
-		// if (const UDialogEdGraphNode* DialogEdGraphNode = Cast<UDialogEdGraphNode>(GraphNode))
-		// {
-		// 	DialogLineTextBlock->SetText(DialogEdGraphNode->GetLineText());
-		// }
+		LeftNodeBox->AddSlot()
+			.HAlign(HAlign_Center)
+			.VAlign(VAlign_Center)
+			[
+				SNew(STextBlock).Text(Cast<UDialogEdGraphNode>(GraphNode)->GetLineText())
+			];
 	}
-
-private:
-	TSharedPtr<STextBlock> DialogLineTextBlock = nullptr; // TOOD create
 };
 
 struct FDialogNodeFactory : public FGraphPanelNodeFactory

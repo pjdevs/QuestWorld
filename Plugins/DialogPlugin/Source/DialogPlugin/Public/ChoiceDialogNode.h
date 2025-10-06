@@ -14,10 +14,13 @@ class DIALOGPLUGIN_API UChoiceDialogNode : public UDialogNode
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditDefaultsOnly, Category = Dialog, meta = (AllowPrivateAccess = true))
-	TArray<FText> DialogChoices;
-
 public:
 	const TArray<FText>& GetChoices() const { return DialogChoices; }
+	void SetChoices(const TArray<FText>& Choices) { DialogChoices = Choices; }
+
 	virtual bool IsAvailable(UWorld* World) const override;
+
+private:
+	UPROPERTY(EditDefaultsOnly, Category = Dialog, meta = (AllowPrivateAccess = true))
+	TArray<FText> DialogChoices;
 };

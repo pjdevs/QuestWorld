@@ -8,6 +8,7 @@
 #include "SingleDialogNode.h"
 #include "Graph/DialogEdGraph.h"
 #include "Graph/DialogEdGraphNode.h"
+#include "EdGraph/EdGraphNode.h"
 #include "Graph/FDialogGraphEditorApplicationMode.h"
 
 
@@ -93,16 +94,26 @@ void FDialogGraphEditorApplication::CreateEdGraphNodesFromNode(
 	
 	UDialogEdGraphNode* DialogEdGraphNode = NewObject<UDialogEdGraphNode>(DialogEdGraph);
 	DialogEdGraphNode->CreateNewGuid();
-	DialogEdGraphNode->SetPosition(FVector2f(Depth * 400.0f, MaxSiblingForDepth * 100.0f));
 	DialogEdGraphNode->AllocateDefaultPins();
+	DialogEdGraphNode->Conditions = DialogNode->GetConditions();
+	DialogEdGraphNode->Triggers = DialogNode->GetTriggers();
+
+	if (DialogNode->EditorNodePosition != FVector2f())
+	{
+		DialogEdGraphNode->SetPosition(DialogNode->EditorNodePosition);
+	}
+	else
+	{
+		DialogEdGraphNode->SetPosition(FVector2f(Depth * 400.0f, MaxSiblingForDepth * 100.0f));
+	}
 
 	if (const USingleDialogNode* SingleDialogNode = Cast<USingleDialogNode>(DialogNode))
 	{
-		DialogEdGraphNode->SetLineText(SingleDialogNode->GetLine());
+		DialogEdGraphNode->DialogLineText = SingleDialogNode->GetLine();
 	}
 	else if (const UChoiceDialogNode* ChoiceDialogNode = Cast<UChoiceDialogNode>(DialogNode))
 	{
-		DialogEdGraphNode->SetLineText(ChoiceDialogNode->GetChoices()[ChoiceIndex]);
+		DialogEdGraphNode->DialogLineText = ChoiceDialogNode->GetChoices()[ChoiceIndex];
 	}
 
 	DialogEdGraph->AddNode(DialogEdGraphNode);
@@ -132,4 +143,96 @@ void FDialogGraphEditorApplication::CreateEdGraphNodesFromNode(
 			i
 		);
 	}
+}
+
+UDialogGraphAsset* FDialogGraphEditorApplication::UpdateAssetFromEdGraph(
+	UDialogGraphAsset* DialogGraphAsset,
+	UDialogEdGraph* DialogEdGraph
+)
+{
+	// find root node
+
+	const TObjectPtr<UEdGraphNode>* RootNode = DialogEdGraph->Nodes.FindByPredicate([](const TObjectPtr<UEdGraphNode>& Node)
+	{
+		if (const UDialogEdGraphNode* DialogNode = Cast<UDialogEdGraphNode>(Node))
+		{
+			if (!DialogNode->GetDialogInputPin()->HasAnyConnections())
+			{
+				return true;
+			}
+		}
+
+		return false;
+	});
+
+	if (RootNode == nullptr)
+	{
+		return nullptr;
+	}
+
+	const UDialogEdGraphNode* RootDialogEdGraphNode = Cast<UDialogEdGraphNode>(*RootNode);
+	UDialogNode* RootDialogNode = CreateAssetNode(DialogGraphAsset, RootDialogEdGraphNode);
+
+	CreateAssetNodesFromEdNode(DialogGraphAsset, RootDialogNode, RootDialogEdGraphNode);
+
+	DialogGraphAsset->SetDialogRoot(RootDialogNode);
+}
+
+void FDialogGraphEditorApplication::CreateAssetNodesFromEdNode(
+	UDialogGraphAsset* DialogGraphAsset,
+	UDialogNode* DialogNode,
+	const UDialogEdGraphNode* DialogEdGraphNode
+)
+{
+	for (UEdGraphPin*& ChildLinkedPin : DialogEdGraphNode->GetDialogOutputPin()->LinkedTo)
+	{
+		const UDialogEdGraphNode* ChildDialogEdGraphNode = Cast<UDialogEdGraphNode>(ChildLinkedPin->GetOwningNode());
+		UDialogNode* ChildDialogNode = CreateAssetNode(DialogGraphAsset, ChildDialogEdGraphNode);
+
+		DialogNode->AddNextDialog(ChildDialogNode);
+		
+		CreateAssetNodesFromEdNode(DialogGraphAsset, ChildDialogNode, ChildDialogEdGraphNode);
+	}
+}
+
+UDialogNode* FDialogGraphEditorApplication::CreateAssetNode(
+	UDialogGraphAsset* DialogGraphAsset,
+	const UDialogEdGraphNode* DialogEdGraphNode
+)
+{
+	UDialogNode* DialogNode;
+	// TArray<UEdGraphPin*>& ChildLinkedPins = DialogEdGraphNode->GetDialogOutputPin()->LinkedTo;
+	//
+	// if (ChildLinkedPins.Num() > 1)
+	// {
+	// 	USingleDialogNode* SingleDialogNode = NewObject<USingleDialogNode>(DialogGraphAsset);
+	// 	SingleDialogNode->SetLine(DialogEdGraphNode->DialogLineText);
+	//
+	// 	DialogNode = SingleDialogNode;
+	// }
+	// else
+	// {
+	// 	TArray<FText> Choices;
+	//
+	// 	for ()
+	// 	
+	// 	UChoiceDialogNode* ChoiceDialogNode = NewObject<UChoiceDialogNode>(DialogGraphAsset);
+	// 	ChoiceDialogNode->SetChoices(Choices);
+	//
+	// 	DialogNode = ChoiceDialogNode;
+	// }
+	//
+	// DialogNode->EditorNodePosition = DialogEdGraphNode->GetPosition();
+	//
+	// for (auto&& Condition : DialogNode->GetConditions())
+	// {
+	// 	DialogNode->AddCondition(Condition);
+	// }
+	//
+	// for (auto&& Trigger : DialogNode->GetTriggers())
+	// {
+	// 	DialogNode->AddTrigger(Trigger);
+	// }
+
+	return DialogNode;
 }
