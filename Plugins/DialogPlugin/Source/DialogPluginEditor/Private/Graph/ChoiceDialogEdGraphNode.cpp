@@ -14,10 +14,24 @@ void UChoiceDialogEdGraphNode::AllocateDefaultPins()
 {
 	InputPin = CreateDialogPin(EGPD_Input,"Parent Dialog");
 
-	OutputPins.Empty();
+	ChoicePins.Empty();
 	
 	for (auto&& DialogChoice : DialogChoices)
 	{
-		OutputPins.Add(CreateDialogPin(EGPD_Output, FName(DialogChoice.ToString())));
+		ChoicePins.Add(CreateDialogPin(EGPD_Output, FName(DialogChoice.ToString())));
 	}
+}
+
+const UDialogEdGraphNode* UChoiceDialogEdGraphNode::GetNextNodeForChoice(int ChoiceIndex) const
+{
+	if (ChoicePins.IsValidIndex(ChoiceIndex))
+	{
+		if (ChoicePins[ChoiceIndex]->LinkedTo.Num() > 0)
+		{
+			return Cast<UDialogEdGraphNode>(ChoicePins[ChoiceIndex]->LinkedTo[0]->GetOwningNode());
+		}
+
+	}
+
+	return nullptr;
 }

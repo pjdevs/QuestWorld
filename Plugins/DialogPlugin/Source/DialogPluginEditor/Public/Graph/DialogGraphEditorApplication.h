@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "WorkflowOrientedApp/WorkflowCentricApplication.h"
 
+class UChoiceDialogEdGraphNode;
+class USingleDialogEdGraphNode;
 class UDialogEdGraphNode;
 class UDialogNode;
 class UDialogEdGraph;
@@ -36,6 +38,9 @@ public:
 	virtual void OnToolkitHostingStarted(const TSharedRef<IToolkit>& Toolkit) override { }
 	virtual void OnToolkitHostingFinished(const TSharedRef<IToolkit>& Toolkit) override { }
 
+	virtual void OnClose() override;
+	void OnGraphChanged(const FEdGraphEditAction& EditAction);
+
 private:
 	static UDialogEdGraph* CreateEdGraphFromAsset(UDialogGraphAsset* DialogGraphAsset);
 	static void CreateEdGraphNodesFromNode(
@@ -62,4 +67,6 @@ private:
 private:
 	TObjectPtr<UDialogGraphAsset> WorkingAsset = nullptr;
 	TObjectPtr<UDialogEdGraph> WorkingGraph = nullptr;
+
+	FDelegateHandle OnGraphChangedHandle;
 };

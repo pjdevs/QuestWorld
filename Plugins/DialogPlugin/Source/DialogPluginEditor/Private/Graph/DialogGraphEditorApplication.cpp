@@ -52,6 +52,10 @@ void FDialogGraphEditorApplication::InitEditor(
 	);
 
 	SetCurrentMode(GraphEditorModeName);
+
+	OnGraphChangedHandle = WorkingGraph->AddOnGraphChangedHandler(
+		FOnGraphChanged::FDelegate::CreateSP(this, &FDialogGraphEditorApplication::OnGraphChanged)
+	);
 }
 
 TObjectPtr<UDialogGraphAsset> FDialogGraphEditorApplication::GetWorkingAsset()
@@ -64,17 +68,21 @@ TObjectPtr<UDialogEdGraph> FDialogGraphEditorApplication::GetWorkingGraph()
 	return WorkingGraph;
 }
 
+void FDialogGraphEditorApplication::OnClose()
+{
+	UpdateAssetFromEdGraph(WorkingAsset, WorkingGraph);
+	WorkingGraph->RemoveOnGraphChangedHandler(OnGraphChangedHandle);
+	
+	FWorkflowCentricApplication::OnClose();
+}
+
+void FDialogGraphEditorApplication::OnGraphChanged(const FEdGraphEditAction& EditAction)
+{
+	UpdateAssetFromEdGraph(WorkingAsset, WorkingGraph);
+}
+
 UDialogEdGraph* FDialogGraphEditorApplication::CreateEdGraphFromAsset(UDialogGraphAsset* DialogGraphAsset)
 {
-	// UDialogEdGraph* DialogGraph = Cast<UDialogEdGraph>(
-	// 	FBlueprintEditorUtils::CreateNewGraph(
-	// 		DialogGraphAsset,
-	// 		DialogGraphAsset->GetFName(),
-	// 		UDialogEdGraph::StaticClass(),
-	// 		UDialogEdGraphSchema::StaticClass()
-	// 	)
-	// );
-
 	UDialogEdGraph* DialogGraph = NewObject<UDialogEdGraph>(DialogGraphAsset);
 
 	TMap<int, int> MaxSiblingByDepth;
@@ -143,11 +151,11 @@ void FDialogGraphEditorApplication::CreateEdGraphNodesFromNode(
 
 	if (const USingleDialogEdGraphNode* SingleDialogParentNode = Cast<USingleDialogEdGraphNode>(ParentDialogEdGraphNode))
 	{
-		SingleDialogParentNode->GetDialogOutputPin()->MakeLinkTo(DialogEdGraphNode->GetDialogInputPin());
+		SingleDialogParentNode->GetNextDialogPin()->MakeLinkTo(DialogEdGraphNode->GetDialogInputPin());
 	}
 	else if (const UChoiceDialogEdGraphNode* ChoiceDialogParentNode = Cast<UChoiceDialogEdGraphNode>(ParentDialogEdGraphNode))
 	{
-		UEdGraphPin* ParentPin = ChoiceDialogParentNode->GetDialogOutputPins()[ChoiceIndex]; 
+		UEdGraphPin* ParentPin = ChoiceDialogParentNode->GetNextDialogsPins()[ChoiceIndex]; 
 		ParentPin->MakeLinkTo(DialogEdGraphNode->GetDialogInputPin());
 	}
 
@@ -213,15 +221,33 @@ void FDialogGraphEditorApplication::CreateAssetNodesFromEdNode(
 	const UDialogEdGraphNode* DialogEdGraphNode
 )
 {
-	// for (UEdGraphPin*& ChildLinkedPin : DialogEdGraphNode->GetDialogOutputPin()->LinkedTo)
-	// {
-	// 	const UDialogEdGraphNode* ChildDialogEdGraphNode = Cast<UDialogEdGraphNode>(ChildLinkedPin->GetOwningNode());
-	// 	UDialogNode* ChildDialogNode = CreateAssetNode(DialogGraphAsset, ChildDialogEdGraphNode);
-	//
-	// 	DialogNode->AddNextDialog(ChildDialogNode);
-	// 	
-	// 	CreateAssetNodesFromEdNode(DialogGraphAsset, ChildDialogNode, ChildDialogEdGraphNode);
-	// }
+	if (USingleDialogNode* SingleDialogNode = Cast<USingleDialogNode>(DialogNode))
+	{
+		const USingleDialogEdGraphNode* SingleDialogEdGraphNode = Cast<USingleDialogEdGraphNode>(DialogEdGraphNode);
+
+		if (const UDialogEdGraphNode* LinkedDialogEdNode = SingleDialogEdGraphNode->GetNextNode())
+		{
+			UDialogNode* NextDialogNode = CreateAssetNode(DialogGraphAsset, LinkedDialogEdNode);
+			SingleDialogNode->SetNextDialog(NextDialogNode);
+
+			CreateAssetNodesFromEdNode(DialogGraphAsset, NextDialogNode, LinkedDialogEdNode);
+		}
+	}
+	else if (UChoiceDialogNode* ChoiceDialogNode = Cast<UChoiceDialogNode>(DialogNode))
+	{
+		const UChoiceDialogEdGraphNode* ChoiceDialogEdGraphNode = Cast<UChoiceDialogEdGraphNode>(DialogEdGraphNode);
+
+		for (int i = 0; i < ChoiceDialogEdGraphNode->GetNextDialogsPins().Num(); i++)
+		{
+			if (const UDialogEdGraphNode* LinkedDialogEdNode = ChoiceDialogEdGraphNode->GetNextNodeForChoice(i))
+			{
+				UDialogNode* NextDialogNode = CreateAssetNode(DialogGraphAsset, LinkedDialogEdNode);
+				ChoiceDialogNode->GetDialogChoices()[i]->SetNextDialog(NextDialogNode);
+			
+				CreateAssetNodesFromEdNode(DialogGraphAsset, NextDialogNode, LinkedDialogEdNode);
+			}
+		}
+	}
 }
 
 UDialogNode* FDialogGraphEditorApplication::CreateAssetNode(
@@ -229,39 +255,46 @@ UDialogNode* FDialogGraphEditorApplication::CreateAssetNode(
 	const UDialogEdGraphNode* DialogEdGraphNode
 )
 {
-	UDialogNode* DialogNode = nullptr;
-	// TArray<UEdGraphPin*>& ChildLinkedPins = DialogEdGraphNode->GetDialogOutputPin()->LinkedTo;
-	//
-	// if (ChildLinkedPins.Num() > 1)
-	// {
-	// 	USingleDialogNode* SingleDialogNode = NewObject<USingleDialogNode>(DialogGraphAsset);
-	// 	SingleDialogNode->SetLine(DialogEdGraphNode->DialogLineText);
-	//
-	// 	DialogNode = SingleDialogNode;
-	// }
-	// else
-	// {
-	// 	TArray<FText> Choices;
-	//
-	// 	for ()
-	// 	
-	// 	UChoiceDialogNode* ChoiceDialogNode = NewObject<UChoiceDialogNode>(DialogGraphAsset);
-	// 	ChoiceDialogNode->SetChoices(Choices);
-	//
-	// 	DialogNode = ChoiceDialogNode;
-	// }
-	//
-	// DialogNode->EditorNodePosition = DialogEdGraphNode->GetPosition();
-	//
-	// for (auto&& Condition : DialogNode->GetConditions())
-	// {
-	// 	DialogNode->AddCondition(Condition);
-	// }
-	//
-	// for (auto&& Trigger : DialogNode->GetTriggers())
-	// {
-	// 	DialogNode->AddTrigger(Trigger);
-	// }
+	UDialogNode* DialogNode;
+
+	if (const USingleDialogEdGraphNode* SingleDialogEdGraphNode = Cast<USingleDialogEdGraphNode>(DialogEdGraphNode))
+	{
+		USingleDialogNode* SingleDialogNode = NewObject<USingleDialogNode>(DialogGraphAsset);
+		SingleDialogNode->SetLine(SingleDialogEdGraphNode->DialogLineText);
+		SingleDialogNode->SetNextDialog(nullptr);
+
+		DialogNode = SingleDialogNode;
+	}
+	else if (const UChoiceDialogEdGraphNode* ChoiceDialogEdGraphNode = Cast<UChoiceDialogEdGraphNode>(DialogEdGraphNode))
+	{
+		UChoiceDialogNode* ChoiceDialogNode = NewObject<UChoiceDialogNode>(DialogGraphAsset);
+
+		for (int i = 0; i < ChoiceDialogEdGraphNode->DialogChoices.Num(); i++)
+		{
+			UDialogChoice* Choice = NewObject<UDialogChoice>(ChoiceDialogNode);
+			Choice->SetChoiceText(ChoiceDialogEdGraphNode->DialogChoices[i]);
+			Choice->SetNextDialog(nullptr);
+			ChoiceDialogNode->AddDialogChoice(Choice);
+		}
+
+		DialogNode = ChoiceDialogNode;
+	}
+	else
+	{
+		return nullptr;
+	}
+	
+	DialogNode->EditorNodePosition = DialogEdGraphNode->GetPosition();
+	
+	for (auto&& Condition : DialogNode->GetConditions())
+	{
+		DialogNode->AddCondition(Condition);
+	}
+	
+	for (auto&& Trigger : DialogNode->GetTriggers())
+	{
+		DialogNode->AddTrigger(Trigger);
+	}
 
 	return DialogNode;
 }

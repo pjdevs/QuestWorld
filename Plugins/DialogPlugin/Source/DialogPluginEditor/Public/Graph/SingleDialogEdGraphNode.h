@@ -24,7 +24,9 @@ public:
 	virtual void AllocateDefaultPins() override;
 
 	virtual UEdGraphPin* GetDialogInputPin() const override { return InputPin; }
-	UEdGraphPin* GetDialogOutputPin() const { return OutputPin; }
+	UEdGraphPin* GetNextDialogPin() const { return OutputPin; }
+
+	const UDialogEdGraphNode* GetNextNode() const;
 
 public:
 	UPROPERTY(EditAnywhere, Category = "Dialog")
