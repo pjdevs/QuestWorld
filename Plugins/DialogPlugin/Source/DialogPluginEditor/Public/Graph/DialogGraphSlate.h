@@ -4,10 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "EdGraphUtilities.h"
+#include "PinCategories.h"
 #include "KismetPins/SGraphPinColor.h"
-#include "KismetNodes/SGraphNodeK2Base.h"
 #include "EdGraph/EdGraphPin.h"
-#include "Graph/DialogEdGraphNode.h"
 
 /**
  * 
@@ -26,7 +25,7 @@ public:
 protected:
 	virtual FSlateColor GetPinColor() const override
 	{
-		return FSlateColor(FLinearColor::Red);
+		return GraphPinObj->GetOwningNode()->GetNodeTitleColor();
 	}
 };
 
@@ -44,41 +43,41 @@ struct FDialogGraphPanelPinFactory : public FGraphPanelPinFactory
 	}
 };
 
-class SDialogGraphNode : public SGraphNode
-{
-public:
-	SLATE_BEGIN_ARGS(SDialogGraphNode) {}
-	SLATE_END_ARGS()
-
-	void Construct(const FArguments& InArgs, UEdGraphNode* InNode)
-	{
-		GraphNode = InNode;
-		SGraphNode::Construct();
-		UpdateGraphNode();
-	}
-
-	virtual void UpdateGraphNode() override
-	{
-		SGraphNode::UpdateGraphNode();
-
-		LeftNodeBox->AddSlot()
-			.HAlign(HAlign_Center)
-			.VAlign(VAlign_Center)
-			[
-				SNew(STextBlock).Text(Cast<UDialogEdGraphNode>(GraphNode)->DialogLineText)
-			];
-	}
-};
-
-struct FDialogNodeFactory : public FGraphPanelNodeFactory
-{
-	virtual TSharedPtr<SGraphNode> CreateNode(UEdGraphNode* Node) const override
-	{
-		if (UDialogEdGraphNode* DialogNode = Cast<UDialogEdGraphNode>(Node))
-		{
-			return SNew(SDialogGraphNode, DialogNode);
-		}
-
-		return nullptr;
-	}
-};
+// class SDialogGraphNode : public SGraphNode
+// {
+// public:
+// 	SLATE_BEGIN_ARGS(SDialogGraphNode) {}
+// 	SLATE_END_ARGS()
+//
+// 	void Construct(const FArguments& InArgs, UEdGraphNode* InNode)
+// 	{
+// 		GraphNode = InNode;
+// 		SGraphNode::Construct();
+// 		UpdateGraphNode();
+// 	}
+//
+// 	virtual void UpdateGraphNode() override
+// 	{
+// 		SGraphNode::UpdateGraphNode();
+//
+// 		LeftNodeBox->AddSlot()
+// 			.HAlign(HAlign_Center)
+// 			.VAlign(VAlign_Center)
+// 			[
+// 				SNew(STextBlock) //.Text(Cast<UDialogEdGraphNode>(GraphNode)->DialogLineText)
+// 			];
+// 	}
+// };
+//
+// struct FDialogNodeFactory : public FGraphPanelNodeFactory
+// {
+// 	virtual TSharedPtr<SGraphNode> CreateNode(UEdGraphNode* Node) const override
+// 	{
+// 		if (UDialogEdGraphNode* DialogNode = Cast<UDialogEdGraphNode>(Node))
+// 		{
+// 			return SNew(SDialogGraphNode, DialogNode);
+// 		}
+//
+// 		return nullptr;
+// 	}
+// };

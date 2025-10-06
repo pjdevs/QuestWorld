@@ -18,11 +18,9 @@ class DIALOGPLUGIN_API UDialogNode : public UObject
 	GENERATED_BODY()
 
 public:
-	const TArray<TObjectPtr<UDialogNode>>& GetNextDialogs() const { return NextDialogs; }
 	const TArray<TObjectPtr<UDialogCondition>>& GetConditions() const { return Conditions; }
 	const TArray<TObjectPtr<UDialogTrigger>>& GetTriggers() const { return Triggers; }
-
-	void AddNextDialog(UDialogNode* Dialog) { NextDialogs.Add(Dialog); }
+	
 	void AddCondition(UDialogCondition* Condition) { Conditions.Add(Condition); }
 	void AddTrigger(UDialogTrigger* Trigger) { Triggers.Add(Trigger); }
 	
@@ -36,9 +34,6 @@ public:
 #endif
 
 private:
-	UPROPERTY(EditDefaultsOnly, Instanced, Category = Dialog, meta = (AllowPrivateAccess = true))
-	TArray<TObjectPtr<UDialogNode>> NextDialogs;
-
 	UPROPERTY(EditDefaultsOnly, Instanced, Category = Dialog, meta = (AllowPrivateAccess = true))
 	TArray<TObjectPtr<UDialogCondition>> Conditions;
 	

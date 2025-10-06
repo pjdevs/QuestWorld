@@ -20,12 +20,28 @@ public:
 };
 
 USTRUCT()
-struct FAddDialogNodeAction : public FEdGraphSchemaAction
+struct FAddSingleDialogNodeAction : public FEdGraphSchemaAction
 {
 	GENERATED_BODY()
 
 public:
-	FAddDialogNodeAction();
+	FAddSingleDialogNodeAction();
+
+	virtual UEdGraphNode* PerformAction(
+		UEdGraph* ParentGraph,
+		UEdGraphPin* FromPin,
+		const FVector2f& Location,
+		bool bSelectNewNode = true
+	) override;
+};
+
+USTRUCT()
+struct FAddChoiceDialogNodeAction : public FEdGraphSchemaAction
+{
+	GENERATED_BODY()
+
+public:
+	FAddChoiceDialogNodeAction();
 
 	virtual UEdGraphNode* PerformAction(
 		UEdGraph* ParentGraph,

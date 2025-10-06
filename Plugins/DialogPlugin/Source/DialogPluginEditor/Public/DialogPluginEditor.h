@@ -17,5 +17,5 @@ public:
 
 private:
 	TSharedPtr<FDialogGraphPanelPinFactory> DialogPinFactory;
-	TSharedPtr<FDialogNodeFactory> DialogNodeFactory;
+	// TSharedPtr<FDialogNodeFactory> DialogNodeFactory;
 };

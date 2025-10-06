@@ -4,6 +4,7 @@
 #include "DialogComponent.h"
 
 #include "ChoiceDialogNode.h"
+#include "DialogChoice.h"
 #include "DialogEvents.h"
 #include "DialogGraphAsset.h"
 #include "DialogNode.h"
@@ -66,28 +67,21 @@ TArray<FText> SetAvailableChoiceIndexes(
 	TArray<int>& AvailableIndexes
 )
 {
-	const TArray<FText>& AllChoices = ChoiceDialogNode->GetChoices();
+	const TArray<TObjectPtr<UDialogChoice>>& AllChoices = ChoiceDialogNode->GetDialogChoices();
 	TArray<FText> AvailableChoices;
-
-	if (AllChoices.Num() != ChoiceDialogNode->GetNextDialogs().Num())
-	{
-		UE_LOG(LogTemp, Error, TEXT("Choice node should have same number of choices and child nodes"));
-		return AvailableChoices;
-	}
 	
 	AvailableIndexes.Empty();
 
-	auto& Children = ChoiceDialogNode->GetNextDialogs();
-
 	for (int i = 0; i < AllChoices.Num(); i++)
 	{
-		const UDialogNode* Child = Children[i];
-		const FText& Choice = AllChoices[i];
+		const UDialogChoice* Choice = AllChoices[i];
 			
-		if (!Child->IsAvailable(World))
+		if (Choice->GetNextDialog() && !Choice->GetNextDialog()->IsAvailable(World))
+		{
 			continue;
+		}
 		
-		AvailableChoices.Add(Choice);
+		AvailableChoices.Add(Choice->GetChoiceText());
 		AvailableIndexes.Add(i);
 	}
 
@@ -104,7 +98,7 @@ void UDialogComponent::ExecuteCurrentDialogNode()
 		return;
 	}
 	
-	if (!CurrentNode || !CurrentNode->IsAvailable(GetWorld()))
+	if (!CurrentNode || !CurrentNode->IsAvailable(World))
 	{
 		EndDialog();
 		return;
@@ -137,13 +131,20 @@ void UDialogComponent::ExecuteCurrentDialogNode()
 
 void UDialogComponent::TryGoToChildNode(int NodeIndex)
 {
-	if (CurrentNode)
+	if (const USingleDialogNode* SingleDialogNode = Cast<USingleDialogNode>(CurrentNode))
 	{
-		const auto& Choices = CurrentNode->GetNextDialogs();
+		CurrentNode = SingleDialogNode->GetNextDialog();
+		ExecuteCurrentDialogNode();
+		return;
+	}
+
+	if (const UChoiceDialogNode* ChoiceDialogNode = Cast<UChoiceDialogNode>(CurrentNode))
+	{
+		auto& Choices = ChoiceDialogNode->GetDialogChoices();
 
 		if (Choices.Num() > 0 && NodeIndex >= 0 && NodeIndex < Choices.Num())
 		{
-			CurrentNode = Choices[NodeIndex];
+			CurrentNode = Choices[NodeIndex]->GetNextDialog();
 			ExecuteCurrentDialogNode();
 			return;
 		}

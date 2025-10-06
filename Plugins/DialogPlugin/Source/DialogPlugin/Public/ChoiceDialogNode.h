@@ -6,6 +6,7 @@
 #include "DialogNode.h"
 #include "ChoiceDialogNode.generated.h"
 
+class UDialogChoice;
 /**
  * 
  */
@@ -15,12 +16,12 @@ class DIALOGPLUGIN_API UChoiceDialogNode : public UDialogNode
 	GENERATED_BODY()
 
 public:
-	const TArray<FText>& GetChoices() const { return DialogChoices; }
-	void SetChoices(const TArray<FText>& Choices) { DialogChoices = Choices; }
+	const TArray<TObjectPtr<UDialogChoice>>& GetDialogChoices() const { return DialogChoices; }
+	void AddDialogChoice(UDialogChoice* DialogChoice) { DialogChoices.Add(DialogChoice); }
 
 	virtual bool IsAvailable(UWorld* World) const override;
 
 private:
-	UPROPERTY(EditDefaultsOnly, Category = Dialog, meta = (AllowPrivateAccess = true))
-	TArray<FText> DialogChoices;
+	UPROPERTY(EditDefaultsOnly, Instanced, Category = Dialog, meta = (AllowPrivateAccess = true))
+	TArray<TObjectPtr<UDialogChoice>> DialogChoices;
 };

@@ -40,7 +40,7 @@ private:
 	static UDialogEdGraph* CreateEdGraphFromAsset(UDialogGraphAsset* DialogGraphAsset);
 	static void CreateEdGraphNodesFromNode(
 		UDialogEdGraph* DialogEdGraph,
-		UDialogEdGraphNode* DialogParentGraphNode,
+		UDialogEdGraphNode* ParentDialogEdGraphNode,
 		UDialogNode* DialogNode,
 		TMap<int, int>& MaxSiblingByDepth,
 		int Depth = 0,

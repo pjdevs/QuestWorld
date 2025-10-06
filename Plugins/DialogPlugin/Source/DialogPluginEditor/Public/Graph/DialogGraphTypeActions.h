@@ -23,8 +23,5 @@ public:
 	virtual uint32 GetCategories() override;
 
 private:
-	static UDialogEdGraph* CreateEdGraphFromAsset(UDialogGraphAsset* DialogGraphAsset);
-
-private:
 	EAssetTypeCategories::Type CategoryType;
 };
