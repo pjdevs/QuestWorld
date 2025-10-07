@@ -29,7 +29,14 @@ public:
 	TObjectPtr<UDialogGraphAsset> GetWorkingAsset();
 	TObjectPtr<UDialogEdGraph> GetWorkingGraph();
 
-	// FAssetEditorToolkit interface
+	void SetGraphEditor(TSharedPtr<SGraphEditor> InGraphEditor);
+	void SetSelectedNodeDetailsView(TSharedPtr<IDetailsView> InDetailsView);
+
+	void OnGraphChanged(const FEdGraphEditAction& EditAction);
+	void OnGraphSelectionChanged(const FGraphPanelSelectionSet& Selection);
+	void OnNodeDetailsViewPropertiesChanged(const FPropertyChangedEvent& Event);
+	
+public: // FAssetEditorToolkit interface
 	virtual FName GetToolkitFName() const override { return FName("DialogGraphEditorApplication"); }
 	virtual FText GetBaseToolkitName() const override { return FText::FromString("DialogGraphEditorApplication"); }
 	virtual FString GetWorldCentricTabPrefix() const override { return FString("DialogGraphEditorApplication"); }
@@ -39,9 +46,8 @@ public:
 	virtual void OnToolkitHostingFinished(const TSharedRef<IToolkit>& Toolkit) override { }
 
 	virtual void OnClose() override;
-	void OnGraphChanged(const FEdGraphEditAction& EditAction);
 
-private:
+private: // Asset/EdGraph conversion helpers
 	static UDialogEdGraph* CreateEdGraphFromAsset(UDialogGraphAsset* DialogGraphAsset);
 	static void CreateEdGraphNodesFromNode(
 		UDialogEdGraph* DialogEdGraph,
@@ -67,6 +73,10 @@ private:
 private:
 	TObjectPtr<UDialogGraphAsset> WorkingAsset = nullptr;
 	TObjectPtr<UDialogEdGraph> WorkingGraph = nullptr;
+
+	// TODO copied arch from tuto but the mode should handle that stuff not entire app
+	TSharedPtr<SGraphEditor> WorkingGraphEditor = nullptr;
+	TSharedPtr<IDetailsView> SelectedNodeDetailsView = nullptr;
 
 	FDelegateHandle OnGraphChangedHandle;
 };

@@ -32,16 +32,27 @@ TSharedRef<SWidget> FDialogGraphDetailsTabFactory::CreateTabBody(const FWorkflow
 		DetailsViewArgs.bShowScrollBar = false;
 	}
 
-	const TSharedPtr<IDetailsView> DetailsView = PropertyEditorModule.CreateDetailView(DetailsViewArgs);
-	DetailsView->SetObject(Application->GetWorkingAsset());
+	const TSharedPtr<IDetailsView> GraphDetailsView = PropertyEditorModule.CreateDetailView(DetailsViewArgs);
+	GraphDetailsView->SetObject(Application->GetWorkingAsset());
 
+	const TSharedPtr<IDetailsView> SelectedNodeDetailsView = PropertyEditorModule.CreateDetailView(DetailsViewArgs);
+	SelectedNodeDetailsView->SetObject(nullptr);
+
+	Application->SetSelectedNodeDetailsView(SelectedNodeDetailsView);
+	
 	return SNew(SVerticalBox)
 		 + SVerticalBox::Slot()
-			.FillHeight(1.0f)
+			.FillHeight(0.5f)
 			.HAlign(HAlign_Fill)
 			[
-				DetailsView.ToSharedRef()
-			];
+				GraphDetailsView.ToSharedRef()
+			]
+		+ SVerticalBox::Slot()
+		   .FillHeight(0.5f)
+		   .HAlign(HAlign_Fill)
+		   [
+			   SelectedNodeDetailsView.ToSharedRef()
+		   ];
 }
 
 FText FDialogGraphDetailsTabFactory::GetTabToolTipText(const FWorkflowTabSpawnInfo& Info) const

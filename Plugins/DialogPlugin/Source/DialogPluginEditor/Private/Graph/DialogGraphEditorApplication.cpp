@@ -68,6 +68,20 @@ TObjectPtr<UDialogEdGraph> FDialogGraphEditorApplication::GetWorkingGraph()
 	return WorkingGraph;
 }
 
+void FDialogGraphEditorApplication::SetGraphEditor(TSharedPtr<SGraphEditor> InGraphEditor)
+{
+	WorkingGraphEditor = InGraphEditor;
+}
+
+void FDialogGraphEditorApplication::SetSelectedNodeDetailsView(TSharedPtr<IDetailsView> InDetailsView)
+{
+	SelectedNodeDetailsView = InDetailsView;
+	SelectedNodeDetailsView->OnFinishedChangingProperties().AddRaw(
+		this,
+		&FDialogGraphEditorApplication::OnNodeDetailsViewPropertiesChanged
+	);
+}
+
 void FDialogGraphEditorApplication::OnClose()
 {
 	UpdateAssetFromEdGraph(WorkingAsset, WorkingGraph);
@@ -79,6 +93,28 @@ void FDialogGraphEditorApplication::OnClose()
 void FDialogGraphEditorApplication::OnGraphChanged(const FEdGraphEditAction& EditAction)
 {
 	UpdateAssetFromEdGraph(WorkingAsset, WorkingGraph);
+}
+
+void FDialogGraphEditorApplication::OnGraphSelectionChanged(const FGraphPanelSelectionSet& Selection)
+{
+	for (UObject* SelectedObject : Selection)
+	{
+		if (UDialogEdGraphNode* Node = Cast<UDialogEdGraphNode>(SelectedObject))
+		{
+			SelectedNodeDetailsView->SetObject(Node);
+			return;
+		}
+	}
+
+	SelectedNodeDetailsView->SetObject(nullptr);
+}
+
+void FDialogGraphEditorApplication::OnNodeDetailsViewPropertiesChanged(const FPropertyChangedEvent& Event)
+{
+	if (WorkingGraphEditor != nullptr)
+	{
+		WorkingGraphEditor->NotifyGraphChanged();
+	}
 }
 
 UDialogEdGraph* FDialogGraphEditorApplication::CreateEdGraphFromAsset(UDialogGraphAsset* DialogGraphAsset)
