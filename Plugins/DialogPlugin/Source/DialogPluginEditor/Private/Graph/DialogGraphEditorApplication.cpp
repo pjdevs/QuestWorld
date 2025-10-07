@@ -99,11 +99,8 @@ void FDialogGraphEditorApplication::OnGraphSelectionChanged(const FGraphPanelSel
 {
 	for (UObject* SelectedObject : Selection)
 	{
-		if (UDialogEdGraphNode* Node = Cast<UDialogEdGraphNode>(SelectedObject))
-		{
-			SelectedNodeDetailsView->SetObject(Node);
-			return;
-		}
+		SelectedNodeDetailsView->SetObject(SelectedObject);
+		return;
 	}
 
 	SelectedNodeDetailsView->SetObject(nullptr);
@@ -111,10 +108,21 @@ void FDialogGraphEditorApplication::OnGraphSelectionChanged(const FGraphPanelSel
 
 void FDialogGraphEditorApplication::OnNodeDetailsViewPropertiesChanged(const FPropertyChangedEvent& Event)
 {
-	if (WorkingGraphEditor != nullptr)
+	if (WorkingGraphEditor == nullptr)
 	{
-		WorkingGraphEditor->NotifyGraphChanged();
+		return;
 	}
+
+	for (UObject* SelectedObject : WorkingGraphEditor->GetSelectedNodes())
+	{
+		// TODO For now only choice node require pin update but make this better and more generic 
+		if (UChoiceDialogEdGraphNode* ChoiceNode = Cast<UChoiceDialogEdGraphNode>(SelectedObject))
+		{
+			ChoiceNode->RebuildOutputPinsForChoices();
+		}
+	}
+
+	WorkingGraphEditor->NotifyGraphChanged();
 }
 
 UDialogEdGraph* FDialogGraphEditorApplication::CreateEdGraphFromAsset(UDialogGraphAsset* DialogGraphAsset)

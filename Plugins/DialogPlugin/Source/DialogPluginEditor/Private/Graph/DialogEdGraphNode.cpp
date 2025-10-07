@@ -18,7 +18,7 @@ void UDialogEdGraphNode::GetNodeContextMenuActions(UToolMenu* Menu, UGraphNodeCo
 {
 	FToolMenuSection& Section = Menu->AddSection(
 		FName("DialogActionsSection"),
-		FText::FromString("Single Dialog Actions")
+		FText::FromString("Dialog Actions")
 	);
 
 	Section.AddMenuEntry(

@@ -19,7 +19,7 @@ class DIALOGPLUGINEDITOR_API USingleDialogEdGraphNode : public UDialogEdGraphNod
 public:
 	USingleDialogEdGraphNode();
 		
-	virtual FText GetNodeTitle(ENodeTitleType::Type TitleType) const override { return DialogLineText; }
+	virtual FText GetNodeTitle(ENodeTitleType::Type TitleType) const override;
 	virtual FLinearColor GetNodeTitleColor() const override { return FLinearColor::Red; }
 	virtual void AllocateDefaultPins() override;
 

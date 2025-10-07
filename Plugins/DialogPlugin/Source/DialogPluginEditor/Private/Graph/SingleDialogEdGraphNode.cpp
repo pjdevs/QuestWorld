@@ -10,6 +10,16 @@ USingleDialogEdGraphNode::USingleDialogEdGraphNode()
 
 }
 
+FText USingleDialogEdGraphNode::GetNodeTitle(ENodeTitleType::Type TitleType) const
+{
+	if (const FString& DialogLineString = DialogLineText.ToString(); DialogLineString.Len() > 20)
+	{
+		return FText::FromString(DialogLineString.Mid(0, 20).Append("..."));
+	}
+
+	return DialogLineText;
+}
+
 void USingleDialogEdGraphNode::AllocateDefaultPins()
 {
 	InputPin = CreateDialogPin(EGPD_Input,"Parent Dialog");
