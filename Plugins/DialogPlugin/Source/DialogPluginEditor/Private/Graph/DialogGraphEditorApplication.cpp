@@ -27,12 +27,13 @@ void FDialogGraphEditorApplication::InitEditor(
 )
 {
 	WorkingAsset = Cast<UDialogGraphAsset>(InObject);
-	WorkingGraph = CreateEdGraphFromAsset(WorkingAsset);
 
 	if (!WorkingAsset)
 	{
 		return;
 	}
+
+	WorkingGraph = CreateEdGraphFromAsset(WorkingAsset);
 	
 	const TArray ObjectsToEdit = { InObject };
 
@@ -330,12 +331,12 @@ UDialogNode* FDialogGraphEditorApplication::CreateAssetNode(
 	
 	DialogNode->EditorNodePosition = DialogEdGraphNode->GetPosition();
 	
-	for (auto&& Condition : DialogNode->GetConditions())
+	for (auto&& Condition : DialogEdGraphNode->Conditions)
 	{
 		DialogNode->AddCondition(Condition);
 	}
 	
-	for (auto&& Trigger : DialogNode->GetTriggers())
+	for (auto&& Trigger : DialogEdGraphNode->Triggers)
 	{
 		DialogNode->AddTrigger(Trigger);
 	}
