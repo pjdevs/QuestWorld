@@ -3,7 +3,8 @@
 
 #include "Dialog/ActionDialogTrigger.h"
 
-#include "QuestSubsystem.h"
+#include "QuestComponent.h"
+#include "QuestStatics.h"
 #include "Assets/ActionQuestEvent.h"
 
 void UActionDialogTrigger::Execute(UWorld* World, AController* DialogController)
@@ -13,7 +14,7 @@ void UActionDialogTrigger::Execute(UWorld* World, AController* DialogController)
 		return;
 	}
 	
-	if (UQuestSubsystem* QuestSubsystem = World->GetGameInstance()->GetSubsystem<UQuestSubsystem>())
+	if (UQuestComponent* QuestSubsystem = UQuestStatics::GetQuestComponent(World))
 	{
 		UActionQuestEvent* ActionQuestEvent = NewObject<UActionQuestEvent>();
 		ActionQuestEvent->ActionInstigator = DialogController;

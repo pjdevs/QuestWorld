@@ -14,16 +14,16 @@ struct QUESTSYSTEM_API FQuestObjectiveDescription
 	GENERATED_BODY()
 
 	UPROPERTY(BlueprintReadOnly, Category = Quest)
-	FText Description;
+	FText Description = FText();
 
 	UPROPERTY(BlueprintReadOnly, Category = Quest)
-	int CurrentValue;
+	int CurrentValue = 0;
 
 	UPROPERTY(BlueprintReadOnly, Category = Quest)
-	int TargetValue;
+	int TargetValue = 1;
 
 	UPROPERTY(BlueprintReadOnly, Category = Quest)
-	bool bIsCompleted;
+	bool bIsCompleted = false;
 };
 
 /**
@@ -35,17 +35,17 @@ struct QUESTSYSTEM_API FQuestDescription
 	GENERATED_BODY()
 
 	UPROPERTY(BlueprintReadOnly, Category = Quest)
-	FPrimaryAssetId QuestId;
+	FPrimaryAssetId QuestId = FPrimaryAssetId();
 
 	UPROPERTY(BlueprintReadOnly, Category = Quest)
-	FText Title;
+	FText Title = FText();
 
 	UPROPERTY(BlueprintReadOnly, Category = Quest)
-	FText Description;
+	FText Description = FText();
 
 	UPROPERTY(BlueprintReadOnly, Category = Quest)
-	TArray<FQuestObjectiveDescription> Objectives;
+	TArray<FQuestObjectiveDescription> Objectives = TArray<FQuestObjectiveDescription>();
 
 	UPROPERTY(BlueprintReadOnly, Category = Quest)
-	bool bIsCompleted;
+	bool bIsCompleted = false;
 };

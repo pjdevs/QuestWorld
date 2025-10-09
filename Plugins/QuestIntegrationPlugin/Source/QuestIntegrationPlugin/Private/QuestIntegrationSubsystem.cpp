@@ -5,20 +5,24 @@
 
 #include "GameNotification.h"
 #include "NotificationSubsystem.h"
+#include "QuestComponent.h"
 #include "QuestIntegrationSettings.h"
-#include "QuestSubsystem.h"
+#include "QuestStatics.h"
 
-void UQuestIntegrationSubsystem::Initialize(FSubsystemCollectionBase& Collection)
+
+void UQuestIntegrationSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 {
+	Super::OnWorldBeginPlay(InWorld);
+
 	if (!QuestIntegrationSettings.IsNull())
 	{
 		CurrentSettings = QuestIntegrationSettings.LoadSynchronous();
 	}
 	
-	UQuestSubsystem* QuestSubsystem = GetGameInstance()->GetSubsystem<UQuestSubsystem>();
+	UQuestComponent* QuestSubsystem = UQuestStatics::GetQuestComponent(GetWorld());
 
-	QuestSubsystem->QuestStartedDelegate.AddDynamic(this, &UQuestIntegrationSubsystem::OnQuestStarted);
-	QuestSubsystem->QuestCompletedDelegate.AddDynamic(this, &UQuestIntegrationSubsystem::OnQuestCompleted);
+	QuestSubsystem->OnQuestStarted.AddDynamic(this, &UQuestIntegrationSubsystem::OnQuestStarted);
+	QuestSubsystem->OnQuestCompleted.AddDynamic(this, &UQuestIntegrationSubsystem::OnQuestCompleted);
 }
 
 void UQuestIntegrationSubsystem::OnQuestStarted(const FQuestDescription& Quest)
@@ -26,7 +30,7 @@ void UQuestIntegrationSubsystem::OnQuestStarted(const FQuestDescription& Quest)
 	if (CurrentSettings == nullptr)
 		return;
 	
-	UNotificationSubsystem* NotificationSubsystem = GetGameInstance()->GetSubsystem<UNotificationSubsystem>();
+	UNotificationSubsystem* NotificationSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<UNotificationSubsystem>();
 
 	FText Message = FText::Format(CurrentSettings->QuestStartedFormat, Quest.Title);
 	
@@ -48,7 +52,7 @@ void UQuestIntegrationSubsystem::OnQuestCompleted(const FQuestDescription& Quest
 	if (CurrentSettings == nullptr)
 		return;
 
-	UNotificationSubsystem* NotificationSubsystem = GetGameInstance()->GetSubsystem<UNotificationSubsystem>();
+	UNotificationSubsystem* NotificationSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<UNotificationSubsystem>();
 
     NotificationSubsystem->QueueNotification(FGameNotification
     {

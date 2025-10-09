@@ -3,11 +3,13 @@
 
 #include "Dialog/StartQuestDialogTrigger.h"
 
-#include "QuestSubsystem.h"
+#include "QuestComponent.h"
+#include "QuestStatics.h"
+
 
 void UStartQuestDialogTrigger::Execute(UWorld* World, AController* DialogController)
 {
-	if (UQuestSubsystem* QuestSubsystem = UQuestSubsystem::GetFromWorld(World))
+	if (UQuestComponent* QuestSubsystem = UQuestStatics::GetQuestComponent(World))
 	{
 		QuestSubsystem->StartQuest(QuestToStartId);
 	}		

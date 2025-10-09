@@ -3,11 +3,13 @@
 
 #include "Dialog/QuestDialogCondition.h"
 
-#include "QuestSubsystem.h"
+#include "QuestComponent.h"
+#include "QuestStatics.h"
+
 
 bool UQuestDialogCondition::IsSatisfied(UWorld* World)
 {
-	if (const UQuestSubsystem* QuestSubsystem = UQuestSubsystem::GetFromWorld(World))
+	if (const UQuestComponent* QuestSubsystem = UQuestStatics::GetQuestComponent(World))
 	{
 		switch (Behavior)
 		{

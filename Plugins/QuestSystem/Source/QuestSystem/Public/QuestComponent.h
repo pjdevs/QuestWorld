@@ -2,26 +2,26 @@
 
 #pragma once
 
-#include "QuestService.h"
-#include "Subsystems/GameInstanceSubsystem.h"
-#include "QuestSubsystem.generated.h"
+#include "CoreMinimal.h"
+#include "QuestDescription.h"
+#include "Components/ActorComponent.h"
+#include "QuestComponent.generated.h"
+
 
 class UBaseQuestEvent;
+class IQuestService;
 
-DECLARE_DYNAMIC_DELEGATE(FQuestLoadedDynamicDelegate);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FQuestEventMulticastDelegate, const FQuestDescription&, Quest);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FQuestsLoadedDynamicDelegate);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FQuestEventDynamicDelegate, const FQuestDescription&, Quest);
 
-UCLASS()
-class QUESTSYSTEM_API UQuestSubsystem : public UGameInstanceSubsystem
+UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
+class QUESTSYSTEM_API UQuestComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
 public:
-	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
-	virtual void Deinitialize() override;
-
-	UFUNCTION(BlueprintCallable, Category = Quest)
-	void LoadQuests(const FQuestLoadedDynamicDelegate CompletionDelegate);
+	// Sets default values for this component's properties
+	UQuestComponent();
 
 	UFUNCTION(BlueprintCallable, Category = Quest)
 	void StartQuest(FPrimaryAssetId QuestId);
@@ -42,14 +42,19 @@ public:
 	void SubmitQuestEvent(UBaseQuestEvent* Event);
 
 	UPROPERTY(BlueprintAssignable, Category = Quest)
-	FQuestEventMulticastDelegate QuestStartedDelegate;
+	FQuestsLoadedDynamicDelegate OnQuestsLoaded;
+
+	UPROPERTY(BlueprintAssignable, Category = Quest)
+	FQuestEventDynamicDelegate OnQuestStarted;
 	
 	UPROPERTY(BlueprintAssignable, Category = Quest)
-	FQuestEventMulticastDelegate QuestCompletedDelegate;
+	FQuestEventDynamicDelegate OnQuestCompleted;
 
-	static UQuestSubsystem* GetFromWorld(const UWorld* World);
-	
+protected:
+	// Called when the game starts
+	virtual void BeginPlay() override;
+
 private:
-	UPROPERTY()
+	UPROPERTY(Transient)
 	TScriptInterface<IQuestService> QuestService;
 };
