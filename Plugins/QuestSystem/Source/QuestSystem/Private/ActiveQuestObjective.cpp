@@ -16,7 +16,10 @@ FActiveQuestObjective::FActiveQuestObjective(UQuestObjective* ObjectiveAsset, UW
 	}
 }
 
-void FActiveQuestObjective::OnQuestEvent(UWorld* World, UBaseQuestEvent* Event)
+bool FActiveQuestObjective::OnQuestEvent(UWorld* World, UBaseQuestEvent* Event)
 {
-	CurrentProgress += ObjectiveAsset->TriggerProgress(World, Event);
+	const int Progress = ObjectiveAsset->TriggerProgress(World, Event);
+	CurrentProgress += Progress;
+
+	return Progress > 0;
 }

@@ -11,7 +11,7 @@ class UBaseQuestEvent;
 class UQuestDataAsset;
 
 DECLARE_DELEGATE(FQuestLoadedDelegate);
-DECLARE_DELEGATE_OneParam(FQuestEventDelegate, FQuestDescription);
+DECLARE_DELEGATE_OneParam(FQuestEventDelegate, const FQuestDescription&);
 
 // Do not modify
 UINTERFACE()
@@ -43,6 +43,7 @@ public:
 
 	virtual void SetQuestStartedDelegate(const FQuestEventDelegate& QuestEventDelegate) = 0;
 	virtual void SetQuestCompletedDelegate(const FQuestEventDelegate& QuestEventDelegate) = 0;
+	virtual void SetQuestUpdatedDelegate(const FQuestEventDelegate& QuestEventDelegate) = 0;
 };
 
 /**
@@ -70,6 +71,7 @@ public:
 
 	virtual void SetQuestStartedDelegate(const FQuestEventDelegate& QuestEventDelegate) override;
 	virtual void SetQuestCompletedDelegate(const FQuestEventDelegate& QuestEventDelegate) override;
+	virtual void SetQuestUpdatedDelegate(const FQuestEventDelegate& QuestEventDelegate) override;
 
 protected:
 	void CompleteQuest(const FPrimaryAssetId& QuestId);
@@ -86,4 +88,5 @@ private:
 
 	FQuestEventDelegate QuestStartedDelegate;
 	FQuestEventDelegate QuestCompletedDelegate;
+	FQuestEventDelegate QuestUpdatedDelegate;
 };

@@ -27,13 +27,7 @@ int UActionQuestObjective::TriggerProgress_Implementation(UWorld* World, UBaseQu
 	{
 		if (ActionEvent->ActionName == ActionToDo)
 		{
-			if (const APlayerController* PlayerController = World->GetFirstPlayerController())
-			{
-				if (PlayerController == ActionEvent->ActionInstigator)
-				{
-					return 1;
-				}
-			}
+			return 1;
 		}
 	}
 

@@ -27,21 +27,25 @@ FActiveQuest::~FActiveQuest()
 {
 }
 
-void FActiveQuest::OnQuestEvent(UWorld* World, UBaseQuestEvent* Event)
+bool FActiveQuest::OnQuestEvent(UWorld* World, UBaseQuestEvent* Event)
 {
 	if (bQuestCompleted)
-		return;
+		return false;
 	
 	bool bAllObjectivesCompleted = true; 
+	bool bAnyObjectiveProgressed = false;
 	
 	for (auto& ActiveQuestObjective : Objectives)
 	{
 		if (ActiveQuestObjective.IsObjectiveCompleted())
 			continue;
 		
-		ActiveQuestObjective.OnQuestEvent(World, Event);
+		bAnyObjectiveProgressed |= ActiveQuestObjective.OnQuestEvent(World, Event);
+
 		bAllObjectivesCompleted = bAllObjectivesCompleted && ActiveQuestObjective.IsObjectiveCompleted();
 	}
 
 	bQuestCompleted = bAllObjectivesCompleted;
+
+	return bAnyObjectiveProgressed;
 }

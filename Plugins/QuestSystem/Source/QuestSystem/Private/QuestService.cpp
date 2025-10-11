@@ -92,8 +92,13 @@ void UQuestServiceImpl::SubmitQuestEvent(UWorld* World, UBaseQuestEvent* Event)
 	
 	for (auto& Tuple : ActiveQuestsById)
 	{
+		const FPrimaryAssetId& ActiveQuestId = Tuple.Key;
 		FActiveQuest& ActiveQuest = Tuple.Value;
-		ActiveQuest.OnQuestEvent(World, Event);
+		
+		if (ActiveQuest.OnQuestEvent(World, Event))
+		{
+			bool _ = QuestUpdatedDelegate.ExecuteIfBound(GetQuestDescription(ActiveQuestId));
+		}
 		
 		if (ActiveQuest.IsCompleted())
 		{
@@ -202,6 +207,11 @@ void UQuestServiceImpl::SetQuestStartedDelegate(const FQuestEventDelegate& Quest
 void UQuestServiceImpl::SetQuestCompletedDelegate(const FQuestEventDelegate& QuestEventDelegate)
 {
 	QuestCompletedDelegate = QuestEventDelegate;
+}
+
+void UQuestServiceImpl::SetQuestUpdatedDelegate(const FQuestEventDelegate& QuestEventDelegate)
+{
+	QuestUpdatedDelegate = QuestEventDelegate;
 }
 
 void UQuestServiceImpl::CompleteQuest(const FPrimaryAssetId& QuestId)

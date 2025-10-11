@@ -20,7 +20,7 @@ struct QUESTSYSTEM_API FActiveQuestObjective
 
 	int GetCurrentProgress() const { return CurrentProgress; }
 	bool IsObjectiveCompleted() const { return CurrentProgress >= ObjectiveAsset->GetTargetValue(); }
-	void OnQuestEvent(UWorld* World, UBaseQuestEvent* Event);
+	bool OnQuestEvent(UWorld* World, UBaseQuestEvent* Event);
 
 private:
 	UPROPERTY()

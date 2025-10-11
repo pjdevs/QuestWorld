@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
-#include "QuestIntegrationSettings.generated.h"
+#include "QuestNotificationSettings.generated.h"
 
 class UBaseNotificationWidget;
 
@@ -12,7 +12,7 @@ class UBaseNotificationWidget;
  * 
  */
 UCLASS()
-class QUESTINTEGRATIONPLUGIN_API UQuestIntegrationSettings : public UDataAsset
+class QUESTINTEGRATIONPLUGIN_API UQuestNotificationSettings : public UDataAsset
 {
 	GENERATED_BODY()
 
@@ -26,6 +26,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, category = Quest, meta = (AllowPrivateAccess = true))
 	FText QuestCompletedFormat;
 
+	UPROPERTY(EditDefaultsOnly, category = Quest, meta = (AllowPrivateAccess = true))
+	FText QuestUpdatedFormat;
+	
 	UPROPERTY(EditDefaultsOnly, category = Quest, meta = (AllowPrivateAccess = true))
 	float QuestMessageDuration;
 };
