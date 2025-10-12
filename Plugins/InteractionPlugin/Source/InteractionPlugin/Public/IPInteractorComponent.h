@@ -84,28 +84,27 @@ protected:
 	 * Show interaction widget on client.
 	 * @param InteractiveActor The interactive actor with which component can interact.
 	 */
-	UFUNCTION(Client, Reliable)
-	void ShowInteractionWidget_Client(AActor* InteractiveActor);
+	void ShowInteractionWidgetClient(AActor* InteractiveActor);
 
 	/**
 	 * Show indication widget on client.
 	 * @param InteractiveActor The interactive actor on which we should show indication.
 	 */
-	UFUNCTION(Client, Reliable)
-	void ShowIndicationWidget_Client(AActor* InteractiveActor);
+	void ShowIndicationWidgetClient(AActor* InteractiveActor);
 	
 	/**
 	 * Hide interaction widget on client.
 	 * @param InteractiveActor The interactive actor on which we should hide the widget.
 	 */
-	UFUNCTION(Client, Reliable)
-	void HideWidget_Client(AActor* InteractiveActor);
+	void HideWidgetClient(AActor* InteractiveActor);
+
+	bool IsLocal() const;
 
 private:
 	/**
 	 * Recompute the relevancy of each interactive by checking look angle, distance etc.
 	 */
-	void RecomputeInteractiveRelevancy();
+	void RecomputeInteractiveRelevancy(bool bForceRefresh = false);
 
 	/**
 	 * Remove all possibly destroyed object that was in the possibly interactive array.

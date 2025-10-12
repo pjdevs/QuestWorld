@@ -14,6 +14,11 @@
 
 // TODO One day rethink that also AI etc can dialog an we don't necessary have a widget
 
+UDialogComponent::UDialogComponent()
+{
+	SetIsReplicatedByDefault(true);
+}
+
 void UDialogComponent::BeginPlay()
 {
 	Super::BeginPlay();
@@ -23,6 +28,11 @@ void UDialogComponent::BeginPlay()
 
 void UDialogComponent::StartDialog(AActor* DialogActor, UDialogGraphAsset* DialogAsset)
 {
+	if (GetOwnerRole() != ROLE_Authority)
+	{
+		return;
+	}
+	
 	// Check if dialog is already active
 	if (CurrentDialogActor)
 	{
@@ -51,11 +61,7 @@ void UDialogComponent::StartDialog(AActor* DialogActor, UDialogGraphAsset* Dialo
 		Pawn->DisableInput(PlayerController);
 	}
 	
-	DisplayedDialogWidget = CreateWidget<UDialogWidget>(PlayerController, DialogWidgetClass);
-	DisplayedDialogWidget->DisplayLineFinishedDelegate.BindUObject(this, &UDialogComponent::OnLineDisplayed);
-	DisplayedDialogWidget->DisplayChoicesFinishedDelegate.BindUObject(this, &UDialogComponent::OnChoicesDisplayed);
-	DisplayedDialogWidget->AddToViewport();
-	DisplayedDialogWidget->SetCharacterName(DialogAsset->GetCharacterName());
+	Client_CreateDialogWidget(PlayerController, DialogAsset);
 
 	CurrentNode = DialogAsset->GetDialogRoot();
 	ExecuteCurrentDialogNode();
@@ -108,7 +114,7 @@ void UDialogComponent::ExecuteCurrentDialogNode()
 
 	if (const USingleDialogNode* SingleDialogNode = Cast<USingleDialogNode>(CurrentNode))
 	{
-		DisplayedDialogWidget->DisplayLine(SingleDialogNode->GetLine());
+		Client_DisplayLine(SingleDialogNode->GetLine());
 	}
 	else if (const UChoiceDialogNode* ChoiceDialogNode = Cast<UChoiceDialogNode>(CurrentNode))
 	{
@@ -121,7 +127,7 @@ void UDialogComponent::ExecuteCurrentDialogNode()
 			return;
 		}
 		
-		DisplayedDialogWidget->DisplayChoices(AvailableChoices);
+		Client_DisplayChoices(AvailableChoices);
 	}
 	else
 	{
@@ -156,14 +162,8 @@ void UDialogComponent::TryGoToChildNode(int NodeIndex)
 void UDialogComponent::EndDialog()
 {
 	CurrentNode = nullptr;
-	
-	if (DisplayedDialogWidget)
-	{
-		DisplayedDialogWidget->DisplayLineFinishedDelegate.Unbind();
-		DisplayedDialogWidget->DisplayChoicesFinishedDelegate.Unbind();
-		DisplayedDialogWidget->RemoveFromParent();
-		DisplayedDialogWidget = nullptr;
-	}
+
+	Client_DestroyDialogWidget();
 
 	if (IDialogEvents* DialogEvents = Cast<IDialogEvents>(CurrentDialogActor))
 	{
@@ -181,12 +181,12 @@ void UDialogComponent::EndDialog()
 	}
 }
 
-void UDialogComponent::OnLineDisplayed()
+void UDialogComponent::OnLineDisplayedServer()
 {
 	TryGoToChildNode(0);
 }
 
-void UDialogComponent::OnChoicesDisplayed(int ChoiceIndex)
+void UDialogComponent::OnChoicesDisplayedServer(int ChoiceIndex)
 {
 	if (ChoiceIndex < 0 || ChoiceIndex >= AvailableChoiceIndexes.Num())
 	{
@@ -196,4 +196,49 @@ void UDialogComponent::OnChoicesDisplayed(int ChoiceIndex)
 
 	const int RealChoiceIndex = AvailableChoiceIndexes[ChoiceIndex];
 	TryGoToChildNode(RealChoiceIndex);
+}
+
+void UDialogComponent::Client_DestroyDialogWidget_Implementation()
+{
+	if (!DisplayedDialogWidget)
+	{
+		return;
+	}
+
+	DisplayedDialogWidget->DisplayLineFinishedDelegate.Unbind();
+	DisplayedDialogWidget->DisplayChoicesFinishedDelegate.Unbind();
+	DisplayedDialogWidget->RemoveFromParent();
+	DisplayedDialogWidget = nullptr;
+}
+
+void UDialogComponent::Client_DisplayChoices_Implementation(const TArray<FText>& Choices)
+{
+	DisplayedDialogWidget->DisplayChoices(Choices);
+}
+
+void UDialogComponent::Client_DisplayLine_Implementation(const FText& LineText)
+{
+	DisplayedDialogWidget->DisplayLine(LineText);
+}
+
+void UDialogComponent::Client_CreateDialogWidget_Implementation(
+	APlayerController* PlayerController,
+	UDialogGraphAsset* DialogAsset
+)
+{
+	DisplayedDialogWidget = CreateWidget<UDialogWidget>(PlayerController, DialogWidgetClass);
+	DisplayedDialogWidget->DisplayLineFinishedDelegate.BindUObject(this, &UDialogComponent::Server_OnLineDisplayed);
+	DisplayedDialogWidget->DisplayChoicesFinishedDelegate.BindUObject(this, &UDialogComponent::Server_OnChoiceDisplayed);
+	DisplayedDialogWidget->AddToViewport();
+	DisplayedDialogWidget->SetCharacterName(DialogAsset->GetCharacterName());
+}
+
+void UDialogComponent::Server_OnLineDisplayed_Implementation()
+{
+	OnLineDisplayedServer();
+}
+
+void UDialogComponent::Server_OnChoiceDisplayed_Implementation(int ChoiceIndex)
+{
+	OnChoicesDisplayedServer(ChoiceIndex);
 }

@@ -18,8 +18,16 @@ class DIALOGPLUGIN_API UDialogComponent : public UActorComponent
 	GENERATED_BODY()
 	
 public:
-	virtual void BeginPlay() override;
+	UDialogComponent();
 	
+	virtual void BeginPlay() override;
+
+	/**
+	 * Start dialog DialogAsset with actor DialogActor and associated player.
+	 * Should be called on server or will have no effect.
+	 * @param DialogActor 
+	 * @param DialogAsset 
+	 */
 	UFUNCTION(BlueprintCallable, Category = Dialog)
 	void StartDialog(AActor* DialogActor, UDialogGraphAsset* DialogAsset);
 
@@ -28,8 +36,27 @@ private:
 	void TryGoToChildNode(int NodeIndex);
 	void EndDialog();
 	
-	void OnLineDisplayed();
-	void OnChoicesDisplayed(int ChoiceIndex);
+	void OnLineDisplayedServer();
+	void OnChoicesDisplayedServer(int ChoiceIndex);
+
+	// Client UI functions
+	UFUNCTION(Client, Reliable)
+	void Client_CreateDialogWidget(APlayerController* PlayerController, UDialogGraphAsset* DialogAsset);
+
+	UFUNCTION(Client, Reliable)
+	void Client_DestroyDialogWidget();
+
+	UFUNCTION(Client, Reliable)
+	void Client_DisplayLine(const FText& LineText);
+
+	UFUNCTION(Client, Reliable)
+	void Client_DisplayChoices(const TArray<FText>& Choices);
+
+	UFUNCTION(Server, Reliable)
+	void Server_OnLineDisplayed();
+	
+	UFUNCTION(Server, Reliable)
+	void Server_OnChoiceDisplayed(int ChoiceIndex);
 
 private:
 	UPROPERTY(EditDefaultsOnly, Category = Dialog)

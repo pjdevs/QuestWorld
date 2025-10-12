@@ -19,7 +19,7 @@ void UIPInteractorComponent::OnComponentDestroyed(bool bDestroyingHierarchy)
 
 	if (MostRelevantActor.IsValid())
 	{
-		HideWidget_Client(MostRelevantActor.Get());
+		HideWidgetClient(MostRelevantActor.Get());
 	}
 }
 
@@ -39,15 +39,16 @@ void UIPInteractorComponent::TickComponent(
 
 void UIPInteractorComponent::Interact()
 {	
-	if (!GetOwner()->HasAuthority())
+	if (GetOwnerRole() != ROLE_Authority)
 	{
 		Server_Interact();
 		return;
 	}
 	
 	auto* Interactive = Cast<IIPInteractive>(MostRelevantActor);
-	
-	if (!Interactive)
+
+	// check on server if we really are in range to interact (is it really possible that it is not the case???)
+	if (!Interactive || !PossibleInteractives.Contains(Interactive))
 	{
 		return;
 	}
@@ -90,7 +91,7 @@ void UIPInteractorComponent::AddInteractiveIndication(IIPInteractive* Interactiv
 	}
 
 	IndicatedInteractives.Add(Interactive);
-	ShowIndicationWidget_Client(Cast<AActor>(Interactive));
+	ShowIndicationWidgetClient(Cast<AActor>(Interactive));
 }
 
 void UIPInteractorComponent::RemoveInteractiveIndication(IIPInteractive* Interactive)
@@ -101,20 +102,17 @@ void UIPInteractorComponent::RemoveInteractiveIndication(IIPInteractive* Interac
 	}
 
 	IndicatedInteractives.Remove(Interactive);
-	HideWidget_Client(Cast<AActor>(Interactive));
+	HideWidgetClient(Cast<AActor>(Interactive));
 }
 
 void UIPInteractorComponent::OnInteractiveStateChanged(IIPInteractive* Interactive)
 {
-	const bool bWasInRangeButNotInteractible =
-		IndicatedInteractives.Contains(Interactive) && !PossibleInteractives.Contains(Interactive);
-	const bool bPotentialyInteractibleButMaybeNotNow = PossibleInteractives.Contains(Interactive);
-	
-	// update indication widget because can be interacted may have changed
-	if (bWasInRangeButNotInteractible || bPotentialyInteractibleButMaybeNotNow)
+	if (!PossibleInteractives.Contains(Interactive))
 	{
-		ShowIndicationWidget_Client(Cast<AActor>(Interactive));
+		ShowIndicationWidgetClient(Cast<AActor>(Interactive));
 	}
+	
+	RecomputeInteractiveRelevancy(true);
 }
 
 void UIPInteractorComponent::Server_Interact_Implementation()
@@ -122,7 +120,7 @@ void UIPInteractorComponent::Server_Interact_Implementation()
 	Interact();
 }
 
-void UIPInteractorComponent::RecomputeInteractiveRelevancy()
+void UIPInteractorComponent::RecomputeInteractiveRelevancy(bool bForceRefresh)
 {
 	AActor* PreviousMostRelevantInteractive = MostRelevantActor.IsValid()
 		? MostRelevantActor.Get()
@@ -138,7 +136,7 @@ void UIPInteractorComponent::RecomputeInteractiveRelevancy()
 		MostRelevantActor = FindNewMostRelevantActor();
 	}
 
-	if (GetOwner()->HasAuthority() && MostRelevantActor != PreviousMostRelevantInteractive)
+	if (MostRelevantActor != PreviousMostRelevantInteractive || bForceRefresh)
 	{
 		OnMostRelevantInteractiveChanged(PreviousMostRelevantInteractive, MostRelevantActor.Get());
 	}
@@ -198,20 +196,20 @@ void UIPInteractorComponent::OnMostRelevantInteractiveChanged(
 	// Show hide interaction widgets
 	if (PreviousMostRelevantActor)
 	{
-		ShowIndicationWidget_Client(PreviousMostRelevantActor);
+		ShowIndicationWidgetClient(PreviousMostRelevantActor);
 	}
 
 	if (NewMostRelevantActor)
 	{
 		if (const IIPInteractive* Interactive = Cast<IIPInteractive>(NewMostRelevantActor))
 		{
-			if (Interactive->IsAutoInteractive())
+			if (Interactive->IsAutoInteractive() && GetOwnerRole() == ROLE_Authority)
 			{
 				Interact();	
 			}
 			else
 			{
-				ShowInteractionWidget_Client(NewMostRelevantActor);
+				ShowInteractionWidgetClient(NewMostRelevantActor);
 			}
 		}
 	}
@@ -242,8 +240,13 @@ FInteractionScore UIPInteractorComponent::ComputeInteractionScore(
 	};
 }
 
-void UIPInteractorComponent::ShowInteractionWidget_Client_Implementation(AActor* InteractiveActor)
+void UIPInteractorComponent::ShowInteractionWidgetClient(AActor* InteractiveActor)
 {
+	if (!IsLocal())
+	{
+		return;
+	}
+
 	const auto* Interactive = Cast<IIPInteractive>(InteractiveActor);
 
 	if (!InteractiveActor)
@@ -284,8 +287,13 @@ void UIPInteractorComponent::ShowInteractionWidget_Client_Implementation(AActor*
 	WidgetComponent->SetWidget(WidgetInstance);
 }
 
-void UIPInteractorComponent::ShowIndicationWidget_Client_Implementation(AActor* InteractiveActor)
+void UIPInteractorComponent::ShowIndicationWidgetClient(AActor* InteractiveActor)
 {
+	if (!IsLocal())
+	{
+		return;
+	}
+
 	const auto* Interactive = Cast<IIPInteractive>(InteractiveActor);
 
 	if (!InteractiveActor)
@@ -316,18 +324,28 @@ void UIPInteractorComponent::ShowIndicationWidget_Client_Implementation(AActor* 
 	WidgetComponent->SetWidget(WidgetInstance);
 }
 
-void UIPInteractorComponent::HideWidget_Client_Implementation(AActor* InteractiveActor)
+void UIPInteractorComponent::HideWidgetClient(AActor* InteractiveActor)
 {
+	if (!IsLocal())
+	{
+		return;
+	}
+
 	if (const IIPInteractive* Interactive = Cast<IIPInteractive>(InteractiveActor))
 	{
 		if (UWidgetComponent* WidgetComponent = Interactive->GetWidgetComponent())
 		{
-			if (UUserWidget* WidgetInside = WidgetComponent->GetWidget())
-			{
-				WidgetInside->RemoveFromParent();
-			}
-
 			WidgetComponent->SetWidget(nullptr);
 		}
 	}
+}
+
+bool UIPInteractorComponent::IsLocal() const
+{
+	if (const APawn* OwnerPawn = Cast<APawn>(GetOwner()))
+	{
+		return OwnerPawn->IsLocallyControlled();
+	}
+
+	return false;
 }

@@ -66,7 +66,7 @@ protected:
 	/**
 	 * Function that can be called to notify interactors that state may have changed
 	 * (to update can be interacted condition etc.).
-	 * Called on client and/or server (after replication). 
+	 * Should be called on both client and server in OnRep_ (to handle new conditions and widgets).
 	 */
 	UFUNCTION(BlueprintCallable)
 	void StateChanged();
