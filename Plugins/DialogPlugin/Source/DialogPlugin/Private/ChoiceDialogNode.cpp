@@ -15,6 +15,10 @@ bool UChoiceDialogNode::IsAvailable(UWorld* World) const
 		{
 			bHasAvailableChoices |= NextDialog->IsAvailable(World);
 		}
+		else
+		{
+			bHasAvailableChoices = true; // no child so dialog is available, it will just end conversation
+		}
 	}
 
 	return bHasAvailableChoices && Super::IsAvailable(World);
