@@ -44,6 +44,9 @@ public:
 	virtual void SetQuestStartedDelegate(const FQuestEventDelegate& QuestEventDelegate) = 0;
 	virtual void SetQuestCompletedDelegate(const FQuestEventDelegate& QuestEventDelegate) = 0;
 	virtual void SetQuestUpdatedDelegate(const FQuestEventDelegate& QuestEventDelegate) = 0;
+	
+	virtual void SetCompletedQuests(const TArray<FPrimaryAssetId>& InCompletedQuestIds) = 0;
+	virtual void SetActiveQuests(const TArray<FQuestDescription>& InActiveQuests, UWorld* World) = 0;
 };
 
 /**
@@ -72,6 +75,9 @@ public:
 	virtual void SetQuestStartedDelegate(const FQuestEventDelegate& QuestEventDelegate) override;
 	virtual void SetQuestCompletedDelegate(const FQuestEventDelegate& QuestEventDelegate) override;
 	virtual void SetQuestUpdatedDelegate(const FQuestEventDelegate& QuestEventDelegate) override;
+
+	virtual void SetCompletedQuests(const TArray<FPrimaryAssetId>& InCompletedQuestIds) override;
+	virtual void SetActiveQuests(const TArray<FQuestDescription>& InActiveQuests, UWorld* World) override;
 
 protected:
 	void CompleteQuest(const FPrimaryAssetId& QuestId);

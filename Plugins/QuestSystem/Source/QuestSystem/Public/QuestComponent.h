@@ -23,6 +23,7 @@ public:
 	UQuestComponent();
 
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 public:
@@ -111,6 +112,12 @@ private:
 	 */
 	UFUNCTION()
 	void OnRep_CompletedQuests();
+
+	// Save functions, server only
+
+	void LoadQuestsFromSave();
+
+	void WriteQuestsToSave();
 
 private:
 	/**

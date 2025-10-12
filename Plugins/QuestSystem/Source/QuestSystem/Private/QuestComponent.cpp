@@ -2,7 +2,10 @@
 
 
 #include "QuestComponent.h"
+
+#include "QuestSave.h"
 #include "QuestService.h"
+#include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 
 
@@ -80,6 +83,16 @@ void UQuestComponent::BeginPlay()
 	}
 }
 
+void UQuestComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+
+	if (GetOwnerRole() == ROLE_Authority)
+	{
+		WriteQuestsToSave();
+	}
+}
+
 void UQuestComponent::InitQuestService()
 {
 	QuestService = NewObject<UQuestServiceImpl>(this, FName("QuestService"));
@@ -91,6 +104,8 @@ void UQuestComponent::InitQuestService()
 
 void UQuestComponent::OnQuestsLoadedServer()
 {
+	LoadQuestsFromSave();
+	
 	ActiveQuests = QuestService->GetActiveQuestDescriptions();
 	CompletedQuests = QuestService->GetCompletedQuestDescriptions();
 }
@@ -140,4 +155,31 @@ void UQuestComponent::OnRep_ActiveQuests()
 void UQuestComponent::OnRep_CompletedQuests()
 {
 	OnCompletedQuestsUpdated.Broadcast();
+}
+
+// TODO Temp save test, expose save etc.
+
+void UQuestComponent::LoadQuestsFromSave()
+{
+	if (const UQuestSave* QuestSave = Cast<UQuestSave>(UGameplayStatics::LoadGameFromSlot("QuestSave", 0)))
+	{
+		QuestService->SetCompletedQuests(QuestSave->CompletedQuests);
+		QuestService->SetActiveQuests(QuestSave->ActiveQuests, GetWorld());
+	}
+}
+
+void UQuestComponent::WriteQuestsToSave()
+{
+	
+
+	UQuestSave* QuestSave = Cast<UQuestSave>(UGameplayStatics::CreateSaveGameObject(UQuestSave::StaticClass()));
+	QuestSave->ActiveQuests = ActiveQuests;
+	QuestSave->CompletedQuests = TArray<FPrimaryAssetId>();
+
+	for (FQuestDescription CompletedQuest : CompletedQuests)
+	{
+		QuestSave->CompletedQuests.Add(CompletedQuest.QuestId);
+	}
+		
+	UGameplayStatics::SaveGameToSlot(QuestSave, "QuestSave", 0);
 }

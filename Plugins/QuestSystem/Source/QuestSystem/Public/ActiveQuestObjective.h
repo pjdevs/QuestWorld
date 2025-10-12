@@ -15,10 +15,12 @@ struct QUESTSYSTEM_API FActiveQuestObjective
 {
 	GENERATED_BODY()
 
+public:
 	FActiveQuestObjective() = default; // Needed for creating TArray etc. Will see if we use TUniquePtr or so later
 	FActiveQuestObjective(UQuestObjective* ObjectiveAsset, UWorld* World);
 
 	int GetCurrentProgress() const { return CurrentProgress; }
+	void SetCurrentProgress(int Progress) { CurrentProgress = Progress; }
 	bool IsObjectiveCompleted() const { return CurrentProgress >= ObjectiveAsset->GetTargetValue(); }
 	bool OnQuestEvent(UWorld* World, UBaseQuestEvent* Event);
 

@@ -214,6 +214,37 @@ void UQuestServiceImpl::SetQuestUpdatedDelegate(const FQuestEventDelegate& Quest
 	QuestUpdatedDelegate = QuestEventDelegate;
 }
 
+void UQuestServiceImpl::SetCompletedQuests(const TArray<FPrimaryAssetId>& InCompletedQuestIds)
+{
+	CompletedQuestIds.Empty();
+	CompletedQuestIds = InCompletedQuestIds;
+}
+
+void UQuestServiceImpl::SetActiveQuests(const TArray<FQuestDescription>& InActiveQuests, UWorld* World)
+{
+	ActiveQuestsById.Empty();
+
+	for (auto&& ActiveQuestDescription : InActiveQuests)
+	{
+		const FPrimaryAssetId& QuestId = ActiveQuestDescription.QuestId;
+		UQuestDataAsset* QuestAsset = QuestAssetsById[QuestId];
+		FActiveQuest ActiveQuest = FActiveQuest(QuestId, QuestAsset, World);
+
+		for (int i = 0; i < ActiveQuestDescription.Objectives.Num(); ++i)
+		{
+			const FQuestObjectiveDescription& ObjectiveDescription = ActiveQuestDescription.Objectives[i];
+			FActiveQuestObjective& ActiveObjective = ActiveQuest.GetObjective(i);
+
+			ActiveObjective.SetCurrentProgress(ObjectiveDescription.CurrentValue);
+		}
+		
+		ActiveQuestsById.Add(
+			QuestId,
+			ActiveQuest
+		);
+	}
+}
+
 void UQuestServiceImpl::CompleteQuest(const FPrimaryAssetId& QuestId)
 {
 	if (!QuestAssetsById.Contains(QuestId) || CompletedQuestIds.Contains(QuestId))

@@ -21,8 +21,10 @@ public:
 	FActiveQuest(const FPrimaryAssetId& QuestId, UQuestDataAsset* QuestDataAsset, UWorld* World);
 	~FActiveQuest();
 
-	const FPrimaryAssetId& GetQuestId() const { return QuestId; }
+	FActiveQuestObjective& GetObjective(int Index) { return Objectives[Index]; }
+
 	const TArray<FActiveQuestObjective>& GetObjectives() const { return Objectives; }
+	const FPrimaryAssetId& GetQuestId() const { return QuestId; }
 	bool IsCompleted() const { return bQuestCompleted; }
 	/**
 	 * Notify the quest of an emitted quest event.
