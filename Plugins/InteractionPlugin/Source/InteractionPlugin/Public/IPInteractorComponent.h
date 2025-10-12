@@ -11,8 +11,8 @@ class UInputAction;
 class UIPInteractionWidget;
 class IIPInteractive;
 
-// TODO Add positioning between interactor and interactive into calculations.
-// Make a normal to the interactive and if angle with the normal is too high disable interaction etc.
+// TODO Only make calculations to show widget etc on client and find way to validate distance on server.
+// TODO Make a normal to the interactive and if angle with the normal is too high disable interaction, etc.
 
 /**
  * Helper struct for representing information on the computed interaction score of an interactive.
@@ -27,7 +27,7 @@ struct INTERACTIONPLUGIN_API FInteractionScore
 /**
  * ActorComponent for handling replicated interactions with other interactive actors. 
  */
-UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
+UCLASS(ClassGroup=(Interaction), meta=(BlueprintSpawnableComponent))
 class INTERACTIONPLUGIN_API UIPInteractorComponent : public UActorComponent
 {
 	GENERATED_BODY()

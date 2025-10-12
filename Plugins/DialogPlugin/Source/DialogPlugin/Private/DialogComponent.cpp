@@ -37,7 +37,7 @@ void UDialogComponent::StartDialog(AActor* DialogActor, UDialogGraphAsset* Dialo
 		return;
 	}
 
-	// Start current actor which we dialog with and call start if implementing interface
+	// Store current actor which we are talking with and call start if implementing interface
 	CurrentDialogActor = DialogActor;
 
 	if (IDialogEvents* DialogEvents = Cast<IDialogEvents>(DialogActor))

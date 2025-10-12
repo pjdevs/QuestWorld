@@ -64,9 +64,9 @@ protected:
 	virtual bool CanBeInteractedBy_Implementation(AActor* InteractionInstigator) const;
 
 	/**
-	 * Function that can be called  to notify interactors that state may have changed
+	 * Function that can be called to notify interactors that state may have changed
 	 * (to update can be interacted condition etc.).
-	 * TODO Check network replication of this.
+	 * Called on client and/or server (after replication). 
 	 */
 	UFUNCTION(BlueprintCallable)
 	void StateChanged();

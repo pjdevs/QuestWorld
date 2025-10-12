@@ -106,8 +106,12 @@ void UIPInteractorComponent::RemoveInteractiveIndication(IIPInteractive* Interac
 
 void UIPInteractorComponent::OnInteractiveStateChanged(IIPInteractive* Interactive)
 {
+	const bool bWasInRangeButNotInteractible =
+		IndicatedInteractives.Contains(Interactive) && !PossibleInteractives.Contains(Interactive);
+	const bool bPotentialyInteractibleButMaybeNotNow = PossibleInteractives.Contains(Interactive);
+	
 	// update indication widget because can be interacted may have changed
-	if (IndicatedInteractives.Contains(Interactive) && !PossibleInteractives.Contains(Interactive))
+	if (bWasInRangeButNotInteractible || bPotentialyInteractibleButMaybeNotNow)
 	{
 		ShowIndicationWidget_Client(Cast<AActor>(Interactive));
 	}

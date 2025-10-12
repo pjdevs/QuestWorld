@@ -40,14 +40,15 @@ void UNotificationSubsystem::TryDisplayNextNotification()
 
 	if (!QueuedMessages.Dequeue(NextNotification))
 		return;
+
+	Subscribers.RemoveAll([](const TWeakObjectPtr<APlayerController>& Ptr)
+	{
+		return !Ptr.IsValid();
+	});
 	
 	for (TWeakObjectPtr<APlayerController> WeakSubscriber : Subscribers)
 	{
 		APlayerController* Subscriber = WeakSubscriber.Get();
-		
-		if (Subscriber == nullptr || !IsValid(Subscriber))
-			continue;
-		
 		DisplayNotification(Subscriber, NextNotification);
 	}
 }

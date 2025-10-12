@@ -224,13 +224,12 @@ bool AIPInteractiveActor::IsAutoInteractive() const
 
 void AIPInteractiveActor::OnRep_State()
 {
-	if (State != EIPInteractiveState::Interacted && !bInteractMultipleTimes)
-	{
-		return;
-	}
-
 	StateChanged();
-	DoFeedback();
+
+	if (State == EIPInteractiveState::Interacted || bInteractMultipleTimes)
+	{
+		DoFeedback();
+	}
 }
 
 void AIPInteractiveActor::DoInteraction_Implementation(AActor* InteractionInstigator)
