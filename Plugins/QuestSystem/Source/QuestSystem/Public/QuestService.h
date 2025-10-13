@@ -7,6 +7,8 @@
 #include "QuestDescription.h"
 #include "QuestService.generated.h"
 
+struct FQuestSaveData;
+class UQuestSaveGame;
 class UBaseQuestEvent;
 class UQuestDataAsset;
 
@@ -44,9 +46,9 @@ public:
 	virtual void SetQuestStartedDelegate(const FQuestEventDelegate& QuestEventDelegate) = 0;
 	virtual void SetQuestCompletedDelegate(const FQuestEventDelegate& QuestEventDelegate) = 0;
 	virtual void SetQuestUpdatedDelegate(const FQuestEventDelegate& QuestEventDelegate) = 0;
-	
-	virtual void SetCompletedQuests(const TArray<FPrimaryAssetId>& InCompletedQuestIds) = 0;
-	virtual void SetActiveQuests(const TArray<FQuestDescription>& InActiveQuests, UWorld* World) = 0;
+
+	virtual void RestoreQuests(const FQuestSaveData& QuestSave, UWorld* World) = 0;
+	virtual FQuestSaveData GetQuestSave() const = 0;
 };
 
 /**
@@ -75,9 +77,9 @@ public:
 	virtual void SetQuestStartedDelegate(const FQuestEventDelegate& QuestEventDelegate) override;
 	virtual void SetQuestCompletedDelegate(const FQuestEventDelegate& QuestEventDelegate) override;
 	virtual void SetQuestUpdatedDelegate(const FQuestEventDelegate& QuestEventDelegate) override;
-
-	virtual void SetCompletedQuests(const TArray<FPrimaryAssetId>& InCompletedQuestIds) override;
-	virtual void SetActiveQuests(const TArray<FQuestDescription>& InActiveQuests, UWorld* World) override;
+	
+	virtual void RestoreQuests(const FQuestSaveData& QuestSave, UWorld* World) override;
+	virtual FQuestSaveData GetQuestSave() const override;
 
 protected:
 	void CompleteQuest(const FPrimaryAssetId& QuestId);

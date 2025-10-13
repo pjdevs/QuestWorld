@@ -25,13 +25,15 @@ class QUESTSYSTEM_API UQuestDataAsset : public UPrimaryDataAsset
 	
 	UPROPERTY(EditDefaultsOnly, Instanced, Category = "Quest", meta = (AllowPrivateAccess = "true"))
 	TArray<TObjectPtr<UQuestObjective>> Objectives;
-
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Quest", meta = (AllowPrivateAccess = "true"))
+	bool bIsSequential;
+	
 public:
 	const FText& GetTitle() const { return Title; }
 	const FText& GetDescription() const { return Description; }
 	const TArray<TObjectPtr<UQuestObjective>>& GetQuestObjectives() const { return Objectives; }
-	
-	bool IsCompleted(UWorld* World) const;
+	bool IsSequential() const { return bIsSequential; }
 	
 	virtual FPrimaryAssetId GetPrimaryAssetId() const override;
 };

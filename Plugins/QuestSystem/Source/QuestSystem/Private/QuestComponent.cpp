@@ -3,7 +3,7 @@
 
 #include "QuestComponent.h"
 
-#include "QuestSave.h"
+#include "QuestSaveGame.h"
 #include "QuestService.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
@@ -161,23 +161,17 @@ void UQuestComponent::OnRep_CompletedQuests()
 
 void UQuestComponent::LoadQuestsFromSave()
 {
-	if (const UQuestSave* QuestSave = Cast<UQuestSave>(UGameplayStatics::LoadGameFromSlot("QuestSave", 0)))
+	if (const UQuestSaveGame* QuestSave = Cast<UQuestSaveGame>(UGameplayStatics::LoadGameFromSlot("QuestSave", 0)))
 	{
-		QuestService->SetCompletedQuests(QuestSave->CompletedQuests);
-		QuestService->SetActiveQuests(QuestSave->ActiveQuests, GetWorld());
+		QuestService->RestoreQuests(QuestSave->QuestSaveData, GetWorld());
 	}
 }
 
 void UQuestComponent::WriteQuestsToSave()
 {
-	UQuestSave* QuestSave = Cast<UQuestSave>(UGameplayStatics::CreateSaveGameObject(UQuestSave::StaticClass()));
-	QuestSave->ActiveQuests = ActiveQuests;
-	QuestSave->CompletedQuests = TArray<FPrimaryAssetId>();
-
-	for (FQuestDescription CompletedQuest : CompletedQuests)
-	{
-		QuestSave->CompletedQuests.Add(CompletedQuest.QuestId);
-	}
-		
-	UGameplayStatics::SaveGameToSlot(QuestSave, "QuestSave", 0);
+	UQuestSaveGame* QuestSaveGame = Cast<UQuestSaveGame>(
+		UGameplayStatics::CreateSaveGameObject(UQuestSaveGame::StaticClass())
+	); 
+	QuestSaveGame->QuestSaveData = QuestService->GetQuestSave();
+	UGameplayStatics::SaveGameToSlot(QuestSaveGame, "QuestSave", 0);
 }

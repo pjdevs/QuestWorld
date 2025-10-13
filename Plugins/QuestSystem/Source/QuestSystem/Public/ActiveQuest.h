@@ -19,13 +19,15 @@ struct QUESTSYSTEM_API FActiveQuest
 public:
 	FActiveQuest() = default; // Needed for creating TArray etc. Will see if we use TUniquePtr or so later
 	FActiveQuest(const FPrimaryAssetId& QuestId, UQuestDataAsset* QuestDataAsset, UWorld* World);
-	~FActiveQuest();
 
 	FActiveQuestObjective& GetObjective(int Index) { return Objectives[Index]; }
-
 	const TArray<FActiveQuestObjective>& GetObjectives() const { return Objectives; }
 	const FPrimaryAssetId& GetQuestId() const { return QuestId; }
 	bool IsCompleted() const { return bQuestCompleted; }
+	int GetCurrentObjectiveIndex() const { return CurrentObjectiveIndex; }
+
+	void RestoreCurrentObjectiveIndex(int ObjectiveIndex);
+	
 	/**
 	 * Notify the quest of an emitted quest event.
 	 * @param World 
@@ -36,13 +38,13 @@ public:
 	
 private:
 	UPROPERTY()
-	FPrimaryAssetId QuestId;
-
-	UPROPERTY()
 	TObjectPtr<UQuestDataAsset> QuestDataAsset;
 	
 	UPROPERTY()
 	TArray<FActiveQuestObjective> Objectives;
 
+	FPrimaryAssetId QuestId;
 	bool bQuestCompleted;
+	bool bIsSequential;
+	int CurrentObjectiveIndex;
 };
