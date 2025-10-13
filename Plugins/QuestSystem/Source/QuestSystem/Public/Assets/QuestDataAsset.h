@@ -3,10 +3,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "QuestObjective.h"
 #include "Engine/DataAsset.h"
 #include "QuestDataAsset.generated.h"
 
+class UQuestStep;
 class UQuestObjective;
 
 /**
@@ -24,14 +24,12 @@ class QUESTSYSTEM_API UQuestDataAsset : public UPrimaryDataAsset
 	FText Description;
 	
 	UPROPERTY(EditDefaultsOnly, Instanced, Category = "Quest", meta = (AllowPrivateAccess = "true"))
-	TArray<TObjectPtr<UQuestObjective>> Objectives;
+	TArray<TObjectPtr<UQuestStep>> Steps;
 
 public:
 	const FText& GetTitle() const { return Title; }
 	const FText& GetDescription() const { return Description; }
-	const TArray<TObjectPtr<UQuestObjective>>& GetQuestObjectives() const { return Objectives; }
-	
-	bool IsCompleted(UWorld* World) const;
+	const TArray<TObjectPtr<UQuestStep>>& GetQuestSteps() const { return Steps; }
 	
 	virtual FPrimaryAssetId GetPrimaryAssetId() const override;
 };

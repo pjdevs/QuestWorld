@@ -27,7 +27,7 @@ struct QUESTSYSTEM_API FQuestObjectiveDescription
 };
 
 /**
- * Description of a quest. Potentially to be user in UI.
+ * Description of a quest. Potentially to be used in UI.
  */
 USTRUCT(BlueprintType)
 struct QUESTSYSTEM_API FQuestDescription
@@ -48,4 +48,7 @@ struct QUESTSYSTEM_API FQuestDescription
 
 	UPROPERTY(BlueprintReadOnly, Category = Quest)
 	bool bIsCompleted = false;
+
+	UPROPERTY(BlueprintReadOnly, Category = Quest)
+	int CurrentStepIndex = 0;
 };

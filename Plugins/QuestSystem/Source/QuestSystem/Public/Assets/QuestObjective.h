@@ -20,7 +20,7 @@ protected:
 	 * Can the objective be completed before this quest objective start and hence be checked right after it started.
 	 */
 	UPROPERTY(EditDefaultsOnly, Category = "Quest", meta = (AllowPrivateAccess = "true"))
-	bool bRetroCompletable;
+	FName ObjectiveName;
 	
 	/**
 	 * Can the objective be completed before this quest objective start and hence be checked right after it started.
@@ -28,7 +28,15 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Quest", meta = (AllowPrivateAccess = "true"))
 	FText ObjectiveDescription;
 
+	/**
+	 * Can the objective be completed before this quest objective start and hence be checked right after it started.
+	 */
+	UPROPERTY(EditDefaultsOnly, Category = "Quest", meta = (AllowPrivateAccess = "true"))
+	bool bRetroCompletable;
+
 public:
+	const FName& GetObjectiveName() const { return ObjectiveName; }
+	
 	/**
 	 * Is the objective retro completable.
 	 */

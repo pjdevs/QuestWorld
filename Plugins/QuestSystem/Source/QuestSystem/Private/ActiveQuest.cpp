@@ -5,47 +5,77 @@
 
 #include "ActiveQuestObjective.h"
 #include "Assets/QuestDataAsset.h"
+#include "Assets/QuestStep.h"
 
 
-FActiveQuest::FActiveQuest(const FPrimaryAssetId& QuestId, UQuestDataAsset* QuestDataAsset, UWorld* World)
-	: QuestId(QuestId), QuestDataAsset(QuestDataAsset), bQuestCompleted(false)
+FActiveQuest::FActiveQuest(
+	const FPrimaryAssetId& QuestId,
+	UQuestDataAsset* QuestDataAsset,
+	UWorld* World,
+	int StepIndex
+)
+	: QuestId(QuestId), QuestDataAsset(QuestDataAsset), CurrentStepIndex(StepIndex)
 {
-	bool bAllObjectivesCompleted = true; 
-	
-	for (auto& ObjectiveAsset : QuestDataAsset->GetQuestObjectives())
-	{
-		FActiveQuestObjective ActiveQuestObjective(ObjectiveAsset, World);
-		Objectives.Add(ActiveQuestObjective);
-
-		bAllObjectivesCompleted = bAllObjectivesCompleted && ActiveQuestObjective.IsObjectiveCompleted();
-	}
-
-	bQuestCompleted = bAllObjectivesCompleted;
+	LoadStep(CurrentStepIndex, World);
 }
 
-FActiveQuest::~FActiveQuest()
+FActiveQuest::FActiveQuest(const FPrimaryAssetId& QuestId, UQuestDataAsset* QuestDataAsset, UWorld* World)
+	: FActiveQuest(QuestId, QuestDataAsset, World, 0)
 {
 }
 
 bool FActiveQuest::OnQuestEvent(UWorld* World, UBaseQuestEvent* Event)
 {
-	if (bQuestCompleted)
+	if (IsCompleted())
+	{
 		return false;
+	}
 	
-	bool bAllObjectivesCompleted = true; 
-	bool bAnyObjectiveProgressed = false;
+	bool bAreAllObjectivesCompleted = true; 
+	bool bHasAnyObjectiveProgressed = false;
 	
 	for (auto& ActiveQuestObjective : Objectives)
 	{
 		if (ActiveQuestObjective.IsObjectiveCompleted())
+		{
 			continue;
+		}
 		
-		bAnyObjectiveProgressed |= ActiveQuestObjective.OnQuestEvent(World, Event);
-
-		bAllObjectivesCompleted = bAllObjectivesCompleted && ActiveQuestObjective.IsObjectiveCompleted();
+		bHasAnyObjectiveProgressed |= ActiveQuestObjective.OnQuestEvent(World, Event);
+		bAreAllObjectivesCompleted = bAreAllObjectivesCompleted && ActiveQuestObjective.IsObjectiveCompleted();
 	}
 
-	bQuestCompleted = bAllObjectivesCompleted;
+	if (bAreAllObjectivesCompleted)
+	{
+		LoadStep(CurrentStepIndex + 1, World);
+		return true;
+	}
 
-	return bAnyObjectiveProgressed;
+	return bHasAnyObjectiveProgressed;
+}
+
+void FActiveQuest::LoadStep(int StepIndex, UWorld* World)
+{
+	CurrentStepIndex = StepIndex;
+
+	if (IsCompleted())
+	{
+		return;
+	}
+
+	bool bAllObjectivesCompleted = true;
+	const UQuestStep* CurrentQuestStep = QuestDataAsset->GetQuestSteps()[CurrentStepIndex];
+	
+	for (const TObjectPtr<UQuestObjective>& ObjectiveAsset : CurrentQuestStep->GetObjectives())
+	{
+		FActiveQuestObjective ActiveQuestObjective(ObjectiveAsset, World);
+		Objectives.Add(ActiveQuestObjective);
+
+		bAllObjectivesCompleted &= ActiveQuestObjective.IsObjectiveCompleted();
+	}
+
+	if (bAllObjectivesCompleted)
+	{
+		LoadStep(CurrentStepIndex + 1, World);
+	}
 }

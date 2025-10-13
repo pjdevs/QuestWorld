@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "ActiveQuestObjective.h"
+#include "Assets/QuestDataAsset.h"
 #include "ActiveQuest.generated.h"
 
 class UQuestDataAsset;
@@ -18,14 +19,13 @@ struct QUESTSYSTEM_API FActiveQuest
 
 public:
 	FActiveQuest() = default; // Needed for creating TArray etc. Will see if we use TUniquePtr or so later
+	FActiveQuest(const FPrimaryAssetId& QuestId, UQuestDataAsset* QuestDataAsset, UWorld* World, int StepIndex);
 	FActiveQuest(const FPrimaryAssetId& QuestId, UQuestDataAsset* QuestDataAsset, UWorld* World);
-	~FActiveQuest();
 
 	FActiveQuestObjective& GetObjective(int Index) { return Objectives[Index]; }
-
 	const TArray<FActiveQuestObjective>& GetObjectives() const { return Objectives; }
 	const FPrimaryAssetId& GetQuestId() const { return QuestId; }
-	bool IsCompleted() const { return bQuestCompleted; }
+	bool IsCompleted() const { return CurrentStepIndex >= QuestDataAsset->GetQuestSteps().Num(); }
 	/**
 	 * Notify the quest of an emitted quest event.
 	 * @param World 
@@ -33,6 +33,9 @@ public:
 	 * @return true if the event made some progression or false else.
 	 */
 	bool OnQuestEvent(UWorld* World, UBaseQuestEvent* Event);
+
+private:
+	void LoadStep(int StepIndex, UWorld* World);
 	
 private:
 	UPROPERTY()
@@ -44,5 +47,5 @@ private:
 	UPROPERTY()
 	TArray<FActiveQuestObjective> Objectives;
 
-	bool bQuestCompleted;
+	int CurrentStepIndex;
 };
