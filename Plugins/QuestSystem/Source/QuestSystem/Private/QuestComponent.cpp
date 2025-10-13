@@ -170,8 +170,6 @@ void UQuestComponent::LoadQuestsFromSave()
 
 void UQuestComponent::WriteQuestsToSave()
 {
-	
-
 	UQuestSave* QuestSave = Cast<UQuestSave>(UGameplayStatics::CreateSaveGameObject(UQuestSave::StaticClass()));
 	QuestSave->ActiveQuests = ActiveQuests;
 	QuestSave->CompletedQuests = TArray<FPrimaryAssetId>();
