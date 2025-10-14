@@ -20,8 +20,15 @@ protected:
 	 * Can the objective be completed before this quest objective start and hence be checked right after it started.
 	 */
 	UPROPERTY(EditDefaultsOnly, Category = "Quest", meta = (AllowPrivateAccess = "true"))
-	bool bRetroCompletable;
-	
+	bool bRetroCompletable = true;
+
+	/**
+	 * When triggered, should we add the return value of the trigger function to progress
+	 * or use it as new the progress value. 
+	 */
+	UPROPERTY(EditDefaultsOnly, Category = "Quest", meta = (AllowPrivateAccess = "true"))
+	bool bAddProgress = true;
+
 	/**
 	 * Can the objective be completed before this quest objective start and hence be checked right after it started.
 	 */

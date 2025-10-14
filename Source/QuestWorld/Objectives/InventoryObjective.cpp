@@ -4,11 +4,12 @@
 #include "InventoryObjective.h"
 
 #include "InventoryQuestEvent.h"
-#include "QuestWorld/Inventory/InventoryHelpers.h"
+#include "InventoryStatics.h"
 
 UInventoryObjective::UInventoryObjective()
 {
 	bRetroCompletable = true;
+	bAddProgress = false;
 }
 
 int UInventoryObjective::GetCompletion_Implementation(UWorld* World)
@@ -18,7 +19,7 @@ int UInventoryObjective::GetCompletion_Implementation(UWorld* World)
 		return 0;
 	}
 	
-	return FInventoryHelpers::GetTotalItemCountForAllPlayers(World, TargetItemName);
+	return UInventoryStatics::GetTotalItemCountForAllPlayers(World, TargetItemId);
 }
 
 int UInventoryObjective::GetTargetValue_Implementation()
@@ -30,9 +31,9 @@ int UInventoryObjective::TriggerProgress_Implementation(UWorld* World, UBaseQues
 {
 	if (const UInventoryQuestEvent* InventoryEvent = Cast<UInventoryQuestEvent>(Event))
 	{
-		if (InventoryEvent->NameOfItemAdded == TargetItemName)
+		if (InventoryEvent->ItemId == TargetItemId)
 		{
-			return TargetItemCount;
+			return GetCompletion_Implementation(World);
 		}
 	}
 

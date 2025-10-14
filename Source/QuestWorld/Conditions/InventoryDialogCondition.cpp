@@ -1,5 +1,5 @@
 ﻿#include "InventoryDialogCondition.h"
-#include "QuestWorld/Inventory/InventoryHelpers.h"
+#include "InventoryStatics.h"
 
 bool UInventoryDialogCondition::IsSatisfied(UWorld* World)
 {
@@ -8,7 +8,7 @@ bool UInventoryDialogCondition::IsSatisfied(UWorld* World)
 		return false;
 	}
 
-	const int Total = FInventoryHelpers::GetTotalItemCountForAllPlayers(World, TargetItemName);
+	const int Total = UInventoryStatics::GetTotalItemCountForAllPlayers(World, TargetItemId);
 
 	switch (Behavior)
 	{

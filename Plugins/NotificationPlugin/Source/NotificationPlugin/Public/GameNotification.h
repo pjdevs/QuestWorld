@@ -37,7 +37,7 @@ struct NOTIFICATIONPLUGIN_API FGameNotification
 	
 	/** Optional sound, icon, etc. if used in most messages */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TObjectPtr<USoundBase> Icon = nullptr;
+	TObjectPtr<UTexture2D> Icon = nullptr;
 	
 	/** Optional sound. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

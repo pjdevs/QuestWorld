@@ -18,8 +18,8 @@ class QUESTWORLD_API UInventoryQuestEvent : public UBaseQuestEvent
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Quest, meta = (ExposeOnSpawn = "true"))
-	FString NameOfItemAdded;
+	FPrimaryAssetId ItemId;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Quest, meta = (ExposeOnSpawn = "true"))
-	int CountOfItemAdded;
+	int NewItemCount;
 };

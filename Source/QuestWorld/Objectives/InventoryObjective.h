@@ -24,7 +24,7 @@ protected:
 
 private:
 	UPROPERTY(EditDefaultsOnly, Category = Inventory, meta = (AllowPrivateAccess = true))
-	FString TargetItemName = FString("None");
+	FPrimaryAssetId TargetItemId = FPrimaryAssetId();
 	
 	UPROPERTY(EditDefaultsOnly, Category = Inventory, meta = (AllowPrivateAccess = true))
 	int TargetItemCount = 1;

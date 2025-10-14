@@ -14,18 +14,19 @@ struct FGameNotification;
 /**
  * 
  */
-UCLASS()
+UCLASS(Category = Notification)
 class NOTIFICATIONPLUGIN_API UNotificationSubsystem : public UGameInstanceSubsystem
 {
 	GENERATED_BODY()
 
 public:
+	UFUNCTION(BlueprintCallable, Category = Notification)
 	void QueueNotification(const FGameNotification& Message);
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = Notification)
 	void Subscribe(APlayerController* PlayerController);
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = Notification)
 	void Unsubscribe(APlayerController* PlayerController);
 	
 	// void SaveToGame(USaveGame* SaveGame);
