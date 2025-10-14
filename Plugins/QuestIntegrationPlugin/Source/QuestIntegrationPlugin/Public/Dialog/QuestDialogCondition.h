@@ -25,12 +25,13 @@ class QUESTINTEGRATIONPLUGIN_API UQuestDialogCondition : public UDialogCondition
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditDefaultsOnly, Category = Dialog)
+public:
+	virtual bool IsSatisfied(UWorld* World) override;	
+
+private:
+	UPROPERTY(EditDefaultsOnly, Category = Dialog, meta = (AllowPrivateAccess = true, AllowedTypes = Quest))
 	FPrimaryAssetId QuestId;
 
 	UPROPERTY(EditDefaultsOnly, Category = Dialog)
 	EQuestConditionBehavior Behavior;
-
-public:
-	virtual bool IsSatisfied(UWorld* World) override;	
 };

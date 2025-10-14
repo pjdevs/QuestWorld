@@ -13,10 +13,11 @@ UCLASS()
 class QUESTINTEGRATIONPLUGIN_API UStartQuestDialogTrigger : public UDialogTrigger
 {
 	GENERATED_BODY()
-	
-	UPROPERTY(EditDefaultsOnly, Category = Dialog)
-	FPrimaryAssetId QuestToStartId;
 
 public:
 	virtual void Execute(UWorld* World, AController* DialogController) override;
+
+private:
+	UPROPERTY(EditDefaultsOnly, Category = Dialog, meta = (AllowPrivateAccess = true, AllowedTypes = Quest))
+	FPrimaryAssetId QuestToStartId;
 };
