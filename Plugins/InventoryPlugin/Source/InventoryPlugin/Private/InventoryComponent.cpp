@@ -24,6 +24,7 @@ void FInventoryList::AddItem(const FInventoryItemId& ItemId, int ItemCountToAdd)
 
 	if (Existing)
 	{
+		Existing->LastQuantity = Existing->Quantity;
 		Existing->Quantity += ItemCountToAdd;
 		MarkItemDirty(*Existing);
 	}
@@ -31,6 +32,7 @@ void FInventoryList::AddItem(const FInventoryItemId& ItemId, int ItemCountToAdd)
 	{
 		FInventoryItemEntry& NewItem = Items.AddDefaulted_GetRef();
 		NewItem.ItemId = ItemId;
+		NewItem.LastQuantity = 0;
 		NewItem.Quantity = ItemCountToAdd;
 		MarkItemDirty(NewItem);
 	}
@@ -42,6 +44,7 @@ void FInventoryList::RemoveItem(const FInventoryItemId& ItemId, int ItemCountToR
 	{
 		if (Items[i].ItemId == ItemId)
 		{
+			Items[i].LastQuantity = Items[i].Quantity;
 			Items[i].Quantity -= ItemCountToRemove;
 
 			if (Items[i].Quantity <= 0)
@@ -78,7 +81,8 @@ void FInventoryList::PostReplicatedAdd(const TArrayView<int32> AddedIndices, int
 
 	for (const int32 Idx : AddedIndices)
 	{
-		OwnerComponent->OnItemAdded(Items[Idx]);
+		FInventoryItemEntry Entry = Items[Idx];
+		OwnerComponent->OnItemAddedClient(Entry.ItemId, Entry.Quantity);
 	}
 }
 
@@ -91,7 +95,17 @@ void FInventoryList::PostReplicatedChange(const TArrayView<int32> ChangedIndices
 
 	for (const int32 Idx : ChangedIndices)
 	{
-		OwnerComponent->OnItemChanged(Items[Idx]);
+		const FInventoryItemEntry& Entry = Items[Idx];
+		const int DeltaQuantity = Entry.Quantity - Entry.LastQuantity;
+
+		if (DeltaQuantity > 0)
+		{
+			OwnerComponent->OnItemAddedClient(Entry.ItemId, DeltaQuantity);
+		}
+		else
+		{
+			OwnerComponent->OnItemRemovedClient(Entry.ItemId, -DeltaQuantity);
+		}
 	}
 }
 
@@ -104,15 +118,29 @@ void FInventoryList::PreReplicatedRemove(const TArrayView<int32> RemovedIndices,
 
 	for (const int32 Idx : RemovedIndices)
 	{
-		OwnerComponent->OnItemRemoved(Items[Idx].ItemId);
+		FInventoryItemEntry Entry = Items[Idx];
+		OwnerComponent->OnItemRemovedClient(Entry.ItemId, Entry.Quantity);
 	}
 }
 
 UInventoryComponent::UInventoryComponent()
-	: InventoryList(this)
+	: InventoryList(this), bInventoryReceived(false)
 {
 	PrimaryComponentTick.bCanEverTick = false;
 	SetIsReplicatedByDefault(true);
+}
+
+void UInventoryComponent::BeginPlay()
+{
+	Super::BeginPlay();
+
+	// Initial replication
+	// TODO load saved inventory
+
+	if (GetOwnerRole() == ROLE_Authority)
+	{
+		InventoryList.MarkArrayDirty();
+	}
 }
 
 void UInventoryComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -140,7 +168,7 @@ void UInventoryComponent::AddItem(FInventoryItemId ItemId, int ItemCountToAdd)
 	}
 
 	InventoryList.AddItem(ItemId, ItemCountToAdd);
-	OnItemCountChanged.Broadcast(ItemId, GetItemCount(ItemId));
+	OnItemAddedDelegate.Broadcast(ItemId, ItemCountToAdd);
 }
 
 void UInventoryComponent::RemoveItem(FInventoryItemId ItemId, int ItemCountToRemove)
@@ -160,27 +188,35 @@ void UInventoryComponent::RemoveItem(FInventoryItemId ItemId, int ItemCountToRem
 		return;
 	}
 
-	InventoryList.RemoveItem(ItemId, ItemCountToRemove);
-	OnItemCountChanged.Broadcast(ItemId, GetItemCount(ItemId));
+	const int ItemCount = InventoryList.GetItemCount(ItemId);
+	const int RealCountToRemove = FMath::Min(ItemCountToRemove, ItemCount);
+
+	InventoryList.RemoveItem(ItemId, RealCountToRemove);
+	OnItemRemovedDelegate.Broadcast(ItemId, RealCountToRemove);
 }
 
 int UInventoryComponent::GetItemCount(FInventoryItemId ItemId) const
 {
-	const FInventoryItemEntry* Entry = InventoryList.Items.FindByKey(ItemId);
-	return Entry ? Entry->Quantity : 0;
+	return InventoryList.GetItemCount(ItemId);
 }
 
-void UInventoryComponent::OnItemAdded(const FInventoryItemEntry& ItemEntry)
+void UInventoryComponent::OnItemAddedClient(const FInventoryItemId& ItemId, int ItemCountAdded)
 {
-	OnItemCountChanged.Broadcast(ItemEntry.ItemId, ItemEntry.Quantity);
+	if (bInventoryReceived)
+	{
+		OnItemAddedDelegate.Broadcast(ItemId, ItemCountAdded);
+	}
 }
 
-void UInventoryComponent::OnItemChanged(const FInventoryItemEntry& ItemEntry)
+void UInventoryComponent::OnItemRemovedClient(const FInventoryItemId& ItemId, int ItemCountRemoved)
 {
-	OnItemCountChanged.Broadcast(ItemEntry.ItemId, ItemEntry.Quantity);
+	if (bInventoryReceived)
+	{
+		OnItemAddedDelegate.Broadcast(ItemId, ItemCountRemoved);
+	}
 }
 
-void UInventoryComponent::OnItemRemoved(const FInventoryItemId& ItemId)
+void UInventoryComponent::OnRep_InventoryList()
 {
-	OnItemCountChanged.Broadcast(ItemId, 0);
+	bInventoryReceived = true;
 }

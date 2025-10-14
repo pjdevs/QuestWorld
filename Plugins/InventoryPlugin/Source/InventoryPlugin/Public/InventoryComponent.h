@@ -29,6 +29,8 @@ struct INVENTORYPLUGIN_API FInventoryItemEntry: public FFastArraySerializerItem
 
 	UPROPERTY()
 	int Quantity = 0;
+
+	int LastQuantity = 0;
 };
 
 USTRUCT()
@@ -36,6 +38,7 @@ struct INVENTORYPLUGIN_API FInventoryList : public FFastArraySerializer
 {
 	GENERATED_BODY()
 
+public:
 	FInventoryList();
 	explicit FInventoryList(UInventoryComponent* InventoryComponent);
 
@@ -47,6 +50,7 @@ struct INVENTORYPLUGIN_API FInventoryList : public FFastArraySerializer
 	void PostReplicatedChange(const TArrayView<int32> ChangedIndices, int32 FinalSize);
 	void PreReplicatedRemove(const TArrayView<int32> RemovedIndices, int32 FinalSize);
 
+private:
 	UPROPERTY()
 	TObjectPtr<UInventoryComponent> OwnerComponent;
 	
@@ -68,6 +72,7 @@ class INVENTORYPLUGIN_API UInventoryComponent : public UActorComponent
 public:
 	UInventoryComponent();
 
+	virtual void BeginPlay() override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 public:
@@ -82,19 +87,24 @@ public:
 
 public:
 	UFUNCTION()
-	void OnItemAdded(const FInventoryItemEntry& ItemEntry);
+	void OnItemAddedClient(const FInventoryItemId& ItemId, int ItemCountAdded);
 
 	UFUNCTION()
-	void OnItemChanged(const FInventoryItemEntry& ItemEntry);
+	void OnItemRemovedClient(const FInventoryItemId& ItemId, int ItemCountRemoved);
 
 	UFUNCTION()
-	void OnItemRemoved(const FInventoryItemId& ItemId);
+	void OnRep_InventoryList();
 
 private:
 	UPROPERTY(BlueprintAssignable, Category = Inventory, meta = (AllowPrivateAccess = true))
-	FInventoryChangedDelegate OnItemCountChanged;
+	FInventoryChangedDelegate OnItemAddedDelegate;
+
+	UPROPERTY(BlueprintAssignable, Category = Inventory, meta = (AllowPrivateAccess = true))
+	FInventoryChangedDelegate OnItemRemovedDelegate;
 	
 private:
-	UPROPERTY(Replicated)
+	UPROPERTY(ReplicatedUsing=OnRep_InventoryList)
 	FInventoryList InventoryList;
+	
+	bool bInventoryReceived;
 };
