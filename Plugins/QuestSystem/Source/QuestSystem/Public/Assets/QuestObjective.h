@@ -17,15 +17,19 @@ class QUESTSYSTEM_API UQuestObjective : public UObject
 
 public:
 	/**
-	 * Is the objective retro completable.
+	 * Is the objective retro completable
+	 * (i.e. should check at objective creation if condition could be already be fulfilled).
 	 */
-	UFUNCTION(BlueprintCallable, Category = Quest)
 	bool IsRetroCompletable() const { return bRetroCompletable; }
 
 	/**
+	 * Is the objective retro completable.
+	 */
+	bool ShouldAddProgress() const { return bShouldAddProgress; }
+	
+	/**
 	 * The description of this objective to display.
 	 */
-	UFUNCTION(BlueprintCallable, Category = Quest)
 	const FText& GetObjectiveDescription() const { return ObjectiveDescription; }
 	
 	/**
@@ -63,15 +67,16 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = Quest, meta = (AllowPrivateAccess = true))
 	FText ObjectiveDescription;
 
-protected:
 	/**
 	 * Can the objective be completed before this quest objective start and hence be checked right after it started.
 	 */
+	UPROPERTY(BlueprintReadWrite, Category = Quest, meta = (AllowPrivateAccess = true))
 	bool bRetroCompletable = true;
 
 	/**
 	 * When triggered, should we add the return value of the trigger function to progress
 	 * or use it as new the progress value. 
 	 */
-	bool bAddProgress = true;
+	UPROPERTY(BlueprintReadWrite, Category = Quest, meta = (AllowPrivateAccess = true))
+	bool bShouldAddProgress = true;
 };

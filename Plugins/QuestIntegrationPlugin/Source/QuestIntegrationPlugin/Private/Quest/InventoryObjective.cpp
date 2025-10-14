@@ -8,7 +8,7 @@
 UInventoryObjective::UInventoryObjective()
 {
 	bRetroCompletable = true;
-	bAddProgress = false;
+	bShouldAddProgress = false;
 }
 
 int UInventoryObjective::GetCompletion_Implementation(UWorld* World)
