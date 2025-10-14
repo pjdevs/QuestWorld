@@ -6,6 +6,7 @@
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "InventoryStatics.generated.h"
 
+struct FInventoryItemId;
 class UInventoryItemDataAsset;
 
 /**
@@ -18,11 +19,11 @@ class INVENTORYPLUGIN_API UInventoryStatics : public UBlueprintFunctionLibrary
 
 public:
 	UFUNCTION(BlueprintCallable, Category = Inventory)
-	static UInventoryItemDataAsset* GetItem(FPrimaryAssetId ItemId);
+	static UInventoryItemDataAsset* GetItem(FInventoryItemId ItemId);
 
 	UFUNCTION(BlueprintCallable, Category = Inventory)
-	static bool IsItemExisting(FPrimaryAssetId ItemId);
+	static bool IsItemExisting(FInventoryItemId ItemId);
 
 	UFUNCTION(BlueprintCallable, Category = Inventory)
-	static int GetTotalItemCountForAllPlayers(const UWorld* World, FPrimaryAssetId ItemId);
+	static int GetTotalItemCountForAllPlayers(const UWorld* World, FInventoryItemId ItemId);
 };

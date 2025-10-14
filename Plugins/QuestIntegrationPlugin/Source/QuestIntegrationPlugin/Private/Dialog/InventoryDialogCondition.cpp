@@ -1,4 +1,4 @@
-﻿#include "InventoryDialogCondition.h"
+﻿#include "Dialog/InventoryDialogCondition.h"
 #include "InventoryStatics.h"
 
 bool UInventoryDialogCondition::IsSatisfied(UWorld* World)

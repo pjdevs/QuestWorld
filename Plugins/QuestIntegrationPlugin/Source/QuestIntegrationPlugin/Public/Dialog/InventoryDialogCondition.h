@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "DialogCondition.h"
+#include "InventoryItemId.h"
 #include "InventoryDialogCondition.generated.h"
 
 // TODO Replace that with a QuestStepCondition
@@ -23,7 +24,7 @@ enum class EInventoryConditionBehavior : uint8
  * 
  */
 UCLASS()
-class QUESTWORLD_API UInventoryDialogCondition : public UDialogCondition
+class QUESTINTEGRATIONPLUGIN_API UInventoryDialogCondition : public UDialogCondition
 {
 	GENERATED_BODY()
 
@@ -35,7 +36,7 @@ private:
 	EInventoryConditionBehavior Behavior = EInventoryConditionBehavior::More;
 	
 	UPROPERTY(EditDefaultsOnly, Category = Inventory, meta = (AllowPrivateAccess = true))
-	FPrimaryAssetId TargetItemId = FPrimaryAssetId();
+	FInventoryItemId TargetItemId = FInventoryItemId();
 	
 	UPROPERTY(EditDefaultsOnly, Category = Inventory, meta = (AllowPrivateAccess = true))
 	int TargetItemCount = 1;

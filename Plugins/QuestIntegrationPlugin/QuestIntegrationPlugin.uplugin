@@ -37,7 +37,11 @@
 		{
 			"Name": "DialogPlugin",
 			"Enabled": true
-		}
+		},
+        {
+          "Name": "InventoryPlugin",
+          "Enabled": true
+        }
 	],
 	"AdditionalDefaultConfigFiles": [
 		"DefaultQuestIntegration.ini"

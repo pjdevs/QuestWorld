@@ -16,7 +16,7 @@ FInventoryList::FInventoryList(UInventoryComponent* InventoryComponent)
 {
 }
 
-void FInventoryList::AddItem(const FPrimaryAssetId& ItemId, int ItemCountToAdd)
+void FInventoryList::AddItem(const FInventoryItemId& ItemId, int ItemCountToAdd)
 {
 	FInventoryItemEntry* Existing = Items.FindByPredicate(
 	[&](const FInventoryItemEntry& Item) { return Item.ItemId == ItemId; }
@@ -36,7 +36,7 @@ void FInventoryList::AddItem(const FPrimaryAssetId& ItemId, int ItemCountToAdd)
 	}
 }
 
-void FInventoryList::RemoveItem(const FPrimaryAssetId& ItemId, int ItemCountToRemove)
+void FInventoryList::RemoveItem(const FInventoryItemId& ItemId, int ItemCountToRemove)
 {
 	for (int32 i = 0; i < Items.Num(); i++)
 	{
@@ -58,7 +58,7 @@ void FInventoryList::RemoveItem(const FPrimaryAssetId& ItemId, int ItemCountToRe
 	}
 }
 
-int FInventoryList::GetItemCount(const FPrimaryAssetId& ItemId) const
+int FInventoryList::GetItemCount(const FInventoryItemId& ItemId) const
 {
 	const FInventoryItemEntry* Entry = Items.FindByKey(ItemId);
 	return Entry ? Entry->Quantity : 0;
@@ -122,7 +122,7 @@ void UInventoryComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 	DOREPLIFETIME(UInventoryComponent, InventoryList);
 }
 
-void UInventoryComponent::AddItem(FPrimaryAssetId ItemId, int ItemCountToAdd)
+void UInventoryComponent::AddItem(FInventoryItemId ItemId, int ItemCountToAdd)
 {
 	if (GetOwnerRole() != ROLE_Authority)
 	{
@@ -143,7 +143,7 @@ void UInventoryComponent::AddItem(FPrimaryAssetId ItemId, int ItemCountToAdd)
 	OnItemCountChanged.Broadcast(ItemId, GetItemCount(ItemId));
 }
 
-void UInventoryComponent::RemoveItem(FPrimaryAssetId ItemId, int ItemCountToRemove)
+void UInventoryComponent::RemoveItem(FInventoryItemId ItemId, int ItemCountToRemove)
 {
 	if (GetOwnerRole() != ROLE_Authority)
 	{
@@ -164,7 +164,7 @@ void UInventoryComponent::RemoveItem(FPrimaryAssetId ItemId, int ItemCountToRemo
 	OnItemCountChanged.Broadcast(ItemId, GetItemCount(ItemId));
 }
 
-int UInventoryComponent::GetItemCount(FPrimaryAssetId ItemId) const
+int UInventoryComponent::GetItemCount(FInventoryItemId ItemId) const
 {
 	const FInventoryItemEntry* Entry = InventoryList.Items.FindByKey(ItemId);
 	return Entry ? Entry->Quantity : 0;
@@ -180,7 +180,7 @@ void UInventoryComponent::OnItemChanged(const FInventoryItemEntry& ItemEntry)
 	OnItemCountChanged.Broadcast(ItemEntry.ItemId, ItemEntry.Quantity);
 }
 
-void UInventoryComponent::OnItemRemoved(const FPrimaryAssetId& ItemId)
+void UInventoryComponent::OnItemRemoved(const FInventoryItemId& ItemId)
 {
 	OnItemCountChanged.Broadcast(ItemId, 0);
 }

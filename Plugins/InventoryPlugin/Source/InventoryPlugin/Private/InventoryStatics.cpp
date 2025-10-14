@@ -8,10 +8,10 @@
 #include "PrimaryAssetTypes.h"
 #include "Engine/AssetManager.h"
 
-UInventoryItemDataAsset* UInventoryStatics::GetItem(FPrimaryAssetId ItemId)
+UInventoryItemDataAsset* UInventoryStatics::GetItem(FInventoryItemId ItemId)
 {
 	const UAssetManager& AssetManager = UAssetManager::Get();
-	const FSoftObjectPath ItemAssetPath = AssetManager.GetPrimaryAssetPath(ItemId);
+	const FSoftObjectPath ItemAssetPath = AssetManager.GetPrimaryAssetPath(ItemId.InventoryItemAssetId);
 
 	if (!ItemAssetPath.IsValid())
 	{
@@ -29,20 +29,20 @@ UInventoryItemDataAsset* UInventoryStatics::GetItem(FPrimaryAssetId ItemId)
 	return ItemAsset;
 }
 
-bool UInventoryStatics::IsItemExisting(FPrimaryAssetId ItemId)
+bool UInventoryStatics::IsItemExisting(FInventoryItemId ItemId)
 {
-	if (!ItemId.IsValid() || ItemId.PrimaryAssetType != PrimaryAssetTypes::InventoryItem)
+	if (!ItemId.IsValid())
 	{
 		return false;
 	}
 
  	const UAssetManager& AssetManager = UAssetManager::Get();
-	const FSoftObjectPath ItemAssetPath = AssetManager.GetPrimaryAssetPath(ItemId);
+	const FSoftObjectPath ItemAssetPath = AssetManager.GetPrimaryAssetPath(ItemId.InventoryItemAssetId);
 
 	return ItemAssetPath.IsValid();
 }
 
-int UInventoryStatics::GetTotalItemCountForAllPlayers(const UWorld* World, FPrimaryAssetId ItemId)
+int UInventoryStatics::GetTotalItemCountForAllPlayers(const UWorld* World, FInventoryItemId ItemId)
 {
 	int TotalItemCount = 0; 
 	

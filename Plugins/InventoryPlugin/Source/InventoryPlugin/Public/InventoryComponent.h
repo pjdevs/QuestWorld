@@ -3,13 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "InventoryItemId.h"
 #include "Net/Serialization/FastArraySerializer.h"
 #include "Components/ActorComponent.h"
 #include "InventoryComponent.generated.h"
 
 class UInventoryItemDataAsset;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FInventoryChangedDelegate, FPrimaryAssetId, ItemId, int, ItemCount);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FInventoryChangedDelegate, FInventoryItemId, ItemId, int, ItemCount);
 
 class UInventoryComponent;
 
@@ -18,13 +19,13 @@ struct INVENTORYPLUGIN_API FInventoryItemEntry: public FFastArraySerializerItem
 {
 	GENERATED_BODY()
 
-	bool operator==(const FPrimaryAssetId& OtherItemId) const
+	bool operator==(const FInventoryItemId& OtherItemId) const
 	{
 		return ItemId == OtherItemId;
 	}
 
 	UPROPERTY()
-	FPrimaryAssetId ItemId = FPrimaryAssetId();
+	FInventoryItemId ItemId = FInventoryItemId();
 
 	UPROPERTY()
 	int Quantity = 0;
@@ -38,9 +39,9 @@ struct INVENTORYPLUGIN_API FInventoryList : public FFastArraySerializer
 	FInventoryList();
 	explicit FInventoryList(UInventoryComponent* InventoryComponent);
 
-	void AddItem(const FPrimaryAssetId& ItemId, int ItemCountToAdd);
-	void RemoveItem(const FPrimaryAssetId& ItemId, int ItemCountToRemove);
-	int GetItemCount(const FPrimaryAssetId& ItemId) const;
+	void AddItem(const FInventoryItemId& ItemId, int ItemCountToAdd);
+	void RemoveItem(const FInventoryItemId& ItemId, int ItemCountToRemove);
+	int GetItemCount(const FInventoryItemId& ItemId) const;
 	bool NetDeltaSerialize(FNetDeltaSerializeInfo& DeltaParms);
 	void PostReplicatedAdd(const TArrayView<int32> AddedIndices, int32 FinalSize);
 	void PostReplicatedChange(const TArrayView<int32> ChangedIndices, int32 FinalSize);
@@ -71,13 +72,13 @@ public:
 
 public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = Inventory)
-	void AddItem(FPrimaryAssetId ItemId, int ItemCountToAdd);
+	void AddItem(FInventoryItemId ItemId, int ItemCountToAdd);
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = Inventory)
-	void RemoveItem(FPrimaryAssetId ItemId, int ItemCountToRemove);
+	void RemoveItem(FInventoryItemId ItemId, int ItemCountToRemove);
 	
 	UFUNCTION(BlueprintPure, Category = Inventory)
-	int GetItemCount(FPrimaryAssetId ItemId) const;
+	int GetItemCount(FInventoryItemId ItemId) const;
 
 public:
 	UFUNCTION()
@@ -87,7 +88,7 @@ public:
 	void OnItemChanged(const FInventoryItemEntry& ItemEntry);
 
 	UFUNCTION()
-	void OnItemRemoved(const FPrimaryAssetId& ItemId);
+	void OnItemRemoved(const FInventoryItemId& ItemId);
 
 private:
 	UPROPERTY(BlueprintAssignable, Category = Inventory, meta = (AllowPrivateAccess = true))

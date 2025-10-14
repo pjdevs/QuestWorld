@@ -12,15 +12,15 @@ public class QuestIntegrationPlugin : ModuleRules
 			new string[] {
 				// ... add public include paths required here ...
 			}
-			);
+		);
 				
 		
 		PrivateIncludePaths.AddRange(
 			new string[] {
 				// ... add other private include paths required here ...
 			}
-			);
-			
+		);
+		
 		
 		PublicDependencyModuleNames.AddRange(
 			new string[]
@@ -44,9 +44,10 @@ public class QuestIntegrationPlugin : ModuleRules
 				"QuestSystem",
 				"NotificationPlugin",
 				"InteractionPlugin",
-				"DialogPlugin"
+				"DialogPlugin",
+				"InventoryPlugin"
 			}
-			);
+		);
 		
 		
 		DynamicallyLoadedModuleNames.AddRange(
@@ -54,6 +55,6 @@ public class QuestIntegrationPlugin : ModuleRules
 			{
 				// ... add any modules that your module loads dynamically here ...
 			}
-			);
+		);
 	}
 }

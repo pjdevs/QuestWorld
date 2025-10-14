@@ -1,9 +1,8 @@
 ﻿// Copyright pjdevs. All Rights Reserved.
 
 
-#include "InventoryObjective.h"
-
-#include "InventoryQuestEvent.h"
+#include "Quest/InventoryObjective.h"
+#include "Quest/InventoryQuestEvent.h"
 #include "InventoryStatics.h"
 
 UInventoryObjective::UInventoryObjective()

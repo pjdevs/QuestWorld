@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "InventoryItemId.h"
 #include "Assets/QuestObjective.h"
 #include "InventoryObjective.generated.h"
 
@@ -10,7 +11,7 @@
  * 
  */
 UCLASS()
-class QUESTWORLD_API UInventoryObjective : public UQuestObjective
+class QUESTINTEGRATIONPLUGIN_API UInventoryObjective : public UQuestObjective
 {
 	GENERATED_BODY()
 
@@ -24,7 +25,7 @@ protected:
 
 private:
 	UPROPERTY(EditDefaultsOnly, Category = Inventory, meta = (AllowPrivateAccess = true))
-	FPrimaryAssetId TargetItemId = FPrimaryAssetId();
+	FInventoryItemId TargetItemId = FInventoryItemId();
 	
 	UPROPERTY(EditDefaultsOnly, Category = Inventory, meta = (AllowPrivateAccess = true))
 	int TargetItemCount = 1;

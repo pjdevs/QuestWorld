@@ -18,7 +18,8 @@ public class QuestWorld : ModuleRules
 			"InteractionPlugin",
 			"QuestSystem",
 			"DialogPlugin",
-			"InventoryPlugin"
+			"InventoryPlugin",
+			"QuestIntegrationPlugin"
 		});
 	}
 }
