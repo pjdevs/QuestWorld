@@ -98,6 +98,9 @@ protected:
 	 */
 	void HideWidgetClient(AActor* InteractiveActor);
 
+	/**
+	 * Helper to check if we are on a local pawn.
+	 */
 	bool IsLocal() const;
 
 private:

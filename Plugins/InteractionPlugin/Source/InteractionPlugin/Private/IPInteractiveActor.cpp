@@ -29,6 +29,33 @@ AIPInteractiveActor::AIPInteractiveActor()
 	bAutoInteract = false;
 }
 
+void AIPInteractiveActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+
+	PossibleInteractors.RemoveAll([](const TWeakObjectPtr<UIPInteractorComponent>& Interactor)
+	{
+		return !Interactor.IsValid();
+	});
+
+	IndicatedInteractors.RemoveAll([](const TWeakObjectPtr<UIPInteractorComponent>& Interactor)
+	{
+		return !Interactor.IsValid();
+	});
+
+	for (const TWeakObjectPtr<UIPInteractorComponent>& Interactor : PossibleInteractors)
+	{
+		Interactor->RemoveInteractive(this);
+		Interactor->RemoveInteractiveIndication(this);
+		IndicatedInteractors.Remove(Interactor);
+	}
+
+	for (const TWeakObjectPtr<UIPInteractorComponent>& Interactor : IndicatedInteractors)
+	{
+		Interactor->RemoveInteractiveIndication(this);
+	}
+}
+
 void AIPInteractiveActor::HandleInteractionTriggerBeginOverlap(
 	UPrimitiveComponent* OverlappedComponent,
 	AActor* OtherActor,
@@ -53,6 +80,7 @@ void AIPInteractiveActor::HandleInteractionTriggerBeginOverlap(
 		return;
 	}
 
+	PossibleInteractors.Add(Interactor);
 	Interactor->AddInteractive(this);
 }
 
@@ -78,6 +106,7 @@ void AIPInteractiveActor::HandleInteractionTriggerEndOverlap(
 		return;
 	}
 
+	PossibleInteractors.Remove(Interactor);
 	Interactor->RemoveInteractive(this);
 }
 
@@ -252,6 +281,7 @@ void AIPInteractiveActor::StateChanged()
 		return !Interactor.IsValid();
 	});
 
+	// Only notify indicated interactors because possible interactors will be updated on interactor's Tick
 	for (const TWeakObjectPtr<UIPInteractorComponent>& Interactor : IndicatedInteractors)
 	{
 		Interactor->OnInteractiveStateChanged(this);

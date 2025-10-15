@@ -27,6 +27,9 @@ class INTERACTIONPLUGIN_API AIPInteractiveActor : public AActor, public IIPInter
 public:
 	AIPInteractiveActor();
 
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+	
+public:
 	virtual void Interact(AActor* InteractionInstigator) override;
 	virtual bool CanBeInteracted(AActor* InteractionInstigator) const override;
 	virtual FVector GetInteractiveLocation() const override;
@@ -178,8 +181,14 @@ private:
 	EIPInteractiveState State;
 
 	/**
-	 * The array of possible interactors that have been indicated.
+	 * The array of interactors that have been indicated.
 	 */
 	UPROPERTY(VisibleInstanceOnly, Category = Interaction, meta = (AllowPrivateAccess = true))
 	TArray<TWeakObjectPtr<UIPInteractorComponent>> IndicatedInteractors;
+
+	/**
+	 * The array of possible interactors.
+	 */
+	UPROPERTY(VisibleInstanceOnly, Category = Interaction, meta = (AllowPrivateAccess = true))
+	TArray<TWeakObjectPtr<UIPInteractorComponent>> PossibleInteractors;
 };

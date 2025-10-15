@@ -107,7 +107,7 @@ void UIPInteractorComponent::RemoveInteractiveIndication(IIPInteractive* Interac
 
 void UIPInteractorComponent::OnInteractiveStateChanged(IIPInteractive* Interactive)
 {
-	if (!PossibleInteractives.Contains(Interactive))
+	if (!PossibleInteractives.Contains(Interactive) && IndicatedInteractives.Contains(Interactive))
 	{
 		ShowIndicationWidgetClient(Cast<AActor>(Interactive));
 	}
@@ -196,7 +196,14 @@ void UIPInteractorComponent::OnMostRelevantInteractiveChanged(
 	// Show hide interaction widgets
 	if (PreviousMostRelevantActor)
 	{
-		ShowIndicationWidgetClient(PreviousMostRelevantActor);
+		if (IndicatedInteractives.Contains(Cast<IIPInteractive>(PreviousMostRelevantActor)))
+		{
+			ShowIndicationWidgetClient(PreviousMostRelevantActor);
+		}
+		else
+		{
+			HideWidgetClient(PreviousMostRelevantActor);
+		}
 	}
 
 	if (NewMostRelevantActor)
