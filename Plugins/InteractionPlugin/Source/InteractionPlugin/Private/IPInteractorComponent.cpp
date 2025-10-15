@@ -80,7 +80,18 @@ void UIPInteractorComponent::RemoveInteractive(IIPInteractive* Interactive)
 	}
 
 	PossibleInteractives.Remove(Interactive);
-	RecomputeInteractiveRelevancy();
+
+	// Interactive could be removed because it destroyed, so check that we can do widget stuff on it before
+	const AActor* InteractiveActor = Cast<AActor>(Interactive);
+	
+	if (IsValid(InteractiveActor))
+	{
+		RecomputeInteractiveRelevancy();
+	}
+	else if (MostRelevantActor == InteractiveActor)
+	{
+		MostRelevantActor = nullptr;
+	}
 }
 
 void UIPInteractorComponent::AddInteractiveIndication(IIPInteractive* Interactive)
@@ -102,7 +113,14 @@ void UIPInteractorComponent::RemoveInteractiveIndication(IIPInteractive* Interac
 	}
 
 	IndicatedInteractives.Remove(Interactive);
-	HideWidgetClient(Cast<AActor>(Interactive));
+
+	// Interactive could be removed because it destroyed, so check that we can do widget stuff on it before
+	AActor* InteractiveActor = Cast<AActor>(Interactive);
+	
+	if (IsValid(InteractiveActor))
+	{
+		HideWidgetClient(InteractiveActor);
+	}
 }
 
 void UIPInteractorComponent::OnInteractiveStateChanged(IIPInteractive* Interactive)
