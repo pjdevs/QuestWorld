@@ -44,6 +44,18 @@ void UQuestNotificationComponent::BeginPlay()
 	}
 }
 
+void UQuestNotificationComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+
+	if (UQuestComponent* QuestComponent = UQuestStatics::GetQuestComponent(GetWorld()))
+	{
+		QuestComponent->OnQuestStarted.RemoveDynamic(this, &UQuestNotificationComponent::OnQuestStarted);
+		QuestComponent->OnQuestCompleted.RemoveDynamic(this, &UQuestNotificationComponent::OnQuestCompleted);
+		QuestComponent->OnQuestUpdated.RemoveDynamic(this, &UQuestNotificationComponent::OnQuestUpdated);
+	}
+}
+
 void UQuestNotificationComponent::OnQuestStarted(const FQuestDescription& Quest)
 {
 	UNotificationSubsystem* NotificationSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<UNotificationSubsystem>();
