@@ -25,6 +25,10 @@
 		{
 			"Name": "InventoryPlugin",
 			"Enabled": true
+		},
+		{
+			"Name": "GameplayAbilitySystemPlugin",
+			"Enabled": true
 		}
 	]
 }

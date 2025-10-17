@@ -1,0 +1,29 @@
+﻿{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "GameplayAbilitySystemPlugin",
+	"Description": "Basic integration of GAS",
+	"Category": "Other",
+	"CreatedBy": "pjdevs",
+	"CreatedByURL": "https://github.com/pjdevs",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"CanContainContent": true,
+	"IsBetaVersion": false,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "GameplayAbilitySystemPlugin",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	],
+    "Plugins": [
+      {
+        "Name": "GameplayAbilities",
+        "Enabled": true
+      }
+    ]
+}
