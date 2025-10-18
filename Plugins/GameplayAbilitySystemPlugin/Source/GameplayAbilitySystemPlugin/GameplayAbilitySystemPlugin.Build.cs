@@ -29,7 +29,8 @@ public class GameplayAbilitySystemPlugin : ModuleRules
 				// ... add other public dependencies that you statically link with here ...
 				"GameplayAbilities",
 				"GameplayTags",
-				"GameplayTasks"
+				"GameplayTasks",
+				"UMG"
 			}
 			);
 			

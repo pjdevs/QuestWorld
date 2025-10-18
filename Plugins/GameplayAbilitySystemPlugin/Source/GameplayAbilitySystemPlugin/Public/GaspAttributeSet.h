@@ -13,6 +13,8 @@
 		GAMEPLAYATTRIBUTE_VALUE_SETTER(PropertyName) \
 		GAMEPLAYATTRIBUTE_VALUE_INITTER(PropertyName)
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FAttributeChangedDelegate);
+
 /**
  * 
  */
@@ -46,7 +48,10 @@ public:
 	UPROPERTY(BlueprintReadOnly, ReplicatedUsing=OnRep_MaxStamina, Category = "Ability | Gameplay Attribute")
 	FGameplayAttributeData MaxStamina;
 	ATTRIBUTE_ACCESSORS(UGaspAttributeSet, MaxStamina);
-	
+
+	UPROPERTY(BlueprintAssignable, Category = "Ability | Gameplay Attribute")
+	FAttributeChangedDelegate OnAttributeChanged;
+
 private:
 	UFUNCTION()
 	void OnRep_Health(const FGameplayAttributeData& OldHealth) const;
