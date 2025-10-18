@@ -7,6 +7,8 @@
 #include "AbilitySystemInterface.h"
 #include "GaspCharacterBase.generated.h"
 
+class UGameplayEffect;
+class UGaspAttributeSet;
 class UGameplayAbility;
 class UGaspAbilitySystemComponent;
 
@@ -23,11 +25,19 @@ public: // IAbilitySystemInterface interface
 
 protected:
 	void GiveDefaultAbilities();
+	void InitDefaultAttributes();
 	
 protected:
 	UPROPERTY()
 	TObjectPtr<UGaspAbilitySystemComponent> AbilitySystemComponent;
 
-	UPROPERTY(EditDefaultsOnly, Category = Ability)
+	UPROPERTY()
+	TObjectPtr<UGaspAttributeSet> AttributeSet;
+
+protected:
+	UPROPERTY(EditDefaultsOnly, Category = Ability, meta = (AllowPrivateAccess = true))
 	TArray<TSubclassOf<UGameplayAbility>> DefaultAbilities;
+
+	UPROPERTY(EditDefaultsOnly, Category = Ability, meta = (AllowPrivateAccess = true))
+	TSubclassOf<UGameplayEffect> DefaultAttributeEffect;
 };

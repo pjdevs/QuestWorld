@@ -3,6 +3,7 @@
 
 #include "GaspPlayerState.h"
 #include "GaspAbilitySystemComponent.h"
+#include "GaspAttributeSet.h"
 
 
 AGaspPlayerState::AGaspPlayerState()
@@ -11,6 +12,7 @@ AGaspPlayerState::AGaspPlayerState()
 
 	AbilitySystemComponent = CreateDefaultSubobject<UGaspAbilitySystemComponent>("AbilitySystemComponent");
 	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
+	AttributeSet = CreateDefaultSubobject<UGaspAttributeSet>("AttributeSet");
 }
 
 UAbilitySystemComponent* AGaspPlayerState::GetAbilitySystemComponent() const

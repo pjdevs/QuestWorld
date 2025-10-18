@@ -3,6 +3,7 @@
 
 #include "GaspAICharacter.h"
 #include "GaspAbilitySystemComponent.h"
+#include "GaspAttributeSet.h"
 
 AGaspAICharacter::AGaspAICharacter()
 {
@@ -10,6 +11,7 @@ AGaspAICharacter::AGaspAICharacter()
 
 	AbilitySystemComponent = CreateDefaultSubobject<UGaspAbilitySystemComponent>("AbilitySystemComponent");
 	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
+	AttributeSet = CreateDefaultSubobject<UGaspAttributeSet>("AttributeSet");
 }
 
 void AGaspAICharacter::BeginPlay()
@@ -18,4 +20,5 @@ void AGaspAICharacter::BeginPlay()
 
 	AbilitySystemComponent->InitAbilityActorInfo(this, this);
 	GiveDefaultAbilities();
+	InitDefaultAttributes();
 }

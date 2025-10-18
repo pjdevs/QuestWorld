@@ -7,6 +7,7 @@
 #include "AbilitySystemInterface.h"
 #include "GaspPlayerState.generated.h"
 
+class UGaspAttributeSet;
 class UGaspAbilitySystemComponent;
 
 /**
@@ -23,7 +24,13 @@ public:
 public: // IAbilitySystemInterface interface
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
+public:
+	virtual UGaspAttributeSet* GetAttributeSet() const { return AttributeSet; }
+
 protected:
 	UPROPERTY()
 	TObjectPtr<UGaspAbilitySystemComponent> AbilitySystemComponent;
+
+	UPROPERTY()
+	TObjectPtr<UGaspAttributeSet> AttributeSet;
 };

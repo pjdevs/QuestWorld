@@ -2,6 +2,7 @@
 
 
 #include "GaspCharacterBase.h"
+#include "GameplayEffect.h"
 #include "GaspAbilitySystemComponent.h"
 
 
@@ -31,5 +32,27 @@ void AGaspCharacterBase::GiveDefaultAbilities()
 	{
 		const FGameplayAbilitySpec AbilitySpec(AbilityClass, 1);
 		AbilitySystemComponent->GiveAbility(AbilitySpec);
+	}
+}
+
+void AGaspCharacterBase::InitDefaultAttributes()
+{
+	if (!AbilitySystemComponent)
+	{
+		return;
+	}
+
+	FGameplayEffectContextHandle EffectContextHandle = AbilitySystemComponent->MakeEffectContext();
+	EffectContextHandle.AddSourceObject(this);
+
+	const FGameplayEffectSpecHandle EffectSpecHandle = AbilitySystemComponent->MakeOutgoingSpec(
+		DefaultAttributeEffect,
+		1.0f,
+		EffectContextHandle
+	);
+
+	if (EffectSpecHandle.IsValid())
+	{
+		AbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*EffectSpecHandle.Data.Get());
 	}
 }

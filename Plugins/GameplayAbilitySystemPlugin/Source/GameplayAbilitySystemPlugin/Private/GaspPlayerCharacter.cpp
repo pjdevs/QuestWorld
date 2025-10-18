@@ -17,6 +17,7 @@ void AGaspPlayerCharacter::PossessedBy(AController* NewController)
 
 	InitAbilitySystemComponent();
 	GiveDefaultAbilities(); // only give abilities on the server
+	InitDefaultAttributes();
 }
 
 void AGaspPlayerCharacter::OnRep_PlayerState()
@@ -24,6 +25,7 @@ void AGaspPlayerCharacter::OnRep_PlayerState()
 	Super::OnRep_PlayerState();
 
 	InitAbilitySystemComponent();
+	InitDefaultAttributes();
 }
 
 void AGaspPlayerCharacter::InitAbilitySystemComponent()
@@ -32,5 +34,6 @@ void AGaspPlayerCharacter::InitAbilitySystemComponent()
 	{
 		AbilitySystemComponent = CastChecked<UGaspAbilitySystemComponent>(GaspPlayerState->GetAbilitySystemComponent());
 		AbilitySystemComponent->InitAbilityActorInfo(GaspPlayerState, this);
+		AttributeSet = GaspPlayerState->GetAttributeSet();
 	}
 }
