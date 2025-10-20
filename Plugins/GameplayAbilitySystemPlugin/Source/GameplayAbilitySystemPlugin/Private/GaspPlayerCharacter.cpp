@@ -18,6 +18,7 @@ void AGaspPlayerCharacter::PossessedBy(AController* NewController)
 	InitAbilitySystemComponent();
 	GiveDefaultAbilities(); // only give abilities on the server
 	InitDefaultAttributes();
+	ApplyDefaultPermanentEffects(); // only apply permanent effects on server?
 }
 
 void AGaspPlayerCharacter::OnRep_PlayerState()

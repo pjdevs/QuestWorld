@@ -49,9 +49,6 @@ public:
 	FGameplayAttributeData MaxStamina;
 	ATTRIBUTE_ACCESSORS(UGaspAttributeSet, MaxStamina);
 
-	UPROPERTY(BlueprintAssignable, Category = "Ability | Gameplay Attribute")
-	FAttributeChangedDelegate OnAttributeChanged;
-
 private:
 	UFUNCTION()
 	void OnRep_Health(const FGameplayAttributeData& OldHealth) const;

@@ -21,4 +21,5 @@ void AGaspAICharacter::BeginPlay()
 	AbilitySystemComponent->InitAbilityActorInfo(this, this);
 	GiveDefaultAbilities();
 	InitDefaultAttributes();
+	ApplyDefaultPermanentEffects();
 }

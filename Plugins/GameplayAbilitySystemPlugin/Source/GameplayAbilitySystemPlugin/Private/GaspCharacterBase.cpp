@@ -56,3 +56,28 @@ void AGaspCharacterBase::InitDefaultAttributes()
 		AbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*EffectSpecHandle.Data.Get());
 	}
 }
+
+void AGaspCharacterBase::ApplyDefaultPermanentEffects()
+{
+	if (!AbilitySystemComponent)
+	{
+		return;
+	}
+
+	for (const TSubclassOf<UGameplayEffect>& EffectClass : DefaultPermanentEffects)
+	{
+		FGameplayEffectContextHandle EffectContextHandle = AbilitySystemComponent->MakeEffectContext();
+		EffectContextHandle.AddSourceObject(this);
+
+		const FGameplayEffectSpecHandle EffectSpecHandle = AbilitySystemComponent->MakeOutgoingSpec(
+			EffectClass,
+			1.0f,
+			EffectContextHandle
+		);
+
+		if (EffectSpecHandle.IsValid())
+		{
+			AbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*EffectSpecHandle.Data.Get());
+		}
+	}
+}

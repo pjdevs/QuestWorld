@@ -12,7 +12,7 @@ void UAttributesWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	const AGaspPlayerState* PlayerState = Cast<AGaspPlayerState>(GetOwningPlayerState());
+	const AGaspPlayerState* PlayerState = GetOwningPlayerState<AGaspPlayerState>();
 
 	if (!PlayerState)
 	{

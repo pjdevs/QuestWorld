@@ -26,6 +26,7 @@ public: // IAbilitySystemInterface interface
 protected:
 	void GiveDefaultAbilities();
 	void InitDefaultAttributes();
+	void ApplyDefaultPermanentEffects();
 	
 protected:
 	UPROPERTY()
@@ -40,4 +41,7 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = Ability, meta = (AllowPrivateAccess = true))
 	TSubclassOf<UGameplayEffect> DefaultAttributeEffect;
+
+	UPROPERTY(EditDefaultsOnly, Category = Ability, meta = (AllowPrivateAccess = true))
+	TArray<TSubclassOf<UGameplayEffect>> DefaultPermanentEffects;
 };

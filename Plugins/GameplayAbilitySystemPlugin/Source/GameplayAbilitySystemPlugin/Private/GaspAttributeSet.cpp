@@ -14,10 +14,10 @@ void UGaspAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(UGaspAttributeSet, Health);
-	DOREPLIFETIME(UGaspAttributeSet, MaxHealth);
-	DOREPLIFETIME(UGaspAttributeSet, Stamina);
-	DOREPLIFETIME(UGaspAttributeSet, MaxStamina);
+	DOREPLIFETIME_CONDITION_NOTIFY(UGaspAttributeSet, Health, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UGaspAttributeSet, MaxHealth, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UGaspAttributeSet, Stamina, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UGaspAttributeSet, MaxStamina, COND_None, REPNOTIFY_Always);
 }
 
 void UGaspAttributeSet::PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue)
@@ -57,17 +57,17 @@ void UGaspAttributeSet::OnRep_Health(const FGameplayAttributeData& OldHealth) co
 
 void UGaspAttributeSet::OnRep_MaxHealth(const FGameplayAttributeData& OldMaxHealth) const
 {
-	GAMEPLAYATTRIBUTE_REPNOTIFY(UGaspAttributeSet, Health, OldMaxHealth);
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UGaspAttributeSet, MaxHealth, OldMaxHealth);
 }
 
 void UGaspAttributeSet::OnRep_Stamina(const FGameplayAttributeData& OldStamina) const
 {
-	GAMEPLAYATTRIBUTE_REPNOTIFY(UGaspAttributeSet, Health, OldStamina);
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UGaspAttributeSet, Stamina, OldStamina);
 }
 
 void UGaspAttributeSet::OnRep_MaxStamina(const FGameplayAttributeData& OldMaxStamina) const
 {
-	GAMEPLAYATTRIBUTE_REPNOTIFY(UGaspAttributeSet, Health, OldMaxStamina);
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UGaspAttributeSet, MaxStamina, OldMaxStamina);
 }
 
 
