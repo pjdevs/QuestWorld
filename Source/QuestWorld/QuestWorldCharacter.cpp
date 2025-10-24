@@ -152,5 +152,5 @@ void AQuestWorldCharacter::Look(const FInputActionValue& Value)
 
 void AQuestWorldCharacter::Interact(const FInputActionValue& Value)
 {
-	Interactor->Interact();
+	Interactor->TryInteract();
 }

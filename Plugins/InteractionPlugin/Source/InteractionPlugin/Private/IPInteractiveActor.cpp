@@ -181,8 +181,10 @@ void AIPInteractiveActor::Interact(AActor* InteractionInstigator)
 	{
 		return;
 	}
-	
-	if (!CanBeInteracted(InteractionInstigator))
+
+	const FIPInteractionStatus InteractionStatus = GetInteractionStatus(InteractionInstigator);
+
+	if (!InteractionStatus.bCanBeInteracted)
 	{
 		return;
 	}
@@ -201,10 +203,29 @@ void AIPInteractiveActor::Interact(AActor* InteractionInstigator)
 	OnRep_State();
 }
 
-bool AIPInteractiveActor::CanBeInteracted(AActor* InteractionInstigator) const
+FIPInteractionStatus AIPInteractiveActor::GetInteractionStatus(AActor* InteractionInstigator) const
 {
-	return (bInteractMultipleTimes || State == EIPInteractiveState::Ready)
-		&& CanBeInteractedBy(InteractionInstigator);
+	FIPInteractionStatus InteractionStatus
+	{
+		.bCanBeInteracted = false,
+		.ReasonText = FText::GetEmpty() // Do not localize anything in base class
+	};
+
+	if (!bInteractMultipleTimes && State != EIPInteractiveState::Ready)
+	{
+		return InteractionStatus;
+	}
+
+	const FIPInteractionStatus AdditionalInteractionStatus = GetInteractionStatusForActor(InteractionInstigator);
+
+	if (!AdditionalInteractionStatus.bCanBeInteracted)
+	{
+		return AdditionalInteractionStatus;
+	}
+
+	InteractionStatus.bCanBeInteracted = true;
+
+	return InteractionStatus;
 }
 
 FVector AIPInteractiveActor::GetInteractiveLocation() const
@@ -269,9 +290,9 @@ void AIPInteractiveActor::DoFeedback_Implementation()
 {
 }
 
-bool AIPInteractiveActor::CanBeInteractedBy_Implementation(AActor* InteractionInstigator) const
+FIPInteractionStatus AIPInteractiveActor::GetInteractionStatusForActor_Implementation(AActor* InteractionInstigator) const
 {
-	return true;
+	return FIPInteractionStatus { .bCanBeInteracted = true };
 }
 
 void AIPInteractiveActor::StateChanged()

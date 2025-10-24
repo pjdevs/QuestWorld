@@ -37,18 +37,32 @@ void UIPInteractorComponent::TickComponent(
 	RecomputeInteractiveRelevancy();	
 }
 
-void UIPInteractorComponent::Interact()
-{	
-	if (GetOwnerRole() != ROLE_Authority)
+void UIPInteractorComponent::TryInteract()
+{
+	IIPInteractive* Interactive = Cast<IIPInteractive>(MostRelevantActor);
+
+	if (!Interactive)
 	{
-		Server_Interact();
 		return;
 	}
-	
-	auto* Interactive = Cast<IIPInteractive>(MostRelevantActor);
+
+	// check that we can interact! (on client and server)
+	const FIPInteractionStatus InteractionStatus = Interactive->GetInteractionStatus(GetOwner());
+
+	if (!InteractionStatus.bCanBeInteracted)
+	{
+		return;
+	}
+
+	// if we are on client call this method on server 
+	if (GetOwnerRole() != ROLE_Authority)
+	{
+		Server_TryInteract();
+		return;
+	}
 
 	// check on server if we really are in range to interact (is it really possible that it is not the case???)
-	if (!Interactive || !PossibleInteractives.Contains(Interactive))
+	if (!PossibleInteractives.Contains(Interactive))
 	{
 		return;
 	}
@@ -133,9 +147,9 @@ void UIPInteractorComponent::OnInteractiveStateChanged(IIPInteractive* Interacti
 	RecomputeInteractiveRelevancy(true);
 }
 
-void UIPInteractorComponent::Server_Interact_Implementation()
+void UIPInteractorComponent::Server_TryInteract_Implementation()
 {
-	Interact();
+	TryInteract();
 }
 
 void UIPInteractorComponent::RecomputeInteractiveRelevancy(bool bForceRefresh)
@@ -176,19 +190,14 @@ AActor* UIPInteractorComponent::FindNewMostRelevantActor() const
 	const FVector LookDirection = EyesRotation.Vector().GetSafeNormal();
 		
 	AActor* NewMostRelevantActor = nullptr;
-	FInteractionScore NewMostRelevantInteractiveScore
+	FIPInteractionScore NewMostRelevantInteractiveScore
 	{
 		.InteractionScore = 0.0f,
 	};
 
 	for (auto&& Interactive : PossibleInteractives)
 	{
-		if (!Interactive->CanBeInteracted(GetOwner()))
-		{
-			continue;
-		}
-		
-		const FInteractionScore Score = ComputeInteractionScore(*Interactive, EyesLocation, LookDirection);
+		const FIPInteractionScore Score = ComputeInteractionScore(*Interactive, EyesLocation, LookDirection);
 
 		// TODO Compute real angle and expose value?
 		if (Score.AngleFromTarget >= MaxInteractionAngleDegrees || Score.DistanceFromTarget >= MaxInteractionDistance)
@@ -230,7 +239,7 @@ void UIPInteractorComponent::OnMostRelevantInteractiveChanged(
 		{
 			if (Interactive->IsAutoInteractive() && GetOwnerRole() == ROLE_Authority)
 			{
-				Interact();	
+				TryInteract();	
 			}
 			else
 			{
@@ -240,7 +249,7 @@ void UIPInteractorComponent::OnMostRelevantInteractiveChanged(
 	}
 }
 
-FInteractionScore UIPInteractorComponent::ComputeInteractionScore(
+FIPInteractionScore UIPInteractorComponent::ComputeInteractionScore(
 	const IIPInteractive& Target,
 	const FVector& EyesLocation,
 	const FVector& LookDirection
@@ -257,7 +266,7 @@ FInteractionScore UIPInteractorComponent::ComputeInteractionScore(
 
 	const float Score = AlignmentFromTarget / (1.f + DistanceToTarget * 0.01f);
 
-	return FInteractionScore
+	return FIPInteractionScore
 	{
 		.InteractionScore = Score,
 		.AngleFromTarget = AngleFromTarget,
@@ -306,7 +315,8 @@ void UIPInteractorComponent::ShowInteractionWidgetClient(AActor* InteractiveActo
 	WidgetInstance->SetInteractionDescription(
 		InteractionAction,
 		Interactive->GetInteractiveName(),
-		Interactive->GetInteractionDescription()
+		Interactive->GetInteractionDescription(),
+		Interactive->GetInteractionStatus(GetOwner())
 	);
 
 	WidgetComponent->SetWidget(WidgetInstance);
@@ -334,8 +344,8 @@ void UIPInteractorComponent::ShowIndicationWidgetClient(AActor* InteractiveActor
 		return;
 	}
 
-	const bool bCanBeInteracted = Interactive->CanBeInteracted(GetOwner());
-	const TSubclassOf<UUserWidget> WidgetClass = bCanBeInteracted
+	const FIPInteractionStatus InteractionStatus = Interactive->GetInteractionStatus(GetOwner());
+	const TSubclassOf<UUserWidget> WidgetClass = InteractionStatus.bCanBeInteracted
 		? Interactive->GetIndicationWidgetClass()
 		: Interactive->GetIndicationBlockedWidgetClass();
 	UUserWidget* WidgetInstance = CreateWidget(GetWorld(), WidgetClass);

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "IPInteractionStatus.h"
 #include "UObject/Interface.h"
 #include "IPInteractive.generated.h"
 
@@ -30,9 +31,9 @@ public:
 	virtual void Interact(AActor* InteractionInstigator) = 0;
 
 	/**
-	 * Check whether the object can be interacted or not. 
+	 * Check whether the object can be interacted or not by giving information on interaction status. 
 	 */
-	virtual bool CanBeInteracted(AActor* InteractionInstigator) const = 0;
+	virtual FIPInteractionStatus GetInteractionStatus(AActor* InteractionInstigator) const = 0;
 
 	/**
 	 * Get interactive's location. 

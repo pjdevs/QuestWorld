@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "IPInteractionStatus.h"
 #include "IPInteractive.h"
 #include "IPInteractorComponent.h"
 #include "IPInteractiveActor.generated.h"
@@ -31,9 +32,9 @@ public:
 	
 public:
 	virtual void Interact(AActor* InteractionInstigator) override;
-	virtual bool CanBeInteracted(AActor* InteractionInstigator) const override;
+	virtual FIPInteractionStatus GetInteractionStatus(AActor* InteractionInstigator) const override;
 	virtual FVector GetInteractiveLocation() const override;
-	virtual UWidgetComponent* GetWidgetComponent() const override;
+	virtual UWidgetComponent* GetWidgetComponent() const override final;
 	virtual TSubclassOf<UIPInteractionWidget> GetInteractionWidgetClass() const override;
 	virtual TSubclassOf<UUserWidget> GetIndicationWidgetClass() const override;
 	virtual TSubclassOf<UUserWidget> GetIndicationBlockedWidgetClass() const override;
@@ -60,18 +61,21 @@ protected:
 	virtual void DoFeedback_Implementation();
 
 	/**
-	 * Blueprintable conditions in addition to core ones to decide whether this actor can be interacted or not.
+	 * Additional conditions to core ones to decide whether this actor can be interacted or not.
+	 * These conditions should be specific to one child type.
+	 * If you subclass this to another type of interactive actor that can also be subclassed,
+	 * use native GetInteractionStatus.
 	 */
 	UFUNCTION(BlueprintNativeEvent)
-	bool CanBeInteractedBy(AActor* InteractionInstigator) const;
-	virtual bool CanBeInteractedBy_Implementation(AActor* InteractionInstigator) const;
+	FIPInteractionStatus GetInteractionStatusForActor(AActor* InteractionInstigator) const;
+	virtual FIPInteractionStatus GetInteractionStatusForActor_Implementation(AActor* InteractionInstigator) const;
 
 	/**
 	 * Function that can be called to notify interactors that state may have changed
 	 * (to update can be interacted condition etc.).
 	 * Should be called on both client and server in OnRep_ (to handle new conditions and widgets).
 	 */
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = Interaction)
 	void StateChanged();
 
 	UFUNCTION()
@@ -112,7 +116,7 @@ private:
 	UFUNCTION()
 	void OnRep_State();
 	
-private:
+protected:
 	/**
 	 * Trigger component used for interaction.
 	 */
@@ -152,7 +156,7 @@ private:
 	/**
 	 * Whether this actor can be interacted one time or multiple times.
 	 */
-	UPROPERTY(EditDefaultsOnly, Category = Interaction, meta = (AllowPrivateAccess = true))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Interaction, meta = (AllowPrivateAccess = true))
 	bool bInteractMultipleTimes;
 
 	/**
@@ -170,7 +174,7 @@ private:
 	/**
 	 * Whether to auto interact with the first interactor entering trigger area.
 	 */
-	UPROPERTY(EditDefaultsOnly, Category = Interaction, meta = (AllowPrivateAccess = true))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Interaction, meta = (AllowPrivateAccess = true))
 	bool bAutoInteract;
 
 private:

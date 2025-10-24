@@ -22,7 +22,7 @@ public:
 public:
 	
 	virtual void DoInteraction_Implementation(AActor* InteractionInstigator) override;
-	virtual bool CanBeInteracted(AActor* InteractionInstigator) const override;
+	virtual FIPInteractionStatus GetInteractionStatus(AActor* InteractionInstigator) const override;
 
 	// For now dialog system is not replicated so these events are only called on client
 	
@@ -38,6 +38,9 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = Dialog)
 	TObjectPtr<UDialogGraphAsset> DialogAsset;
 
+	UPROPERTY(EditDefaultsOnly, Category = Dialog)
+	FText InDialogReasonText;
+	
 private:
 	UPROPERTY(ReplicatedUsing=OnRep_bIsInDialog)
 	bool bIsInDialog;

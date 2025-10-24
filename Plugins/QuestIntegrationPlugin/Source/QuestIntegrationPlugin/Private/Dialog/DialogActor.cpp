@@ -8,7 +8,7 @@
 
 
 ADialogActor::ADialogActor()
-	: DialogAsset(nullptr), bIsInDialog(false)
+	: DialogAsset(nullptr), InDialogReasonText(FText::FromString("Talking...")), bIsInDialog(false)
 {
 	PrimaryActorTick.bCanEverTick = false;
 }
@@ -43,9 +43,19 @@ void ADialogActor::DoInteraction_Implementation(AActor* InteractionInstigator)
 	}
 }
 
-bool ADialogActor::CanBeInteracted(AActor* InteractionInstigator) const
+FIPInteractionStatus ADialogActor::GetInteractionStatus(AActor* InteractionInstigator) const
 {
-	return Super::CanBeInteracted(InteractionInstigator) && !bIsInDialog;
+	FIPInteractionStatus BaseInteractionStatus = Super::GetInteractionStatus(InteractionInstigator);
+
+	if (!BaseInteractionStatus.bCanBeInteracted)
+	{
+		return BaseInteractionStatus;
+	}
+
+	// TODO Localize by exposing this default text in properties or se
+	return bIsInDialog
+		? FIPInteractionStatus { .bCanBeInteracted = false, .ReasonText = InDialogReasonText }
+		: FIPInteractionStatus { .bCanBeInteracted = true };
 }
 
 void ADialogActor::OnDialogStarted(AController* DialogController)

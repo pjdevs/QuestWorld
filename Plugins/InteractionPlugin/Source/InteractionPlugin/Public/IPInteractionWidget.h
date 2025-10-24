@@ -3,8 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "IPInteractionStatus.h"
 #include "Blueprint/UserWidget.h"
 #include "IPInteractionWidget.generated.h"
+
+class UInputAction;
 
 /**
  * Widget base class used to show display interaction description on client.
@@ -19,6 +22,7 @@ public:
 	void SetInteractionDescription(
 		const UInputAction* InteractionAction,
 		const FText& InteractiveName,
-		const FText& InteractionDescription
+		const FText& InteractionDescription,
+		const FIPInteractionStatus& InteractionStatus
 	);
 };

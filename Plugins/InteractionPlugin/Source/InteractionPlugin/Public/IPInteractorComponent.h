@@ -17,7 +17,7 @@ class IIPInteractive;
 /**
  * Helper struct for representing information on the computed interaction score of an interactive.
  */
-struct INTERACTIONPLUGIN_API FInteractionScore
+struct FIPInteractionScore
 {
 	float InteractionScore;
 	float AngleFromTarget;
@@ -46,7 +46,7 @@ public:
 
 	/** Called for interact input */
 	UFUNCTION(BlueprintCallable)
-	void Interact();
+	void TryInteract();
 
 	/**
 	 * Add an interactive to the list of possible interactives.
@@ -78,7 +78,7 @@ protected:
 	 * Execute Interact on the server.
 	 */
 	UFUNCTION(Server, Reliable)
-	void Server_Interact();
+	void Server_TryInteract();
 
 	/**
 	 * Show interaction widget on client.
@@ -124,7 +124,7 @@ private:
 	 * Compute interaction score for a given interactive. Used to sort them and find the most relevant one.
 	 * The higher the score, the better.
 	 */
-	static FInteractionScore ComputeInteractionScore(
+	static FIPInteractionScore ComputeInteractionScore(
 		const IIPInteractive& Target,
 		const FVector& EyesLocation,
 		const FVector& LookDirection
