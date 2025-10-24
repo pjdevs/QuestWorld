@@ -45,14 +45,13 @@ void ADialogActor::DoInteraction_Implementation(AActor* InteractionInstigator)
 
 FIPInteractionStatus ADialogActor::GetInteractionStatus(AActor* InteractionInstigator) const
 {
-	FIPInteractionStatus BaseInteractionStatus = Super::GetInteractionStatus(InteractionInstigator);
+	const FIPInteractionStatus BaseInteractionStatus = Super::GetInteractionStatus(InteractionInstigator);
 
 	if (!BaseInteractionStatus.bCanBeInteracted)
 	{
 		return BaseInteractionStatus;
 	}
 
-	// TODO Localize by exposing this default text in properties or se
 	return bIsInDialog
 		? FIPInteractionStatus { .bCanBeInteracted = false, .ReasonText = InDialogReasonText }
 		: FIPInteractionStatus { .bCanBeInteracted = true };

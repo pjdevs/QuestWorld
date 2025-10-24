@@ -29,6 +29,10 @@
 		{
 			"Name": "GameplayAbilitySystemPlugin",
 			"Enabled": true
+		},
+		{
+			"Name": "InteractionAbilityPlugin",
+			"Enabled": true
 		}
 	]
 }

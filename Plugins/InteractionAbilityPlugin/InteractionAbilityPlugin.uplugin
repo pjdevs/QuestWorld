@@ -1,0 +1,33 @@
+﻿{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "InteractionAbilityPlugin",
+	"Description": "Integration of InteractionPlugin with GAS providing ability for interaction etc.",
+	"Category": "Other",
+	"CreatedBy": "pjdevs",
+	"CreatedByURL": "https://github.com/pjdevs",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"CanContainContent": true,
+	"IsBetaVersion": false,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "InteractionAbilityPlugin",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	],
+    "Plugins": [
+        {
+            "Name": "InteractionPlugin",
+            "Enabled": true
+        },
+        {
+            "Name": "GameplayAbilities",
+            "Enabled": true
+        }
+    ]
+}

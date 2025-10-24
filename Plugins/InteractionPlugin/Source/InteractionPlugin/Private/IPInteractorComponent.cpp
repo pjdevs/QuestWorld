@@ -147,6 +147,11 @@ void UIPInteractorComponent::OnInteractiveStateChanged(IIPInteractive* Interacti
 	RecomputeInteractiveRelevancy(true);
 }
 
+TWeakObjectPtr<AActor> UIPInteractorComponent::GetMostRelevantActor() const
+{
+	return MostRelevantActor;
+}
+
 void UIPInteractorComponent::Server_TryInteract_Implementation()
 {
 	TryInteract();
@@ -348,7 +353,15 @@ void UIPInteractorComponent::ShowIndicationWidgetClient(AActor* InteractiveActor
 	const TSubclassOf<UUserWidget> WidgetClass = InteractionStatus.bCanBeInteracted
 		? Interactive->GetIndicationWidgetClass()
 		: Interactive->GetIndicationBlockedWidgetClass();
-	UUserWidget* WidgetInstance = CreateWidget(GetWorld(), WidgetClass);
+
+	UWorld* World = GetWorld();
+	
+	if (!IsValid(World))
+	{
+		return;
+	}
+	
+	UUserWidget* WidgetInstance = CreateWidget(World, WidgetClass);
 
 	if (!WidgetInstance)
 	{

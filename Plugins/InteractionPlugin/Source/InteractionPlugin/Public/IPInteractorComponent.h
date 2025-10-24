@@ -44,6 +44,7 @@ public:
 		FActorComponentTickFunction* ThisTickFunction
 	) override;
 
+public:
 	/** Called for interact input */
 	UFUNCTION(BlueprintCallable)
 	void TryInteract();
@@ -72,6 +73,11 @@ public:
 	 * Called by an interactive when its state has changed and this interactor was in range.
 	 */
 	void OnInteractiveStateChanged(IIPInteractive* Interactive);
+
+	/**
+	 * Get the current most relevant actor that interactor would interact with in TryInteract.
+	 */
+	TWeakObjectPtr<AActor> GetMostRelevantActor() const;
 
 protected:
 	/**
