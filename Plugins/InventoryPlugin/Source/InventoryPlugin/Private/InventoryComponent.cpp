@@ -200,6 +200,42 @@ int UInventoryComponent::GetItemCount(FInventoryItemId ItemId) const
 	return InventoryList.GetItemCount(ItemId);
 }
 
+void UInventoryComponent::LoadItemsFromSave(const FInventorySaveData& InventorySaveData)
+{
+	if (GetOwnerRole() != ROLE_Authority)
+	{
+		return;
+	}
+	
+	for (const FInventoryEntrySaveData& Item : InventorySaveData.Items)
+	{
+		InventoryList.AddItem(Item.ItemId, Item.Quantity);
+	}
+}
+
+FInventorySaveData UInventoryComponent::WriteItemsToSave()
+{
+	FInventorySaveData InventorySaveData;
+
+	if (GetOwnerRole() != ROLE_Authority)
+	{
+		return InventorySaveData;
+	}
+	
+	for (const auto& Entry : InventoryList.GetItems())
+	{
+		InventorySaveData.Items.Add(
+			FInventoryEntrySaveData
+			{
+				.ItemId = Entry.ItemId,
+				.Quantity = Entry.Quantity
+			}
+		);
+	}
+
+	return InventorySaveData;
+}
+
 void UInventoryComponent::OnItemAddedClient(const FInventoryItemId& ItemId, int ItemCountAdded)
 {
 	if (bInventoryReceived)

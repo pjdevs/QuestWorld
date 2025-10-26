@@ -3,25 +3,20 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "InteractiveSaveData.h"
 #include "IPInteractionStatus.h"
 #include "IPInteractive.h"
 #include "IPInteractorComponent.h"
+#include "IPSavableInteractive.h"
 #include "IPInteractiveActor.generated.h"
 
 class UBoxComponent;
-
-UENUM()
-enum class EIPInteractiveState : uint8
-{
-	Ready,
-	Interacted
-};
 
 /**
  * A base interactive Actor implementing IInteractive interface.
  */
 UCLASS(Abstract)
-class INTERACTIONPLUGIN_API AIPInteractiveActor : public AActor, public IIPInteractive
+class INTERACTIONPLUGIN_API AIPInteractiveActor : public AActor, public IIPInteractive, public IIPSavableInteractive
 {
 	GENERATED_BODY()
 	
@@ -29,8 +24,10 @@ public:
 	AIPInteractiveActor();
 
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+	virtual void PostInitializeComponents() override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	
-public:
+public: // IIPInteractive interface
 	virtual void Interact(AActor* InteractionInstigator) override;
 	virtual FIPInteractionStatus GetInteractionStatus(AActor* InteractionInstigator) const override;
 	virtual FVector GetInteractiveLocation() const override;
@@ -42,8 +39,11 @@ public:
 	virtual FText GetInteractionDescription() const override;
 	virtual bool IsAutoInteractive() const override;
 
-	virtual void PostInitializeComponents() override;
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+public: // IIPSavableInteractive interface
+	virtual FName GetUniqueId() const override;
+	virtual bool IsSavable() const override;
+	virtual void LoadFromSave(const FInteractiveSaveData& InteractiveSaveData) override;
+	virtual FInteractiveSaveData WriteToSave() override;
 	
 protected:
 	/**
@@ -115,7 +115,7 @@ protected:
 private:
 	UFUNCTION()
 	void OnRep_State();
-	
+
 protected:
 	/**
 	 * Trigger component used for interaction.
@@ -176,6 +176,18 @@ protected:
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Interaction, meta = (AllowPrivateAccess = true))
 	bool bAutoInteract;
+
+	/**
+	 * Save unique ID of this interactive.
+	 */
+	UPROPERTY(EditDefaultsOnly, Category = "Interaction|Save", meta = (AllowPrivateAccess = true))
+	FName UniqueId;
+	
+	/**
+	 * Whether this interactive should be saved or not.
+	 */
+	UPROPERTY(EditDefaultsOnly, Category = "Interaction|Save", meta = (AllowPrivateAccess = true))
+	bool bIsSavable;
 
 private:
 	/**

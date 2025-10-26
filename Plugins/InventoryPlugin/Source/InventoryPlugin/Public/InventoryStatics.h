@@ -6,6 +6,7 @@
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "InventoryStatics.generated.h"
 
+class UInventoryComponent;
 struct FInventoryItemId;
 class UInventoryItemDataAsset;
 
@@ -26,4 +27,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = Inventory)
 	static int GetTotalItemCountForAllPlayers(const UWorld* World, FInventoryItemId ItemId);
+
+	UFUNCTION(BlueprintCallable, Category = Inventory, meta=(WorldContext="WorldContextObject"))
+	static UInventoryComponent* GetSharedInventory(UObject* WorldContextObject);
 };

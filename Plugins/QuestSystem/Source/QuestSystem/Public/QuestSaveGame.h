@@ -41,16 +41,3 @@ struct QUESTSYSTEM_API FQuestSaveData
 	UPROPERTY()
 	TArray<FPrimaryAssetId> CompletedQuests = TArray<FPrimaryAssetId>();
 };
-
-/**
- * 
- */
-UCLASS(Blueprintable, BlueprintType)
-class QUESTSYSTEM_API UQuestSaveGame : public USaveGame
-{
-	GENERATED_BODY()
-
-public:
-	UPROPERTY()
-	FQuestSaveData QuestSaveData = FQuestSaveData();
-};

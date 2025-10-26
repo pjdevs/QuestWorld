@@ -7,6 +7,7 @@
 #include "InventoryItemDataAsset.h"
 #include "PrimaryAssetTypes.h"
 #include "Engine/AssetManager.h"
+#include "GameFramework/GameStateBase.h"
 
 UInventoryItemDataAsset* UInventoryStatics::GetItem(FInventoryItemId ItemId)
 {
@@ -64,4 +65,21 @@ int UInventoryStatics::GetTotalItemCountForAllPlayers(const UWorld* World, FInve
 	}
 
 	return TotalItemCount;
+}
+
+UInventoryComponent* UInventoryStatics::GetSharedInventory(UObject* WorldContextObject)
+{
+	if (!WorldContextObject)
+	{
+		return nullptr;
+	}
+
+	const UWorld* World = GEngine->GetWorldFromContextObjectChecked(WorldContextObject);
+
+	if (UInventoryComponent* SharedInventory = World->GetGameState()->FindComponentByClass<UInventoryComponent>())
+	{
+		return SharedInventory;
+	}
+
+	return nullptr;
 }

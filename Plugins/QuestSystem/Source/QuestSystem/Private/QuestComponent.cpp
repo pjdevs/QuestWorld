@@ -104,7 +104,7 @@ void UQuestComponent::InitQuestService()
 
 void UQuestComponent::OnQuestsLoadedServer()
 {
-	LoadQuestsFromSave();
+	OnQuestsLoaded.Broadcast();
 	
 	ActiveQuests = QuestService->GetActiveQuestDescriptions();
 	CompletedQuests = QuestService->GetCompletedQuestDescriptions();
@@ -159,19 +159,12 @@ void UQuestComponent::OnRep_CompletedQuests()
 
 // TODO Temp save test, expose save etc.
 
-void UQuestComponent::LoadQuestsFromSave()
+void UQuestComponent::LoadQuestsFromSave(const FQuestSaveData& SaveData)
 {
-	if (const UQuestSaveGame* QuestSave = Cast<UQuestSaveGame>(UGameplayStatics::LoadGameFromSlot("QuestSave", 0)))
-	{
-		QuestService->RestoreQuests(QuestSave->QuestSaveData, GetWorld());
-	}
+	QuestService->RestoreQuests(SaveData, GetWorld());
 }
 
-void UQuestComponent::WriteQuestsToSave()
+FQuestSaveData UQuestComponent::WriteQuestsToSave()
 {
-	UQuestSaveGame* QuestSaveGame = Cast<UQuestSaveGame>(
-		UGameplayStatics::CreateSaveGameObject(UQuestSaveGame::StaticClass())
-	); 
-	QuestSaveGame->QuestSaveData = QuestService->GetQuestSave();
-	UGameplayStatics::SaveGameToSlot(QuestSaveGame, "QuestSave", 0);
+	return QuestService->GetQuestSave();
 }

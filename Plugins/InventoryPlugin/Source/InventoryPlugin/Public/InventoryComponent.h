@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "InventoryItemId.h"
+#include "InventorySaveData.h"
 #include "Net/Serialization/FastArraySerializer.h"
 #include "Components/ActorComponent.h"
 #include "InventoryComponent.generated.h"
@@ -45,6 +46,9 @@ public:
 	void AddItem(const FInventoryItemId& ItemId, int ItemCountToAdd);
 	void RemoveItem(const FInventoryItemId& ItemId, int ItemCountToRemove);
 	int GetItemCount(const FInventoryItemId& ItemId) const;
+	const TArray<FInventoryItemEntry>& GetItems() const { return Items; }
+
+public:
 	bool NetDeltaSerialize(FNetDeltaSerializeInfo& DeltaParms);
 	void PostReplicatedAdd(const TArrayView<int32> AddedIndices, int32 FinalSize);
 	void PostReplicatedChange(const TArrayView<int32> ChangedIndices, int32 FinalSize);
@@ -84,6 +88,12 @@ public:
 	
 	UFUNCTION(BlueprintPure, Category = Inventory)
 	int GetItemCount(FInventoryItemId ItemId) const;
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = Inventory)
+	void LoadItemsFromSave(const FInventorySaveData& InventorySaveData);
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = Inventory)
+	FInventorySaveData WriteItemsToSave();
 
 public:
 	UFUNCTION()

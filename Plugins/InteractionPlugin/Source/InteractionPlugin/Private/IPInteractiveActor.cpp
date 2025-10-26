@@ -1,6 +1,8 @@
 // Copyright pjdevs. All Rights Reserved.
 
 #include "IPInteractiveActor.h"
+#include "InteractiveSaveData.h"
+#include "IPInteractiveState.h"
 #include "Components/WidgetComponent.h"
 #include "Components/BoxComponent.h"
 #include "Net/UnrealNetwork.h"
@@ -270,6 +272,31 @@ FText AIPInteractiveActor::GetInteractionDescription() const
 bool AIPInteractiveActor::IsAutoInteractive() const
 {
 	return bAutoInteract;
+}
+
+FName AIPInteractiveActor::GetUniqueId() const
+{
+	return UniqueId;
+}
+
+bool AIPInteractiveActor::IsSavable() const
+{
+	return bIsSavable;
+}
+
+void AIPInteractiveActor::LoadFromSave(const FInteractiveSaveData& InteractiveSaveData)
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+	
+	State = InteractiveSaveData.State;
+}
+
+FInteractiveSaveData AIPInteractiveActor::WriteToSave()
+{
+	return FInteractiveSaveData { .State = State, .bWasDestroyed = false  };
 }
 
 void AIPInteractiveActor::OnRep_State()

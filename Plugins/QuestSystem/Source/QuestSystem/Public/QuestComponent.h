@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "QuestDescription.h"
+#include "QuestSaveGame.h"
 #include "Components/ActorComponent.h"
 #include "QuestComponent.generated.h"
 
@@ -49,6 +50,14 @@ public:
 	UFUNCTION(BlueprintPure, Category = Quest)
 	bool IsQuestActive(FPrimaryAssetId QuestId) const;
 
+	// Save functions, server only
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Quest|Save")
+	void LoadQuestsFromSave(const FQuestSaveData& SaveData);
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Quest|Save")
+	FQuestSaveData WriteQuestsToSave();
+
 	// Delegates
 
 	/**
@@ -62,6 +71,12 @@ public:
 	 */
 	UPROPERTY(BlueprintAssignable, Category = Quest)
 	FQuestDynamicDelegate OnCompletedQuestsUpdated;
+
+	/**
+	 * Sever only delegate called when quests are loaded.
+	 */
+	UPROPERTY(BlueprintAssignable, Category = Quest)
+	FQuestDynamicDelegate OnQuestsLoaded;
 
 	// Shared delegate called both on server and client
 
@@ -112,12 +127,6 @@ private:
 	 */
 	UFUNCTION()
 	void OnRep_CompletedQuests();
-
-	// Save functions, server only
-
-	void LoadQuestsFromSave();
-
-	void WriteQuestsToSave();
 
 private:
 	/**
