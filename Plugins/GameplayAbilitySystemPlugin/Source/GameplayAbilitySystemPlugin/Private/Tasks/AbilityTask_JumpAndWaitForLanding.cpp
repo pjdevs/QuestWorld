@@ -7,24 +7,27 @@
 
 
 UAbilityTask_JumpAndWaitForLanding* UAbilityTask_JumpAndWaitForLanding::JumpAndWaitForLanding(
-	UGameplayAbility* OwningAbility
+	UGameplayAbility* OwningAbility,
+	ACharacter* OwnerCharacter
 )
 {
-	return NewAbilityTask<UAbilityTask_JumpAndWaitForLanding>(OwningAbility);
+	auto* Task = NewAbilityTask<UAbilityTask_JumpAndWaitForLanding>(OwningAbility);
+	Task->OwnerCharacter = OwnerCharacter;
+
+	return Task;
 }
 
 void UAbilityTask_JumpAndWaitForLanding::Activate()
 {
-	ACharacter* Character = Cast<ACharacter>(GetAvatarActor());
-
-	if (!Character)
+	if (!OwnerCharacter || !OwnerCharacter->CanJump())
 	{
 		EndTask();
+		OnLanded.Broadcast(); // to output something even if there was no character (could stick ability)
 		return;
 	}
 
-	Character->Jump();
-	Character->MovementModeChangedDelegate.AddDynamic(this, &UAbilityTask_JumpAndWaitForLanding::OnMovementModeChanged);
+	OwnerCharacter->Jump();
+	OwnerCharacter->MovementModeChangedDelegate.AddDynamic(this, &UAbilityTask_JumpAndWaitForLanding::OnMovementModeChanged);
 }
 
 void UAbilityTask_JumpAndWaitForLanding::OnMovementModeChanged(
@@ -35,17 +38,16 @@ void UAbilityTask_JumpAndWaitForLanding::OnMovementModeChanged(
 {
 	if (Character->GetCharacterMovement()->MovementMode != MOVE_Falling)
 	{
+		CleanTask();
+		EndTask();
 		OnLanded.Broadcast();
-		CleanAndEndTask();
 	}
 }
 
-void UAbilityTask_JumpAndWaitForLanding::CleanAndEndTask()
+void UAbilityTask_JumpAndWaitForLanding::CleanTask()
 {
-	if (ACharacter* Character = Cast<ACharacter>(GetAvatarActor()))
+	if (OwnerCharacter)
 	{
-		Character->MovementModeChangedDelegate.RemoveDynamic(this, &UAbilityTask_JumpAndWaitForLanding::OnMovementModeChanged);
+		OwnerCharacter->MovementModeChangedDelegate.RemoveDynamic(this, &UAbilityTask_JumpAndWaitForLanding::OnMovementModeChanged);
 	}
-
-	EndTask();
 }

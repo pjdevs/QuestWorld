@@ -31,7 +31,10 @@ public:
 			BlueprintInternalUseOnly = "TRUE"
 		)
 	)
-	static UAbilityTask_JumpAndWaitForLanding* JumpAndWaitForLanding(UGameplayAbility* OwningAbility);
+	static UAbilityTask_JumpAndWaitForLanding* JumpAndWaitForLanding(
+		UGameplayAbility* OwningAbility,
+		ACharacter* OwnerCharacter
+	);
 
 protected:
 	virtual void Activate() override;
@@ -40,5 +43,8 @@ private:
 	UFUNCTION()
 	void OnMovementModeChanged(ACharacter* Character, EMovementMode PrevMovementMode, uint8 PreviousCustomMode);
 
-	void CleanAndEndTask();
+	void CleanTask();
+
+private:
+	ACharacter* OwnerCharacter;	
 };
