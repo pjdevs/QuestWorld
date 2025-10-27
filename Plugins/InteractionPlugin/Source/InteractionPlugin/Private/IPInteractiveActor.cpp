@@ -292,6 +292,7 @@ void AIPInteractiveActor::LoadFromSave(const FInteractiveSaveData& InteractiveSa
 	}
 	
 	State = InteractiveSaveData.State;
+	OnRep_State();
 }
 
 FInteractiveSaveData AIPInteractiveActor::WriteToSave()
