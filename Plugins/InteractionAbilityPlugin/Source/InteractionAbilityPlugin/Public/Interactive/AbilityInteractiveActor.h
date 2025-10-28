@@ -9,6 +9,7 @@
 
 class UGameplayAbility_Interact;
 
+// TODO Fix this later if really needed but with new start end interaction this would be long to modify
 UCLASS()
 class INTERACTIONABILITYPLUGIN_API AAbilityInteractiveActor : public AIPInteractiveActor
 {
@@ -34,7 +35,7 @@ public:
 	TSubclassOf<UGameplayAbility_Interact> GetRequiredAbilityClass() const { return RequiredAbilityClass;  }
 	
 protected: // Interactive
-	virtual void Interact(AActor* InteractionInstigator) override;
+	// virtual void Interact(AActor* InteractionInstigator) override;
 	virtual FIPInteractionStatus GetInteractionStatus(AActor* InteractionInstigator) const override;
 
 private:

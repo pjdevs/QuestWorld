@@ -2,25 +2,16 @@
 
 
 #include "Dialog/DialogActor.h"
-
 #include "DialogComponent.h"
-#include "Net/UnrealNetwork.h"
 
 
 ADialogActor::ADialogActor()
-	: DialogAsset(nullptr), InDialogReasonText(FText::FromString("Talking...")), bIsInDialog(false)
+	: DialogAsset(nullptr), InDialogReasonText(FText::FromString("Talking..."))
 {
 	PrimaryActorTick.bCanEverTick = false;
 }
 
-void ADialogActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
-{
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-	DOREPLIFETIME(ADialogActor, bIsInDialog);
-}
-
-void ADialogActor::DoInteraction_Implementation(AActor* InteractionInstigator)
+void ADialogActor::OnStartInteractionInput_Implementation(AActor* InteractionInstigator)
 {
 	if (!DialogAsset)
 	{
@@ -45,31 +36,18 @@ void ADialogActor::DoInteraction_Implementation(AActor* InteractionInstigator)
 
 FIPInteractionStatus ADialogActor::GetInteractionStatus(AActor* InteractionInstigator) const
 {
-	const FIPInteractionStatus BaseInteractionStatus = Super::GetInteractionStatus(InteractionInstigator);
+	FIPInteractionStatus BaseInteractionStatus = Super::GetInteractionStatus(InteractionInstigator);
+	BaseInteractionStatus.ReasonText = InDialogReasonText; // display talking reason (only one possible for now)
 
-	if (!BaseInteractionStatus.bCanBeInteracted)
-	{
-		return BaseInteractionStatus;
-	}
-
-	return bIsInDialog
-		? FIPInteractionStatus { .bCanBeInteracted = false, .ReasonText = InDialogReasonText }
-		: FIPInteractionStatus { .bCanBeInteracted = true };
+	return BaseInteractionStatus;
 }
 
 void ADialogActor::OnDialogStarted(AController* DialogController)
 {
-	bIsInDialog = true;
-	OnRep_bIsInDialog();
+	StartInteractionPhase(DialogController->GetPawn());
 }
 
 void ADialogActor::OnDialogEnded(AController* DialogController)
 {
-	bIsInDialog = false;
-	OnRep_bIsInDialog();
-}
-
-void ADialogActor::OnRep_bIsInDialog()
-{
-	StateChanged();
+	EndInteractionPhase(EIPInteractiveState::Ready);
 }

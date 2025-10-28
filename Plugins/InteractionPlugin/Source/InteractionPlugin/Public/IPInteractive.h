@@ -26,9 +26,14 @@ class INTERACTIONPLUGIN_API IIPInteractive
 
 public:
 	/**
-	 * Interact with the interactive object.
+	 * Begin interaction input with the interactive object.
 	 */
-	virtual void Interact(AActor* InteractionInstigator) = 0;
+	virtual void StartInteractionInput(AActor* InteractionInstigator) = 0;
+
+	/**
+	 * End interaction input with the interactive object.
+	 */
+	virtual void EndInteractionInput(AActor* InteractionInstigator) = 0;
 
 	/**
 	 * Check whether the object can be interacted or not by giving information on interaction status. 

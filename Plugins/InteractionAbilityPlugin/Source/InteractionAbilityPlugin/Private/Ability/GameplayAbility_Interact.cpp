@@ -53,7 +53,7 @@ void UGameplayAbility_Interact::ActivateAbility(
 	}
 
 	InteractiveActor->OnPreAbilityInteract(GetCurrentAbilitySpecHandle());
-	InteractorComponent->TryInteract();
+	// InteractorComponent->TryInteract();
 	InteractiveActor->OnPostAbilityInteract();
 
 	EndAbility(Handle, ActorInfo, ActivationInfo, true, false);

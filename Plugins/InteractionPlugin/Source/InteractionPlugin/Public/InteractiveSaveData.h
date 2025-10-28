@@ -12,8 +12,5 @@ struct FInteractiveSaveData
 	GENERATED_BODY()
 
 	UPROPERTY()
-	EIPInteractiveState State = EIPInteractiveState::Ready;
-
-	UPROPERTY()
-	bool bWasDestroyed = false;
+	FIPInteractiveState State = FIPInteractiveState();
 };

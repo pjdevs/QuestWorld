@@ -55,8 +55,11 @@ protected:
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
 
-	/** Called for interacting input */
-	void Interact(const FInputActionValue& Value);
+	/** Called for start interacting input */
+	void InteractStarted(const FInputActionValue& Value);
+
+	/** Called for end interacting input */
+	void InteractCompleted(const FInputActionValue& Value);
 
 
 protected:

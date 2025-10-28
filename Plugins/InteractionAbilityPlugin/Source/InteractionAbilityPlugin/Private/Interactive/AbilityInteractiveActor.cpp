@@ -27,31 +27,31 @@ void AAbilityInteractiveActor::OnPostAbilityInteract()
 	CurrentAbilitySpecHandle = FGameplayAbilitySpecHandle();
 }
 
-void AAbilityInteractiveActor::Interact(AActor* InteractionInstigator)
-{
-	// First validate that we interact with the right ability 
-
-	const UAbilitySystemComponent* InstigatorAsc = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(InteractionInstigator);
-
-	if (!InstigatorAsc)
-	{
-		return;
-	}
-	
-	const FGameplayAbilitySpec* Spec = InstigatorAsc->FindAbilitySpecFromHandle(CurrentAbilitySpecHandle);
-
-	if (!Spec)
-	{
-		return; // handle forged or not belonging to this ASC
-	}
-
-	if (RequiredAbilityClass && !Spec->Ability->IsA(RequiredAbilityClass))
-	{
-		return;
-	}
-
-	Super::Interact(InteractionInstigator);
-}
+// void AAbilityInteractiveActor::Interact(AActor* InteractionInstigator)
+// {
+// 	// First validate that we interact with the right ability 
+//
+// 	const UAbilitySystemComponent* InstigatorAsc = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(InteractionInstigator);
+//
+// 	if (!InstigatorAsc)
+// 	{
+// 		return;
+// 	}
+// 	
+// 	const FGameplayAbilitySpec* Spec = InstigatorAsc->FindAbilitySpecFromHandle(CurrentAbilitySpecHandle);
+//
+// 	if (!Spec)
+// 	{
+// 		return; // handle forged or not belonging to this ASC
+// 	}
+//
+// 	if (RequiredAbilityClass && !Spec->Ability->IsA(RequiredAbilityClass))
+// 	{
+// 		return;
+// 	}
+//
+// 	Super::Interact(InteractionInstigator);
+// }
 
 FIPInteractionStatus AAbilityInteractiveActor::GetInteractionStatus(AActor* InteractionInstigator) const
 {
@@ -62,7 +62,7 @@ FIPInteractionStatus AAbilityInteractiveActor::GetInteractionStatus(AActor* Inte
 		return BaseInteractionStatus;
 	}
 
-	if (!BaseInteractionStatus.bCanBeInteracted)
+	if (!BaseInteractionStatus.bCanStartInteraction)
 	{
 		return BaseInteractionStatus;
 	}
@@ -70,12 +70,12 @@ FIPInteractionStatus AAbilityInteractiveActor::GetInteractionStatus(AActor* Inte
 	const FText& RequiredAbilityName = RequiredAbilityClass.GetDefaultObject()->GetAbilityName(); 
 	FIPInteractionStatus DoesNotHaveRequiredAbilityStatus = FIPInteractionStatus
 	{
-		.bCanBeInteracted = false,
+		.bCanStartInteraction = false,
 		.ReasonText = FText::Format(DoesNotHasRequiredAbilityTextFormat, RequiredAbilityName)
 	};
 	FIPInteractionStatus CannotActivateRequiredAbilityStatus = FIPInteractionStatus
 	{
-		.bCanBeInteracted = false,
+		.bCanStartInteraction = false,
 		.ReasonText = FText::Format(CannotActivateRequiredAbilityTextFormat, RequiredAbilityName)
 	};
 
@@ -98,6 +98,6 @@ FIPInteractionStatus AAbilityInteractiveActor::GetInteractionStatus(AActor* Inte
 		return CannotActivateRequiredAbilityStatus;
 	}
 	
-	return FIPInteractionStatus { .bCanBeInteracted = true };
+	return FIPInteractionStatus { .bCanStartInteraction = true };
 }
 

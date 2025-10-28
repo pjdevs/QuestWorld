@@ -45,10 +45,14 @@ public:
 	) override;
 
 public:
-	/** Called for interact input */
+	/** Called for start interaction input. */
 	UFUNCTION(BlueprintCallable)
-	void TryInteract();
+	void TryStartInteractionInput();
 
+	/** Called for end interaction input/ */
+	UFUNCTION(BlueprintCallable)
+	void TryEndInteractionInput();
+	
 	/**
 	 * Add an interactive to the list of possible interactives.
 	 */
@@ -84,7 +88,13 @@ protected:
 	 * Execute Interact on the server.
 	 */
 	UFUNCTION(Server, Reliable)
-	void Server_TryInteract();
+	void Server_TryStartInteractionInput();
+
+	/**
+	 * Execute Interact on the server.
+	 */
+	UFUNCTION(Server, Reliable)
+	void Server_TryEndInteractionInput();
 
 	/**
 	 * Show interaction widget on client.

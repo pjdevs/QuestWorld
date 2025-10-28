@@ -24,8 +24,11 @@ AIPInteractiveActor::AIPInteractiveActor()
 	WidgetComponent->SetDrawAtDesiredSize(true);
 	WidgetComponent->SetupAttachment(RootComponent);
 
-	State = EIPInteractiveState::Ready;
-	bInteractMultipleTimes = true;
+	InteractiveState = FIPInteractiveState
+	{
+		.State = EIPInteractiveState::Ready,
+		.InteractionCount = 0
+	};
 	InteractiveName = FText::FromString("Interactive Actor");
 	InteractionDescription = FText::FromString("Interact");
 	bAutoInteract = false;
@@ -110,6 +113,15 @@ void AIPInteractiveActor::HandleInteractionTriggerEndOverlap(
 
 	PossibleInteractors.Remove(Interactor);
 	Interactor->RemoveInteractive(this);
+
+	// End interaction if was interacting with this actor and he left the zone
+	if (HasAuthority())
+	{
+		if (CurrentInteractor == OtherActor)
+		{
+			EndInteractionInput(OtherActor);	
+		}
+	}
 }
 
 void AIPInteractiveActor::HandleIndicationTriggerBeginOverlap(
@@ -177,7 +189,7 @@ void AIPInteractiveActor::PostInitializeComponents()
 	IndicationTrigger->OnComponentEndOverlap.AddDynamic(this, &AIPInteractiveActor::HandleIndicationTriggerEndOverlap);
 }
 
-void AIPInteractiveActor::Interact(AActor* InteractionInstigator)
+void AIPInteractiveActor::StartInteractionInput(AActor* InteractionInstigator)
 {
 	if (!HasAuthority())
 	{
@@ -186,46 +198,41 @@ void AIPInteractiveActor::Interact(AActor* InteractionInstigator)
 
 	const FIPInteractionStatus InteractionStatus = GetInteractionStatus(InteractionInstigator);
 
-	if (!InteractionStatus.bCanBeInteracted)
+	if (!InteractionStatus.bCanStartInteraction)
+	{
+		// TODO Could make function OnInteractionFailed to track and/or play a "can't do that" feedback
+		return;
+	}
+
+	OnStartInteractionInput(InteractionInstigator);
+}
+
+void AIPInteractiveActor::EndInteractionInput(AActor* InteractionInstigator)
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+	
+	if (InteractionInstigator != CurrentInteractor)
 	{
 		return;
 	}
 
-	DoInteraction(InteractionInstigator);
-
-	if (bInteractMultipleTimes)
-	{
-		State = State == EIPInteractiveState::Interacted ? EIPInteractiveState::Ready : EIPInteractiveState::Interacted;
-	}
-	else
-	{
-		State = EIPInteractiveState::Interacted;
-	}
-
-	OnRep_State();
+	OnEndInteractionInput(InteractionInstigator);
 }
 
 FIPInteractionStatus AIPInteractiveActor::GetInteractionStatus(AActor* InteractionInstigator) const
 {
 	FIPInteractionStatus InteractionStatus
 	{
-		.bCanBeInteracted = false,
-		.ReasonText = FText::GetEmpty() // Do not localize anything in base class
+		.bCanStartInteraction = InteractiveState.State == EIPInteractiveState::Ready,
 	};
-
-	if (!bInteractMultipleTimes && State != EIPInteractiveState::Ready)
-	{
-		return InteractionStatus;
-	}
 
 	const FIPInteractionStatus AdditionalInteractionStatus = GetInteractionStatusForActor(InteractionInstigator);
 
-	if (!AdditionalInteractionStatus.bCanBeInteracted)
-	{
-		return AdditionalInteractionStatus;
-	}
-
-	InteractionStatus.bCanBeInteracted = true;
+	InteractionStatus.bCanStartInteraction &= AdditionalInteractionStatus.bCanStartInteraction;
+	InteractionStatus.ReasonText = AdditionalInteractionStatus.ReasonText;
 
 	return InteractionStatus;
 }
@@ -291,26 +298,26 @@ void AIPInteractiveActor::LoadFromSave(const FInteractiveSaveData& InteractiveSa
 		return;
 	}
 	
-	State = InteractiveSaveData.State;
+	InteractiveState = InteractiveSaveData.State;
 	OnRep_State();
 }
 
 FInteractiveSaveData AIPInteractiveActor::WriteToSave()
 {
-	return FInteractiveSaveData { .State = State, .bWasDestroyed = false  };
+	return FInteractiveSaveData { .State = InteractiveState.State };
 }
 
 void AIPInteractiveActor::OnRep_State()
 {
-	StateChanged();
-
-	if (State == EIPInteractiveState::Interacted || bInteractMultipleTimes)
-	{
-		DoFeedback();
-	}
+	NotifyStateChanged();
+	DoFeedback();
 }
 
-void AIPInteractiveActor::DoInteraction_Implementation(AActor* InteractionInstigator)
+void AIPInteractiveActor::OnStartInteractionInput_Implementation(AActor* InteractionInstigator)
+{
+}
+
+void AIPInteractiveActor::OnEndInteractionInput_Implementation(AActor* InteractionInstigator)
 {
 }
 
@@ -318,12 +325,54 @@ void AIPInteractiveActor::DoFeedback_Implementation()
 {
 }
 
-FIPInteractionStatus AIPInteractiveActor::GetInteractionStatusForActor_Implementation(AActor* InteractionInstigator) const
+void AIPInteractiveActor::StartInteractionPhase(AActor* InteractionInstigator)
 {
-	return FIPInteractionStatus { .bCanBeInteracted = true };
+	if (!HasAuthority())
+	{
+		return;
+	}
+	
+	CurrentInteractor = InteractionInstigator;
+	InteractiveState = FIPInteractiveState
+	{
+		.State = EIPInteractiveState::Busy,
+		.InteractionCount = InteractiveState.InteractionCount,
+	};
+
+	OnRep_State();
 }
 
-void AIPInteractiveActor::StateChanged()
+void AIPInteractiveActor::EndInteractionPhase(EIPInteractiveState NextState)
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+	
+	const uint8 NextInteractionCount = InteractiveState.InteractionCount + 1;
+	InteractiveState = FIPInteractiveState
+	{
+		.State = NextState,
+		.InteractionCount = NextInteractionCount,
+	};
+
+	OnRep_State();
+
+	if (NextState == EIPInteractiveState::Destroyed)
+	{
+		ForceNetUpdate();
+		Destroy();
+	}
+
+	CurrentInteractor = nullptr;
+}
+
+FIPInteractionStatus AIPInteractiveActor::GetInteractionStatusForActor_Implementation(AActor* InteractionInstigator) const
+{
+	return FIPInteractionStatus { .bCanStartInteraction = true };
+}
+
+void AIPInteractiveActor::NotifyStateChanged()
 {
 	IndicatedInteractors.RemoveAll([](const TWeakObjectPtr<UIPInteractorComponent>& Interactor)
 	{
@@ -341,5 +390,5 @@ void AIPInteractiveActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(AIPInteractiveActor, State);
+	DOREPLIFETIME(AIPInteractiveActor, InteractiveState);
 }

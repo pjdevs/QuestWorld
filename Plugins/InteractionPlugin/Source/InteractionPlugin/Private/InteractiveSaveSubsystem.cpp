@@ -19,7 +19,9 @@ void UInteractiveSaveSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 
 	for (TActorIterator<AActor> Actor(GetWorld()); Actor; ++Actor)
 	{
-		if (Actor->Implements<UIPSavableInteractive>())
+		const IIPSavableInteractive* Savable = Cast<IIPSavableInteractive>(*Actor);
+
+		if (Savable && Savable->IsSavable())
 		{
 			Actor->OnDestroyed.AddDynamic(this, &UInteractiveSaveSubsystem::OnSavableActorDestroyed);
 			SavableActorArray.Add(*Actor);
@@ -37,7 +39,7 @@ void UInteractiveSaveSubsystem::LoadSaveData(const FInteractiveWorldSaveData& Wo
 		{
 			if (const FInteractiveSaveData* InteractiveSave = WorldSaveData.SavedInteractives.Find(Savable->GetUniqueId()))
 			{
-				if (InteractiveSave->bWasDestroyed)
+				if (InteractiveSave->State.State == EIPInteractiveState::Destroyed)
 				{
 					Actor->Destroy();
 				}
@@ -71,6 +73,6 @@ void UInteractiveSaveSubsystem::OnSavableActorDestroyed(AActor* DestroyedActor)
 	if (const IIPSavableInteractive* Savable = Cast<IIPSavableInteractive>(DestroyedActor))
 	{
 		FInteractiveSaveData& InteractiveSaveData = CurrentWorldSaveData.SavedInteractives.FindOrAdd(Savable->GetUniqueId());
-		InteractiveSaveData.bWasDestroyed = true;
+		InteractiveSaveData.State.State = EIPInteractiveState::Destroyed;
 	}
 }

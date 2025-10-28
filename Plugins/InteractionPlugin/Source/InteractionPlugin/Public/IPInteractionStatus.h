@@ -14,10 +14,10 @@ struct INTERACTIONPLUGIN_API FIPInteractionStatus
 	GENERATED_BODY()
 
 	/**
-	 * Can the actor be interacted?
+	 * Can the actor be interacted by the given instigator?
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Interaction)
-	bool bCanBeInteracted = false;
+	bool bCanStartInteraction = false;
 
 	/**
 	 * Reason text to be displayed if it cannot be interacted.

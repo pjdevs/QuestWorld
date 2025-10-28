@@ -89,7 +89,13 @@ void AQuestWorldCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 			InteractAction,
 			ETriggerEvent::Started,
 			this,
-		    &AQuestWorldCharacter::Interact
+		    &AQuestWorldCharacter::InteractStarted
+		);
+		EnhancedInputComponent->BindAction(
+			InteractAction,
+			ETriggerEvent::Completed,
+			this,
+			&AQuestWorldCharacter::InteractCompleted
 		);
 	}
 	else
@@ -141,21 +147,28 @@ void AQuestWorldCharacter::Look(const FInputActionValue& Value)
 	}
 }
 
-void AQuestWorldCharacter::Interact(const FInputActionValue& Value)
+void AQuestWorldCharacter::InteractStarted(const FInputActionValue& Value)
 {
-	if (const AAbilityInteractiveActor* Interactive = Cast<AAbilityInteractiveActor>(Interactor->GetMostRelevantActor()))
-	{
-		UAbilitySystemComponent* MyAbilitySystemComponent = GetAbilitySystemComponent();
+	// if (const AAbilityInteractiveActor* Interactive = Cast<AAbilityInteractiveActor>(Interactor->GetMostRelevantActor()))
+	// {
+	// 	UAbilitySystemComponent* MyAbilitySystemComponent = GetAbilitySystemComponent();
+	//
+	// 	if (!MyAbilitySystemComponent)
+	// 	{
+	// 		return;
+	// 	}
+	//
+	// 	MyAbilitySystemComponent->TryActivateAbilityByClass(Interactive->GetRequiredAbilityClass());
+	// }
+	// else
+	// {
+	// 	Interactor->TryInteract();
+	// }
 
-		if (!MyAbilitySystemComponent)
-		{
-			return;
-		}
+	Interactor->TryStartInteractionInput();
+}
 
-		MyAbilitySystemComponent->TryActivateAbilityByClass(Interactive->GetRequiredAbilityClass());
-	}
-	else
-	{
-		Interactor->TryInteract();
-	}
+void AQuestWorldCharacter::InteractCompleted(const FInputActionValue& Value)
+{
+	Interactor->TryEndInteractionInput();
 }

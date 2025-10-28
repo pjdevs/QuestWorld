@@ -37,7 +37,7 @@ void UIPInteractorComponent::TickComponent(
 	RecomputeInteractiveRelevancy();	
 }
 
-void UIPInteractorComponent::TryInteract()
+void UIPInteractorComponent::TryStartInteractionInput()
 {
 	IIPInteractive* Interactive = Cast<IIPInteractive>(MostRelevantActor);
 
@@ -46,10 +46,10 @@ void UIPInteractorComponent::TryInteract()
 		return;
 	}
 
-	// check that we can interact! (on client and server)
+	// check that we can start interact! (on client and server)
 	const FIPInteractionStatus InteractionStatus = Interactive->GetInteractionStatus(GetOwner());
 
-	if (!InteractionStatus.bCanBeInteracted)
+	if (!InteractionStatus.bCanStartInteraction)
 	{
 		return;
 	}
@@ -57,7 +57,7 @@ void UIPInteractorComponent::TryInteract()
 	// if we are on client call this method on server 
 	if (GetOwnerRole() != ROLE_Authority)
 	{
-		Server_TryInteract();
+		Server_TryStartInteractionInput();
 		return;
 	}
 
@@ -67,7 +67,32 @@ void UIPInteractorComponent::TryInteract()
 		return;
 	}
 
-	Interactive->Interact(GetOwner());
+	Interactive->StartInteractionInput(GetOwner());
+}
+
+void UIPInteractorComponent::TryEndInteractionInput()
+{
+	IIPInteractive* Interactive = Cast<IIPInteractive>(MostRelevantActor);
+
+	if (!Interactive)
+	{
+		return;
+	}
+
+	// if we are on client call this method on server 
+	if (GetOwnerRole() != ROLE_Authority)
+	{
+		Server_TryEndInteractionInput();
+		return;
+	}
+
+	// check on server if we really are in range to interact (is it really possible that it is not the case???)
+	if (!PossibleInteractives.Contains(Interactive))
+	{
+		return;
+	}
+
+	Interactive->EndInteractionInput(GetOwner());
 }
 
 void UIPInteractorComponent::AddInteractive(IIPInteractive* Interactive)
@@ -88,6 +113,13 @@ void UIPInteractorComponent::AddInteractive(IIPInteractive* Interactive)
 
 void UIPInteractorComponent::RemoveInteractive(IIPInteractive* Interactive)
 {
+	const UWorld* World = GetWorld();
+
+	if (!IsValid(World) || World->bIsTearingDown)
+	{
+		return;
+	}
+	
 	if (!Interactive)
 	{
 		return;
@@ -121,6 +153,13 @@ void UIPInteractorComponent::AddInteractiveIndication(IIPInteractive* Interactiv
 
 void UIPInteractorComponent::RemoveInteractiveIndication(IIPInteractive* Interactive)
 {
+	const UWorld* World = GetWorld();
+
+	if (!IsValid(World) || World->bIsTearingDown)
+	{
+		return;
+	}
+
 	if (!Interactive)
 	{
 		return;
@@ -152,9 +191,9 @@ TWeakObjectPtr<AActor> UIPInteractorComponent::GetMostRelevantActor() const
 	return MostRelevantActor;
 }
 
-void UIPInteractorComponent::Server_TryInteract_Implementation()
+void UIPInteractorComponent::Server_TryStartInteractionInput_Implementation()
 {
-	TryInteract();
+	TryStartInteractionInput();
 }
 
 void UIPInteractorComponent::RecomputeInteractiveRelevancy(bool bForceRefresh)
@@ -244,7 +283,7 @@ void UIPInteractorComponent::OnMostRelevantInteractiveChanged(
 		{
 			if (Interactive->IsAutoInteractive() && GetOwnerRole() == ROLE_Authority)
 			{
-				TryInteract();	
+				TryStartInteractionInput();	
 			}
 			else
 			{
@@ -277,6 +316,11 @@ FIPInteractionScore UIPInteractorComponent::ComputeInteractionScore(
 		.AngleFromTarget = AngleFromTarget,
 		.DistanceFromTarget = DistanceToTarget,
 	};
+}
+
+void UIPInteractorComponent::Server_TryEndInteractionInput_Implementation()
+{
+	TryEndInteractionInput();
 }
 
 void UIPInteractorComponent::ShowInteractionWidgetClient(AActor* InteractiveActor)
@@ -350,7 +394,7 @@ void UIPInteractorComponent::ShowIndicationWidgetClient(AActor* InteractiveActor
 	}
 
 	const FIPInteractionStatus InteractionStatus = Interactive->GetInteractionStatus(GetOwner());
-	const TSubclassOf<UUserWidget> WidgetClass = InteractionStatus.bCanBeInteracted
+	const TSubclassOf<UUserWidget> WidgetClass = InteractionStatus.bCanStartInteraction
 		? Interactive->GetIndicationWidgetClass()
 		: Interactive->GetIndicationBlockedWidgetClass();
 
