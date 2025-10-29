@@ -36,5 +36,7 @@ void AGaspPlayerCharacter::InitAbilitySystemComponent()
 		AbilitySystemComponent = CastChecked<UGaspAbilitySystemComponent>(GaspPlayerState->GetAbilitySystemComponent());
 		AbilitySystemComponent->InitAbilityActorInfo(GaspPlayerState, this);
 		AttributeSet = GaspPlayerState->GetAttributeSet();
+
+		OnAscInitialized.ExecuteIfBound();
 	}
 }

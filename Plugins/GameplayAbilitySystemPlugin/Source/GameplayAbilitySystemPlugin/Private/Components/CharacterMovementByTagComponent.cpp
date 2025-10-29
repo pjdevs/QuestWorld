@@ -2,9 +2,8 @@
 
 
 #include "Components/CharacterMovementByTagComponent.h"
-
 #include "AbilitySystemComponent.h"
-#include "AbilitySystemGlobals.h"
+#include "GaspCharacterBase.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
@@ -23,22 +22,21 @@ void UCharacterMovementByTagComponent::BeginPlay()
 		return;
 	}
 
-	OwnerCharacter = Cast<ACharacter>(GetOwner());
+	OwnerCharacter = Cast<AGaspCharacterBase>(GetOwner());
 	
 	if (!OwnerCharacter)
 	{
 		return;
 	}
 
-	OwnerAsc = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(OwnerCharacter);
-
-	if (!OwnerAsc)
+	if (OwnerCharacter->GetAbilitySystemComponent())
 	{
-		return;
+		OnOwnerAscInitialized();
 	}
-	
-	TagCountChangedDelegateHandle = OwnerAsc->RegisterGameplayTagEvent(MovementBlockedTag)
-		.AddUObject(this, &UCharacterMovementByTagComponent::OnMovementBlockedTagCountChanged);
+	else
+	{
+		OwnerCharacter->OnAscInitialized.BindUObject(this, &UCharacterMovementByTagComponent::OnOwnerAscInitialized);
+	}
 }
 
 void UCharacterMovementByTagComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -51,6 +49,19 @@ void UCharacterMovementByTagComponent::EndPlay(const EEndPlayReason::Type EndPla
 	}
 
 	OwnerAsc->UnregisterGameplayTagEvent(TagCountChangedDelegateHandle, MovementBlockedTag);
+}
+
+void UCharacterMovementByTagComponent::OnOwnerAscInitialized()
+{
+	OwnerAsc = OwnerCharacter->GetAbilitySystemComponent();
+
+	if (!OwnerAsc)
+	{
+		return;
+	}
+	
+	TagCountChangedDelegateHandle = OwnerAsc->RegisterGameplayTagEvent(MovementBlockedTag)
+		.AddUObject(this, &UCharacterMovementByTagComponent::OnMovementBlockedTagCountChanged);
 }
 
 void UCharacterMovementByTagComponent::OnMovementBlockedTagCountChanged(FGameplayTag GameplayTag, int TagCount)
@@ -66,7 +77,7 @@ void UCharacterMovementByTagComponent::OnMovementBlockedTagCountChanged(FGamepla
 		bLastUseControllerRotationYaw = OwnerCharacter->bUseControllerRotationYaw;
 		
 		OwnerCharacter->GetCharacterMovement()->DisableMovement();
-		OwnerCharacter->bUseControllerRotationYaw = false;
+		OwnerCharacter->bUseControllerRotationYaw = !bDisableUseControllerRotationYaw;
 	}
 	else
 	{

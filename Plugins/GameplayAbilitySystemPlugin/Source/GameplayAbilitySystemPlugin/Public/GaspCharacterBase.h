@@ -12,6 +12,8 @@ class UGaspAttributeSet;
 class UGameplayAbility;
 class UGaspAbilitySystemComponent;
 
+DECLARE_DELEGATE(FAscInitializedDelegate);
+
 UCLASS()
 class GAMEPLAYABILITYSYSTEMPLUGIN_API AGaspCharacterBase : public ACharacter, public IAbilitySystemInterface
 {
@@ -27,6 +29,9 @@ protected:
 	void GiveDefaultAbilities();
 	void InitDefaultAttributes();
 	void ApplyDefaultPermanentEffects();
+
+public:
+	FAscInitializedDelegate OnAscInitialized;
 	
 protected:
 	UPROPERTY()
