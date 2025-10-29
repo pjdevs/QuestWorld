@@ -41,10 +41,6 @@ class AQuestWorldCharacter : public AGaspPlayerCharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* LookAction;
 
-	/** Interact Input Action */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* InteractAction;
-
 public:
 	AQuestWorldCharacter();
 

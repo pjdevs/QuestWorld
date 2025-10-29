@@ -49,9 +49,15 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void TryStartInteractionInput();
 
-	/** Called for end interaction input/ */
+	/** Called for end interaction input */
 	UFUNCTION(BlueprintCallable)
 	void TryEndInteractionInput();
+
+	/**
+	 * Get the input action required to interact.
+	 */
+	UFUNCTION(BlueprintPure)
+	UInputAction* GetInteractionAction() const { return InteractionAction; }
 	
 	/**
 	 * Add an interactive to the list of possible interactives.

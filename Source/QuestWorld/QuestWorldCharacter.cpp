@@ -86,13 +86,13 @@ void AQuestWorldCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 
 		// Interacting
 		EnhancedInputComponent->BindAction(
-			InteractAction,
+			Interactor->GetInteractionAction(),
 			ETriggerEvent::Started,
 			this,
 		    &AQuestWorldCharacter::InteractStarted
 		);
 		EnhancedInputComponent->BindAction(
-			InteractAction,
+			Interactor->GetInteractionAction(),
 			ETriggerEvent::Completed,
 			this,
 			&AQuestWorldCharacter::InteractCompleted
