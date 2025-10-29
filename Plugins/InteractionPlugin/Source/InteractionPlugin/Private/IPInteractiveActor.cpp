@@ -356,12 +356,13 @@ void AIPInteractiveActor::EndInteractionPhase(EIPInteractiveState NextState)
 		.InteractionCount = NextInteractionCount,
 	};
 
-	OnRep_State();
-
 	if (NextState == EIPInteractiveState::Destroyed)
 	{
-		ForceNetUpdate();
 		Destroy();
+	}
+	else
+	{
+		OnRep_State();
 	}
 
 	CurrentInteractor = nullptr;
