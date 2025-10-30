@@ -31,19 +31,19 @@ public:
 	void SetState(EIPState NewState);
 	
 protected:
-	UFUNCTION(BlueprintNativeEvent, BlueprintCosmetic)
-	void DoFeedback(EIPState NewState);
-	void DoFeedback_Implementation(EIPState NewState);
+	UFUNCTION(BlueprintNativeEvent)
+	void OnStateChanged(EIPState NewState);
+	void OnStateChanged_Implementation(EIPState NewState);
 
 private:
 	UFUNCTION()
 	void OnRep_State();
 	
 private:
-	UPROPERTY(EditDefaultsOnly, Category = "Save", meta = (AllowPrivateAccess = true))
+	UPROPERTY(EditAnywhere, Category = "Save", meta = (AllowPrivateAccess = true))
 	FName UniqueId;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Save", meta = (AllowPrivateAccess = true))
+	UPROPERTY(EditAnywhere, Category = "Save", meta = (AllowPrivateAccess = true))
 	bool bIsSavable;
 
 protected:

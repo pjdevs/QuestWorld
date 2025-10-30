@@ -21,7 +21,7 @@ public:
 	void Execute(UWorld* InWorld, AController* DialogController);
 
 protected:
-	UFUNCTION(BlueprintImplementableEvent, Category = Dialog)
+	UFUNCTION(BlueprintNativeEvent, Category = Dialog)
 	void OnExecute(AController* DialogController);
 	virtual void OnExecute_Implementation(AController* DialogController);
 

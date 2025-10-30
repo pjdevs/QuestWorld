@@ -209,13 +209,13 @@ protected:
 	/**
 	 * Save unique ID of this interactive.
 	 */
-	UPROPERTY(EditDefaultsOnly, Category = "Interaction|Save")
+	UPROPERTY(EditAnywhere, Category = "Interaction|Save")
 	FName UniqueId;
 	
 	/**
 	 * Whether this interactive should be saved or not.
 	 */
-	UPROPERTY(EditDefaultsOnly, Category = "Interaction|Save")
+	UPROPERTY(EditAnywhere, Category = "Interaction|Save")
 	bool bIsSavable;
 
 protected:

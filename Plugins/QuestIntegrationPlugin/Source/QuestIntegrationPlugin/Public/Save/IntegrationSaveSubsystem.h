@@ -4,14 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
-#include "QuestWorldSaveSubsystem.generated.h"
+#include "IntegrationSaveSubsystem.generated.h"
 
-class UQuestWorldSaveGame;
+class UIntegrationSaveGame;
 /**
  * 
  */
 UCLASS()
-class QUESTWORLD_API UQuestWorldSaveSubsystem : public UGameInstanceSubsystem
+class QUESTINTEGRATIONPLUGIN_API UIntegrationSaveSubsystem : public UGameInstanceSubsystem
 {
 	GENERATED_BODY()
 
@@ -25,9 +25,12 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = Save)
 	void SaveGame();
 
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = Save)
+	void SetSaveGameSlotName(const FString& SlotName);
+	
 private:
 	UPROPERTY()
-	UQuestWorldSaveGame* SaveGameObject;
+	UIntegrationSaveGame* SaveGameObject;
 
 	FString SaveGameSlotName = "QuestWorldSave";
 };

@@ -55,12 +55,6 @@ void UDialogComponent::StartDialog(AActor* DialogActor, UDialogGraphAsset* Dialo
 		DialogEvents->OnDialogStarted(OwnerController);
 	}
 
-	// Prevent player moving while dialog is active
-	if (APawn* Pawn = PlayerController->GetPawn())
-	{
-		Pawn->DisableInput(PlayerController);
-	}
-	
 	Client_CreateDialogWidget(PlayerController, DialogAsset);
 
 	CurrentNode = DialogAsset->GetDialogRoot();
@@ -171,14 +165,6 @@ void UDialogComponent::EndDialog()
 	}
 
 	CurrentDialogActor = nullptr;
-	
-	if (APlayerController* PlayerController = Cast<APlayerController>(OwnerController))
-	{
-		if (APawn* Pawn = OwnerController->GetPawn())
-		{
-			Pawn->EnableInput(PlayerController);
-		}
-	}
 }
 
 void UDialogComponent::OnLineDisplayedServer()
@@ -200,6 +186,14 @@ void UDialogComponent::OnChoicesDisplayedServer(int ChoiceIndex)
 
 void UDialogComponent::Client_DestroyDialogWidget_Implementation()
 {
+	if (APlayerController* PlayerController = Cast<APlayerController>(OwnerController))
+	{
+		if (APawn* Pawn = OwnerController->GetPawn())
+		{
+			Pawn->EnableInput(PlayerController);
+		}
+	}
+	
 	if (!DisplayedDialogWidget)
 	{
 		return;
@@ -226,6 +220,12 @@ void UDialogComponent::Client_CreateDialogWidget_Implementation(
 	UDialogGraphAsset* DialogAsset
 )
 {
+	// Prevent player moving while dialog is active on client
+	if (APawn* Pawn = PlayerController->GetPawn())
+	{
+		Pawn->DisableInput(PlayerController);
+	}
+	
 	DisplayedDialogWidget = CreateWidget<UDialogWidget>(PlayerController, DialogWidgetClass);
 	DisplayedDialogWidget->DisplayLineFinishedDelegate.BindUObject(this, &UDialogComponent::Server_OnLineDisplayed);
 	DisplayedDialogWidget->DisplayChoicesFinishedDelegate.BindUObject(this, &UDialogComponent::Server_OnChoiceDisplayed);

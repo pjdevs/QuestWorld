@@ -59,13 +59,13 @@ void AIPStatefulActor::SetState(EIPState NewState)
 	OnRep_State();
 }
 
-void AIPStatefulActor::DoFeedback_Implementation(EIPState NewState)
+void AIPStatefulActor::OnStateChanged_Implementation(EIPState NewState)
 {
 	
 }
 
 void AIPStatefulActor::OnRep_State()
 {
-	DoFeedback(State);
+	OnStateChanged(State);
 }
 

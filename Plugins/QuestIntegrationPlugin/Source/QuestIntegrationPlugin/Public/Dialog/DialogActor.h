@@ -21,13 +21,13 @@ public: // Interactive actor
 	virtual void OnStartInteractionInput_Implementation(AActor* InteractionInstigator) override;
 	virtual FIPInteractionStatus GetInteractionStatus(AActor* InteractionInstigator) const override;
 
-public: // IDalogEvents interface
+public: // IDialogEvents interface
 	virtual void OnDialogStarted(AController* DialogController) override;
 	virtual void OnDialogEnded(AController* DialogController) override;
 
 private:
 	// TODO Later handle soft ref etc in dialog like quest
-	UPROPERTY(EditDefaultsOnly, Category = Dialog)
+	UPROPERTY(EditAnywhere, Category = Dialog)
 	TObjectPtr<UDialogGraphAsset> DialogAsset;
 
 	UPROPERTY(EditDefaultsOnly, Category = Dialog)

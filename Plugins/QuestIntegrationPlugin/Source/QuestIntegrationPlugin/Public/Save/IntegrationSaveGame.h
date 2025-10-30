@@ -7,13 +7,13 @@
 #include "InventorySaveData.h"
 #include "QuestSaveGame.h"
 #include "GameFramework/SaveGame.h"
-#include "QuestWorldSaveGame.generated.h"
+#include "IntegrationSaveGame.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class QUESTWORLD_API UQuestWorldSaveGame : public USaveGame
+class QUESTINTEGRATIONPLUGIN_API UIntegrationSaveGame : public USaveGame
 {
 	GENERATED_BODY()
 
@@ -26,4 +26,7 @@ public:
 
 	UPROPERTY()
 	FIPWorldStateSaveData InteractiveWorldSaveData = FIPWorldStateSaveData();
+
+	UPROPERTY()
+	TSet<FName> ActionsDone = TSet<FName>();
 };

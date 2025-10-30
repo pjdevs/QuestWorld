@@ -1,32 +1,33 @@
 ﻿// Copyright pjdevs. All Rights Reserved.
 
 
-#include "QuestWorldSaveSubsystem.h"
-
+#include "Save/IntegrationSaveSubsystem.h"
+#include "Save/IntegrationSaveGame.h"
 #include "IPWorldStateSaveSubsystem.h"
 #include "InventoryComponent.h"
 #include "InventoryStatics.h"
 #include "QuestComponent.h"
 #include "QuestStatics.h"
-#include "QuestWorldSaveGame.h"
+#include "Actions/PersistentActionsComponent.h"
+#include "Actions/PersistentActionsStatics.h"
 #include "Kismet/GameplayStatics.h"
 
-void UQuestWorldSaveSubsystem::LoadSaveGame()
+void UIntegrationSaveSubsystem::LoadSaveGame()
 {
 	if (UGameplayStatics::DoesSaveGameExist(SaveGameSlotName, 0))
 	{
-		SaveGameObject = Cast<UQuestWorldSaveGame>(UGameplayStatics::LoadGameFromSlot(SaveGameSlotName, 0));
+		SaveGameObject = Cast<UIntegrationSaveGame>(UGameplayStatics::LoadGameFromSlot(SaveGameSlotName, 0));
 	}
 
 	if (!SaveGameObject)
 	{
-		SaveGameObject = Cast<UQuestWorldSaveGame>(
-			UGameplayStatics::CreateSaveGameObject(UQuestWorldSaveGame::StaticClass())
+		SaveGameObject = Cast<UIntegrationSaveGame>(
+			UGameplayStatics::CreateSaveGameObject(UIntegrationSaveGame::StaticClass())
 		);
 	}
 }
 
-void UQuestWorldSaveSubsystem::LoadGame()
+void UIntegrationSaveSubsystem::LoadGame()
 {
 	if (!SaveGameObject)
 	{
@@ -47,14 +48,19 @@ void UQuestWorldSaveSubsystem::LoadGame()
 	{
 		InteractiveSave->LoadSaveData(SaveGameObject->InteractiveWorldSaveData);
 	}
+
+	if (UPersistentActionsComponent* PersistentActions = UPersistentActionsStatics::GetPersistentActions(GetWorld()))
+	{
+		PersistentActions->SetActionsDone(SaveGameObject->ActionsDone);
+	}
 }
 
-void UQuestWorldSaveSubsystem::SaveGame()
+void UIntegrationSaveSubsystem::SaveGame()
 {
 	if (!SaveGameObject)
 	{
-		SaveGameObject = Cast<UQuestWorldSaveGame>(
-			UGameplayStatics::CreateSaveGameObject(UQuestWorldSaveGame::StaticClass())
+		SaveGameObject = Cast<UIntegrationSaveGame>(
+			UGameplayStatics::CreateSaveGameObject(UIntegrationSaveGame::StaticClass())
 		);
 	}
 	
@@ -73,5 +79,15 @@ void UQuestWorldSaveSubsystem::SaveGame()
 		SaveGameObject->InteractiveWorldSaveData = InteractiveSave->GetSaveData();
 	}
 
+	if (UPersistentActionsComponent* PersistentActions = UPersistentActionsStatics::GetPersistentActions(GetWorld()))
+	{
+		SaveGameObject->ActionsDone = PersistentActions->GetActionsDone();
+	}
+
 	UGameplayStatics::SaveGameToSlot(SaveGameObject, SaveGameSlotName, 0);
+}
+
+void UIntegrationSaveSubsystem::SetSaveGameSlotName(const FString& SlotName)
+{
+	SaveGameSlotName = SlotName;
 }

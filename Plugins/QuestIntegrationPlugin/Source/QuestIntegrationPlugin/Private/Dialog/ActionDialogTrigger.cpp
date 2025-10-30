@@ -14,6 +14,7 @@ void UActionDialogTrigger::OnExecute_Implementation(AController* DialogControlle
 		UActionQuestEvent* ActionQuestEvent = NewObject<UActionQuestEvent>();
 		ActionQuestEvent->ActionInstigator = DialogController;
 		ActionQuestEvent->ActionName = ActionToTrigger;
+
 		QuestSubsystem->SubmitQuestEvent(ActionQuestEvent);
 	}
 }
