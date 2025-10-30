@@ -7,14 +7,9 @@
 #include "QuestStatics.h"
 #include "Assets/ActionQuestEvent.h"
 
-void UActionDialogTrigger::Execute(UWorld* World, AController* DialogController)
+void UActionDialogTrigger::OnExecute_Implementation(AController* DialogController)
 {
-	if (!World)
-	{
-		return;
-	}
-	
-	if (UQuestComponent* QuestSubsystem = UQuestStatics::GetQuestComponent(World))
+	if (UQuestComponent* QuestSubsystem = UQuestStatics::GetQuestComponent(GetWorld()))
 	{
 		UActionQuestEvent* ActionQuestEvent = NewObject<UActionQuestEvent>();
 		ActionQuestEvent->ActionInstigator = DialogController;

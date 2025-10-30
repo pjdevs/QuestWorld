@@ -3,11 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "InteractiveSaveData.h"
+#include "IPStateSaveData.h"
 #include "IPInteractionStatus.h"
 #include "IPInteractive.h"
+#include "IPInteractiveState.h"
 #include "IPInteractorComponent.h"
-#include "IPSavableInteractive.h"
+#include "IPStateSavable.h"
 #include "IPInteractiveActor.generated.h"
 
 class UBoxComponent;
@@ -16,7 +17,7 @@ class UBoxComponent;
  * A base interactive Actor implementing IInteractive interface.
  */
 UCLASS(Abstract)
-class INTERACTIONPLUGIN_API AIPInteractiveActor : public AActor, public IIPInteractive, public IIPSavableInteractive
+class INTERACTIONPLUGIN_API AIPInteractiveActor : public AActor, public IIPInteractive, public IIPStateSavable
 {
 	GENERATED_BODY()
 	
@@ -43,8 +44,8 @@ public: // IIPInteractive interface
 public: // IIPSavableInteractive interface
 	virtual FName GetUniqueId() const override;
 	virtual bool IsSavable() const override;
-	virtual void LoadFromSave(const FInteractiveSaveData& InteractiveSaveData) override;
-	virtual FInteractiveSaveData WriteToSave() override;
+	virtual void LoadFromSave(const FIPStateSaveData& SaveData) override;
+	virtual FIPStateSaveData WriteToSave() override;
 	
 protected:
 	/**
@@ -65,8 +66,8 @@ protected:
 	 * Feedback to execute on the client when state changed.
 	 */
 	UFUNCTION(BlueprintNativeEvent, BlueprintCosmetic)
-	void DoFeedback();
-	virtual void DoFeedback_Implementation();
+	void DoFeedback(const FIPInteractiveState& NewState);
+	virtual void DoFeedback_Implementation(const FIPInteractiveState& NewState);
 
 	/**
 	 * Start interaction phase which will make object currently
@@ -95,8 +96,14 @@ protected:
 	 * use native GetInteractionStatus.
 	 */
 	UFUNCTION(BlueprintNativeEvent, BlueprintAuthorityOnly)
-	FIPInteractionStatus GetInteractionStatusForActor(AActor* InteractionInstigator) const;
-	virtual FIPInteractionStatus GetInteractionStatusForActor_Implementation(AActor* InteractionInstigator) const;
+	FIPInteractionStatus GetInteractionStatusForActor(
+		AActor* InteractionInstigator,
+		const FIPInteractiveState& CurrentState
+	) const;
+	virtual FIPInteractionStatus GetInteractionStatusForActor_Implementation(
+		AActor* InteractionInstigator,
+		const FIPInteractiveState& CurrentState
+	) const;
 
 	/**
 	 * Function that can be called to notify interactors that state may have changed
@@ -215,7 +222,7 @@ protected:
 	/**
 	 * Interaction state of the actor.
 	 */
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = Interaction, ReplicatedUsing=OnRep_State)
+	UPROPERTY(VisibleInstanceOnly, Category = Interaction, ReplicatedUsing=OnRep_State)
 	FIPInteractiveState InteractiveState;
 
 	/**

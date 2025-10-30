@@ -4,13 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
-#include "IPSavableInteractive.generated.h"
+#include "IPStateSavable.generated.h"
 
-struct FInteractiveSaveData;
+struct FIPStateSaveData;
 
 // This class does not need to be modified.
 UINTERFACE()
-class UIPSavableInteractive : public UInterface
+class UIPStateSavable : public UInterface
 {
 	GENERATED_BODY()
 };
@@ -18,13 +18,13 @@ class UIPSavableInteractive : public UInterface
 /**
  * 
  */
-class INTERACTIONPLUGIN_API IIPSavableInteractive
+class INTERACTIONPLUGIN_API IIPStateSavable
 {
 	GENERATED_BODY()
 
 public:
 	virtual FName GetUniqueId() const = 0;
 	virtual bool IsSavable() const = 0;
-	virtual void LoadFromSave(const FInteractiveSaveData& InteractiveSaveData) = 0;
-	virtual FInteractiveSaveData WriteToSave() = 0;
+	virtual void LoadFromSave(const FIPStateSaveData& SaveData) = 0;
+	virtual FIPStateSaveData WriteToSave() = 0;
 };

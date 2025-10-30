@@ -3,7 +3,7 @@
 
 #include "QuestWorldSaveSubsystem.h"
 
-#include "InteractiveSaveSubsystem.h"
+#include "IPWorldStateSaveSubsystem.h"
 #include "InventoryComponent.h"
 #include "InventoryStatics.h"
 #include "QuestComponent.h"
@@ -43,7 +43,7 @@ void UQuestWorldSaveSubsystem::LoadGame()
 		QuestComponent->LoadQuestsFromSave(SaveGameObject->QuestSaveData);
 	}
 
-	if (UInteractiveSaveSubsystem* InteractiveSave = GetWorld()->GetSubsystem<UInteractiveSaveSubsystem>())
+	if (UIPWorldStateSaveSubsystem* InteractiveSave = GetWorld()->GetSubsystem<UIPWorldStateSaveSubsystem>())
 	{
 		InteractiveSave->LoadSaveData(SaveGameObject->InteractiveWorldSaveData);
 	}
@@ -68,7 +68,7 @@ void UQuestWorldSaveSubsystem::SaveGame()
 		SaveGameObject->QuestSaveData = QuestComponent->WriteQuestsToSave();
 	}
 
-	if (UInteractiveSaveSubsystem* InteractiveSave = GetWorld()->GetSubsystem<UInteractiveSaveSubsystem>())
+	if (UIPWorldStateSaveSubsystem* InteractiveSave = GetWorld()->GetSubsystem<UIPWorldStateSaveSubsystem>())
 	{
 		SaveGameObject->InteractiveWorldSaveData = InteractiveSave->GetSaveData();
 	}

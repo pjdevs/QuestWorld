@@ -15,10 +15,17 @@ class DIALOGPLUGIN_API UDialogTrigger : public UObject
 	GENERATED_BODY()
 
 public:
-	// UFUNCTION(BlueprintNativeEvent, Category = Dialog)
-	virtual void Execute(UWorld* World, AController* DialogController);
+	virtual UWorld* GetWorld() const override;
+	
+public:
+	void Execute(UWorld* InWorld, AController* DialogController);
 
-// protected:
-// 	virtual void Execute_Implementation()
-// 	PURE_VIRTUAL(UDialogTrigger::Execute_Implementation, );
+protected:
+	UFUNCTION(BlueprintImplementableEvent, Category = Dialog)
+	void OnExecute(AController* DialogController);
+	virtual void OnExecute_Implementation(AController* DialogController);
+
+private:
+	UPROPERTY(Transient)
+	UWorld* World = nullptr;
 };

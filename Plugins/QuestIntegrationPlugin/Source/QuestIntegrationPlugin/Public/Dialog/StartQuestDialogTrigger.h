@@ -15,7 +15,7 @@ class QUESTINTEGRATIONPLUGIN_API UStartQuestDialogTrigger : public UDialogTrigge
 	GENERATED_BODY()
 
 public:
-	virtual void Execute(UWorld* World, AController* DialogController) override;
+	virtual void OnExecute_Implementation(AController* DialogController) override;
 
 private:
 	UPROPERTY(EditDefaultsOnly, Category = Dialog, meta = (AllowPrivateAccess = true, AllowedTypes = Quest))

@@ -3,14 +3,19 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "IPInteractiveState.h"
-#include "InteractiveSaveData.generated.h"
+#include "IPStateSaveData.generated.h"
 
 USTRUCT(Blueprintable, BlueprintType)
-struct FInteractiveSaveData
+struct FIPStateSaveData
 {
 	GENERATED_BODY()
 
 	UPROPERTY()
-	FIPInteractiveState State = FIPInteractiveState();
+	uint8 State = 0;
+
+	UPROPERTY()
+	uint8 Counter = 0;
+
+	UPROPERTY()
+	bool bWasDestroyed = false;
 };

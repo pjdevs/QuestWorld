@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "InteractiveWorldSaveData.h"
+#include "IPWorldStateSaveData.h"
 #include "InventorySaveData.h"
 #include "QuestSaveGame.h"
 #include "GameFramework/SaveGame.h"
@@ -25,5 +25,5 @@ public:
 	FInventorySaveData InventorySaveData = FInventorySaveData();
 
 	UPROPERTY()
-	FInteractiveWorldSaveData InteractiveWorldSaveData = FInteractiveWorldSaveData();
+	FIPWorldStateSaveData InteractiveWorldSaveData = FIPWorldStateSaveData();
 };

@@ -1,7 +1,7 @@
 // Copyright pjdevs. All Rights Reserved.
 
 #include "IPInteractiveActor.h"
-#include "InteractiveSaveData.h"
+#include "IPStateSaveData.h"
 #include "IPInteractiveState.h"
 #include "Components/WidgetComponent.h"
 #include "Components/BoxComponent.h"
@@ -229,7 +229,10 @@ FIPInteractionStatus AIPInteractiveActor::GetInteractionStatus(AActor* Interacti
 		.bCanStartInteraction = InteractiveState.State == EIPInteractiveState::Ready,
 	};
 
-	const FIPInteractionStatus AdditionalInteractionStatus = GetInteractionStatusForActor(InteractionInstigator);
+	const FIPInteractionStatus AdditionalInteractionStatus = GetInteractionStatusForActor(
+		InteractionInstigator,
+		InteractiveState
+	);
 
 	InteractionStatus.bCanStartInteraction &= AdditionalInteractionStatus.bCanStartInteraction;
 	InteractionStatus.ReasonText = AdditionalInteractionStatus.ReasonText;
@@ -291,26 +294,35 @@ bool AIPInteractiveActor::IsSavable() const
 	return bIsSavable;
 }
 
-void AIPInteractiveActor::LoadFromSave(const FInteractiveSaveData& InteractiveSaveData)
+void AIPInteractiveActor::LoadFromSave(const FIPStateSaveData& SaveData)
 {
 	if (!HasAuthority())
 	{
 		return;
 	}
-	
-	InteractiveState = InteractiveSaveData.State;
+
+	InteractiveState = FIPInteractiveState
+	{
+		.State = static_cast<EIPInteractiveState>(SaveData.State),
+		.InteractionCount = SaveData.Counter
+	};
+
 	OnRep_State();
 }
 
-FInteractiveSaveData AIPInteractiveActor::WriteToSave()
+FIPStateSaveData AIPInteractiveActor::WriteToSave()
 {
-	return FInteractiveSaveData { .State = InteractiveState.State };
+	return FIPStateSaveData
+	{
+		.State = static_cast<uint8>(InteractiveState.State),
+		.Counter = InteractiveState.InteractionCount
+	};
 }
 
 void AIPInteractiveActor::OnRep_State()
 {
 	NotifyStateChanged();
-	DoFeedback();
+	DoFeedback(InteractiveState);
 }
 
 void AIPInteractiveActor::OnStartInteractionInput_Implementation(AActor* InteractionInstigator)
@@ -321,7 +333,7 @@ void AIPInteractiveActor::OnEndInteractionInput_Implementation(AActor* Interacti
 {
 }
 
-void AIPInteractiveActor::DoFeedback_Implementation()
+void AIPInteractiveActor::DoFeedback_Implementation(const FIPInteractiveState& NewState)
 {
 }
 
@@ -368,7 +380,10 @@ void AIPInteractiveActor::EndInteractionPhase(EIPInteractiveState NextState)
 	CurrentInteractor = nullptr;
 }
 
-FIPInteractionStatus AIPInteractiveActor::GetInteractionStatusForActor_Implementation(AActor* InteractionInstigator) const
+FIPInteractionStatus AIPInteractiveActor::GetInteractionStatusForActor_Implementation(
+	AActor* InteractionInstigator,
+	const FIPInteractiveState& CurrentState
+) const
 {
 	return FIPInteractionStatus { .bCanStartInteraction = true };
 }

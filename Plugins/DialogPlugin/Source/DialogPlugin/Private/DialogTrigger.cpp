@@ -1,5 +1,19 @@
 #include "DialogTrigger.h"
 
-void UDialogTrigger::Execute(UWorld* World, AController* DialogController)
+UWorld* UDialogTrigger::GetWorld() const
+{
+	return World;
+}
+
+void UDialogTrigger::Execute(UWorld* InWorld, AController* DialogController)
+{
+	World = InWorld;
+
+	OnExecute(DialogController);
+	
+	World = nullptr;
+}
+
+void UDialogTrigger::OnExecute_Implementation(AController* DialogController)
 {
 }
