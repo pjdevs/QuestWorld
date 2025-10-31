@@ -6,5 +6,5 @@
 
 FPrimaryAssetId UInventoryItemDataAsset::GetPrimaryAssetId() const
 {
-	return FPrimaryAssetId(PrimaryAssetTypes::InventoryItem, ItemName);
+	return FPrimaryAssetId(PrimaryAssetTypes::InventoryItem, GetFName());
 }

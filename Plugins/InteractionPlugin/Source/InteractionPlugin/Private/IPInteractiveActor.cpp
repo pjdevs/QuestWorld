@@ -12,11 +12,11 @@ AIPInteractiveActor::AIPInteractiveActor()
 	bReplicates = true;
 
 	InteractionTrigger = CreateDefaultSubobject<UBoxComponent>(TEXT("Interaction Trigger"));
-	InteractionTrigger->SetCollisionProfileName(TEXT("Trigger"));
+	InteractionTrigger->SetCollisionProfileName(TEXT("TriggerPawn"));
 	RootComponent = InteractionTrigger;
 
 	IndicationTrigger = CreateDefaultSubobject<UBoxComponent>(TEXT("Indication Trigger"));
-	IndicationTrigger->SetCollisionProfileName(TEXT("Trigger"));
+	IndicationTrigger->SetCollisionProfileName(TEXT("TriggerPawn"));
 	IndicationTrigger->SetupAttachment(RootComponent);
 
 	WidgetComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("Widget Component"));

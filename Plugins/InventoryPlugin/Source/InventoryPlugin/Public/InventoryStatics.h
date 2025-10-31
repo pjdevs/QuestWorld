@@ -19,15 +19,15 @@ class INVENTORYPLUGIN_API UInventoryStatics : public UBlueprintFunctionLibrary
 	GENERATED_BODY()
 
 public:
-	UFUNCTION(BlueprintCallable, Category = Inventory)
+	UFUNCTION(BlueprintPure, Category = Inventory)
 	static UInventoryItemDataAsset* GetItem(FInventoryItemId ItemId);
 
-	UFUNCTION(BlueprintCallable, Category = Inventory)
+	UFUNCTION(BlueprintPure, Category = Inventory)
 	static bool IsItemExisting(FInventoryItemId ItemId);
 
-	UFUNCTION(BlueprintCallable, Category = Inventory)
+	UFUNCTION(BlueprintPure, Category = Inventory)
 	static int GetTotalItemCountForAllPlayers(const UWorld* World, FInventoryItemId ItemId);
 
-	UFUNCTION(BlueprintCallable, Category = Inventory, meta=(WorldContext="WorldContextObject"))
+	UFUNCTION(BlueprintPure, Category = Inventory, meta=(WorldContext="WorldContextObject"))
 	static UInventoryComponent* GetSharedInventory(UObject* WorldContextObject);
 };

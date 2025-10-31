@@ -16,7 +16,7 @@ class INVENTORYPLUGIN_API UInventoryItemDataAsset : public UPrimaryDataAsset
 
 public:
 	UFUNCTION(BlueprintPure, Category = Inventory)
-	const FName& GetItemName() const { return ItemName; }
+	const FText& GetItemName() const { return ItemName; }
 
 	UFUNCTION(BlueprintPure, Category = Inventory)
 	UTexture2D* GetItemIcon() const { return ItemIcon; }
@@ -25,7 +25,7 @@ public:
 
 private:
 	UPROPERTY(EditDefaultsOnly, Category = Inventory, meta = (AllowPrivateAccess = true))
-	FName ItemName;
+	FText ItemName;
 
 	UPROPERTY(EditDefaultsOnly, Category = Inventory, meta = (AllowPrivateAccess = true))
 	TObjectPtr<UTexture2D> ItemIcon;

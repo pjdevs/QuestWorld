@@ -37,6 +37,8 @@ void UIPWorldStateSaveSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 void UIPWorldStateSaveSubsystem::LoadSaveData(const FIPWorldStateSaveData& WorldSaveData)
 {
 	CurrentWorldSaveData = WorldSaveData;
+
+	TArray<AActor*> ActorsToDestroy;
 	
 	for (AActor* Actor : SavableActorArray)
 	{
@@ -46,7 +48,7 @@ void UIPWorldStateSaveSubsystem::LoadSaveData(const FIPWorldStateSaveData& World
 			{
 				if (InteractiveSave->bWasDestroyed)
 				{
-					Actor->Destroy();
+					ActorsToDestroy.Add(Actor);
 				}
 				else
 				{
@@ -54,6 +56,11 @@ void UIPWorldStateSaveSubsystem::LoadSaveData(const FIPWorldStateSaveData& World
 				}
 			}
 		}
+	}
+
+	for (AActor* Actor : ActorsToDestroy)
+	{
+		Actor->Destroy();
 	}
 }
 
@@ -90,4 +97,6 @@ void UIPWorldStateSaveSubsystem::OnSavableActorDestroyed(AActor* DestroyedActor)
 		FIPStateSaveData& InteractiveSaveData = CurrentWorldSaveData.SavedActors.FindOrAdd(Savable->GetUniqueId());
 		InteractiveSaveData.bWasDestroyed = true;
 	}
+
+	SavableActorArray.Remove(DestroyedActor);
 }
