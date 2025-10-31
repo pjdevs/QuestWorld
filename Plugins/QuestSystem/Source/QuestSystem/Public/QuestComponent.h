@@ -38,10 +38,10 @@ public:
 
 	// Functions to access replicated quests
 	
-	UFUNCTION(BlueprintPure, BlueprintAuthorityOnly, Category = Quest)
+	UFUNCTION(BlueprintPure, Category = Quest)
 	TArray<FQuestDescription> GetActiveQuests() const;
 	
-	UFUNCTION(BlueprintPure, BlueprintAuthorityOnly, Category = Quest)
+	UFUNCTION(BlueprintPure, Category = Quest)
 	TArray<FQuestDescription> GetCompletedQuests() const;
 
 	UFUNCTION(BlueprintPure, Category = Quest)

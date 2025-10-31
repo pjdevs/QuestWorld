@@ -108,12 +108,16 @@ void UQuestComponent::OnQuestsLoadedServer()
 	
 	ActiveQuests = QuestService->GetActiveQuestDescriptions();
 	CompletedQuests = QuestService->GetCompletedQuestDescriptions();
+	
+	OnRep_ActiveQuests();
+	OnRep_CompletedQuests();
 }
 
 void UQuestComponent::OnQuestStartedServer(const FQuestDescription& StartedQuest)
 {
 	ActiveQuests = QuestService->GetActiveQuestDescriptions();
-
+	
+	OnRep_ActiveQuests();
 	Multicast_QuestStarted(StartedQuest);
 }
 
@@ -122,6 +126,8 @@ void UQuestComponent::OnQuestCompletedServer(const FQuestDescription& CompletedQ
 	ActiveQuests = QuestService->GetActiveQuestDescriptions();
 	CompletedQuests = QuestService->GetCompletedQuestDescriptions();
 
+	OnRep_ActiveQuests();
+	OnRep_CompletedQuests();
 	Multicast_QuestCompleted(CompletedQuest);
 }
 
@@ -129,6 +135,7 @@ void UQuestComponent::OnQuestUpdatedServer(const FQuestDescription& UpdatedQuest
 {
 	ActiveQuests = QuestService->GetActiveQuestDescriptions();
 
+	OnRep_ActiveQuests();
 	Multicast_QuestUpdated(UpdatedQuest);
 }
 
@@ -162,6 +169,12 @@ void UQuestComponent::OnRep_CompletedQuests()
 void UQuestComponent::LoadQuestsFromSave(const FQuestSaveData& SaveData)
 {
 	QuestService->RestoreQuests(SaveData, GetWorld());
+
+	ActiveQuests = QuestService->GetActiveQuestDescriptions();
+	CompletedQuests = QuestService->GetCompletedQuestDescriptions();
+
+	OnRep_ActiveQuests();
+	OnRep_CompletedQuests();
 }
 
 FQuestSaveData UQuestComponent::WriteQuestsToSave()

@@ -95,7 +95,7 @@ protected:
 	 * If you subclass this to another type of interactive actor that can also be subclassed,
 	 * use native GetInteractionStatus.
 	 */
-	UFUNCTION(BlueprintNativeEvent, BlueprintAuthorityOnly)
+	UFUNCTION(BlueprintNativeEvent)
 	FIPInteractionStatus GetInteractionStatusForActor(
 		AActor* InteractionInstigator,
 		const FIPInteractiveState& CurrentState
