@@ -17,20 +17,18 @@ class QUESTINTEGRATIONPLUGIN_API UIntegrationSaveSubsystem : public UGameInstanc
 
 public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = Save)
-	void LoadSaveGame();
+	void LoadSaveGame(const FString& SlotName);
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = Save)
+	void LoadSaveGameFromConfig();
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = Save)
 	void LoadGame();
 	
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = Save)
 	void SaveGame();
-
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = Save)
-	void SetSaveGameSlotName(const FString& SlotName);
 	
 private:
 	UPROPERTY()
 	UIntegrationSaveGame* SaveGameObject;
-
-	FString SaveGameSlotName = "QuestWorldSave";
 };

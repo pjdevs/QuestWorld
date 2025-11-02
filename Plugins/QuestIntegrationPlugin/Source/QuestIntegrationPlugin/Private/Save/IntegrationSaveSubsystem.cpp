@@ -12,26 +12,75 @@
 #include "Actions/PersistentActionsStatics.h"
 #include "Kismet/GameplayStatics.h"
 
-void UIntegrationSaveSubsystem::LoadSaveGame()
-{
-	if (UGameplayStatics::DoesSaveGameExist(SaveGameSlotName, 0))
-	{
-		SaveGameObject = Cast<UIntegrationSaveGame>(UGameplayStatics::LoadGameFromSlot(SaveGameSlotName, 0));
-	}
 
-	if (!SaveGameObject)
-	{
-		SaveGameObject = Cast<UIntegrationSaveGame>(
-			UGameplayStatics::CreateSaveGameObject(UIntegrationSaveGame::StaticClass())
-		);
-	}
+static TAutoConsoleVariable<FString> CVarWorldStateSaveGameSlot(
+	TEXT("Save.SaveGameSlot"),
+	"QuestWorldSave",
+	TEXT("Defines the slot to use for save subsystem.\n")
+);
+
+static FAutoConsoleCommand Cmd_Save_Reset(
+	TEXT("Save.Reset"),
+	TEXT("Reset save of the world state subsystem."),
+	FConsoleCommandWithArgsDelegate::CreateLambda(
+		[](const TArray<FString>& Args)
+		{
+			const FString& SlotName = CVarWorldStateSaveGameSlot->GetString();
+			
+			if (UGameplayStatics::DoesSaveGameExist(SlotName, 0))
+			{
+				UGameplayStatics::DeleteGameInSlot(SlotName, 0);
+			}
+		}
+	)
+);
+
+static FAutoConsoleCommand Cmd_Save_Save(
+	TEXT("Save.Save"),
+	TEXT("Execute a new save of the game."),
+	FConsoleCommandWithWorldArgsAndOutputDeviceDelegate::CreateLambda(
+		[](const TArray<FString>& Args, UWorld* World, FOutputDevice& Ar)
+		{
+			if (UIntegrationSaveSubsystem* SaveSubsystem = World->GetGameInstance()->GetSubsystem<UIntegrationSaveSubsystem>())
+			{
+				SaveSubsystem->SaveGame();
+			}
+		}
+	)
+);
+
+static FAutoConsoleCommand Cmd_Save_Load(
+	TEXT("Save.Load"),
+	TEXT("Load a save of the game."),
+	FConsoleCommandWithWorldArgsAndOutputDeviceDelegate::CreateLambda(
+		[](const TArray<FString>& Args, UWorld* World, FOutputDevice& Ar)
+		{
+			if (Args.IsEmpty())
+			{
+				UE_LOG(LogTemp, Error, TEXT("Need to provide a valid slot name arg."));
+				return;
+			}
+			
+			if (UIntegrationSaveSubsystem* SaveSubsystem = World->GetGameInstance()->GetSubsystem<UIntegrationSaveSubsystem>())
+			{
+				SaveSubsystem->LoadSaveGame(Args[0]);
+				SaveSubsystem->LoadGame();
+			}
+		}
+	)
+);
+
+void UIntegrationSaveSubsystem::LoadSaveGameFromConfig()
+{
+	const FString& SlotName = CVarWorldStateSaveGameSlot->GetString();
+	LoadSaveGame(SlotName);
 }
 
 void UIntegrationSaveSubsystem::LoadGame()
 {
 	if (!SaveGameObject)
 	{
-		LoadSaveGame();
+		LoadSaveGameFromConfig();
 	}
 	
 	if (UInventoryComponent* SharedInventory = UInventoryStatics::GetSharedInventory(GetWorld()))
@@ -84,10 +133,21 @@ void UIntegrationSaveSubsystem::SaveGame()
 		SaveGameObject->ActionsDone = PersistentActions->GetActionsDone();
 	}
 
-	UGameplayStatics::SaveGameToSlot(SaveGameObject, SaveGameSlotName, 0);
+	const FString& SlotName = CVarWorldStateSaveGameSlot->GetString();
+	UGameplayStatics::SaveGameToSlot(SaveGameObject, SlotName, 0);
 }
 
-void UIntegrationSaveSubsystem::SetSaveGameSlotName(const FString& SlotName)
+void UIntegrationSaveSubsystem::LoadSaveGame(const FString& SlotName)
 {
-	SaveGameSlotName = SlotName;
+	if (UGameplayStatics::DoesSaveGameExist(SlotName, 0))
+	{
+		SaveGameObject = Cast<UIntegrationSaveGame>(UGameplayStatics::LoadGameFromSlot(SlotName, 0));
+	}
+
+	if (!SaveGameObject)
+	{
+		SaveGameObject = Cast<UIntegrationSaveGame>(
+			UGameplayStatics::CreateSaveGameObject(UIntegrationSaveGame::StaticClass())
+		);
+	}
 }

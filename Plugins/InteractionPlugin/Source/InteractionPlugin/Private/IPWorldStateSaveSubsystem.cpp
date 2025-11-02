@@ -6,8 +6,6 @@
 #include "IPStateSavable.h"
 
 
-class IIPStateSavable;
-
 void UIPWorldStateSaveSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 {
 	Super::OnWorldBeginPlay(InWorld);

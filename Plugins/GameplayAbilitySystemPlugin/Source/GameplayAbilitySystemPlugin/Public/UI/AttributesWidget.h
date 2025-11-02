@@ -3,9 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AbilitySystemComponent.h"
 #include "Blueprint/UserWidget.h"
 #include "AttributesWidget.generated.h"
 
+struct FOnAttributeChangeData;
 /**
  * 
  */
@@ -16,6 +18,7 @@ class GAMEPLAYABILITYSYSTEMPLUGIN_API UAttributesWidget : public UUserWidget
 
 public:
 	virtual void NativeConstruct() override;
+	virtual void NativeDestruct() override;
 
 public:
 	UFUNCTION(BlueprintImplementableEvent)
@@ -23,4 +26,13 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void SetStamina(float StaminaValue, float MaxStaminaValue);
+
+private:
+	void OnAttributeChanged(const FOnAttributeChangeData& Data);
+
+private:
+	FDelegateHandle HealthAttributeChangedDelegateHandle;
+	FDelegateHandle MaxHealthAttributeChangedDelegateHandle;
+	FDelegateHandle StaminaAttributeChangedDelegateHandle;
+	FDelegateHandle MaxStaminaAttributeChangedDelegateHandle;
 };

@@ -41,12 +41,32 @@ void UGaspAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallba
 
 	if (Data.EvaluatedData.Attribute == GetHealthAttribute())
 	{
-		SetHealth(FMath::Clamp(GetHealth(), 0.0f, GetMaxHealth()));	
+		const float HealthValue = GetHealth();
+		const float MaxHealthValue = GetMaxHealth();
+
+		if (HealthValue <= 0.0f)
+		{
+			SetHealth(0.0f);
+		}
+		else if (HealthValue > MaxHealthValue)
+		{
+			SetHealth(MaxHealthValue);	
+		}
 	}
 
 	if (Data.EvaluatedData.Attribute == GetStaminaAttribute())
 	{
-		SetStamina(FMath::Clamp(GetStamina(), 0.0f, GetMaxStamina()));	
+		const float StaminaValue = GetStamina();
+		const float MaxStaminaValue = GetMaxStamina();
+
+		if (StaminaValue <= 0.0f)
+		{
+			SetStamina(0.0f);
+		}
+		else if (StaminaValue > MaxStaminaValue)
+		{
+			SetStamina(MaxStaminaValue);	
+		}
 	}
 }
 
