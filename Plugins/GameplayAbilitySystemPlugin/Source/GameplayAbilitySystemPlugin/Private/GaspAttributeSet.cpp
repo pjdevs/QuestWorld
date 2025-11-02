@@ -22,8 +22,6 @@ void UGaspAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 
 void UGaspAttributeSet::PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue)
 {
-	Super::PreAttributeChange(Attribute, NewValue);
-
 	if (Attribute == GetHealthAttribute())
 	{
 		NewValue = FMath::Clamp(NewValue, 0.0f, GetMaxHealth());	
@@ -33,6 +31,8 @@ void UGaspAttributeSet::PreAttributeChange(const FGameplayAttribute& Attribute, 
 	{
 		NewValue = FMath::Clamp(NewValue, 0.0f, GetMaxStamina());	
 	}
+
+	Super::PreAttributeChange(Attribute, NewValue);
 }
 
 void UGaspAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data)
@@ -41,32 +41,12 @@ void UGaspAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallba
 
 	if (Data.EvaluatedData.Attribute == GetHealthAttribute())
 	{
-		const float HealthValue = GetHealth();
-		const float MaxHealthValue = GetMaxHealth();
-
-		if (HealthValue <= 0.0f)
-		{
-			SetHealth(0.0f);
-		}
-		else if (HealthValue > MaxHealthValue)
-		{
-			SetHealth(MaxHealthValue);	
-		}
+		SetHealth(FMath::Clamp(GetHealth(), 0.0f, GetMaxHealth()));
 	}
 
 	if (Data.EvaluatedData.Attribute == GetStaminaAttribute())
 	{
-		const float StaminaValue = GetStamina();
-		const float MaxStaminaValue = GetMaxStamina();
-
-		if (StaminaValue <= 0.0f)
-		{
-			SetStamina(0.0f);
-		}
-		else if (StaminaValue > MaxStaminaValue)
-		{
-			SetStamina(MaxStaminaValue);	
-		}
+		SetStamina(FMath::Clamp(GetStamina(), 0.0f, GetMaxStamina()));
 	}
 }
 
@@ -89,5 +69,3 @@ void UGaspAttributeSet::OnRep_MaxStamina(const FGameplayAttributeData& OldMaxSta
 {
 	GAMEPLAYATTRIBUTE_REPNOTIFY(UGaspAttributeSet, MaxStamina, OldMaxStamina);
 }
-
-
