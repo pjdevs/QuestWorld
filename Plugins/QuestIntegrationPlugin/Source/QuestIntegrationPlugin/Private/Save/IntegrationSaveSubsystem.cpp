@@ -125,7 +125,8 @@ void UIntegrationSaveSubsystem::SaveGame()
 
 	if (UIPWorldStateSaveSubsystem* InteractiveSave = GetWorld()->GetSubsystem<UIPWorldStateSaveSubsystem>())
 	{
-		SaveGameObject->InteractiveWorldSaveData.SavedActors.Append(InteractiveSave->GetSaveData().SavedActors);
+		const FIPWorldStateSaveData InteractiveWorldSaveData = InteractiveSave->GetSaveData();
+		SaveGameObject->InteractiveWorldSaveData.SavedActors.Append(InteractiveWorldSaveData.SavedActors);
 	}
 
 	if (UPersistentActionsComponent* PersistentActions = UPersistentActionsStatics::GetPersistentActions(GetWorld()))

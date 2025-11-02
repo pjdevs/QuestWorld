@@ -17,6 +17,7 @@ class INTERACTIONPLUGIN_API UIPWorldStateSaveSubsystem : public UWorldSubsystem
 
 public:
 	virtual void OnWorldBeginPlay(UWorld& InWorld) override;
+	virtual void Deinitialize() override;
 	
 public:
 	void LoadSaveData(const FIPWorldStateSaveData& WorldSaveData);

@@ -32,6 +32,11 @@ void UIPWorldStateSaveSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 	// ));
 }
 
+void UIPWorldStateSaveSubsystem::Deinitialize()
+{
+	Super::Deinitialize();
+}
+
 void UIPWorldStateSaveSubsystem::LoadSaveData(const FIPWorldStateSaveData& WorldSaveData)
 {
 	CurrentWorldSaveData = WorldSaveData;
