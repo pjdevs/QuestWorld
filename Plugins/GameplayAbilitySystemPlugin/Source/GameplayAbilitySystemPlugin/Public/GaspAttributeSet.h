@@ -13,6 +13,8 @@
 		GAMEPLAYATTRIBUTE_VALUE_SETTER(PropertyName) \
 		GAMEPLAYATTRIBUTE_VALUE_INITTER(PropertyName)
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDiedDelegate, AActor*, AvatarActor);
+
 /**
  * 
  */
@@ -58,6 +60,9 @@ public:
 	UPROPERTY(BlueprintReadOnly, ReplicatedUsing=OnRep_StaminaRegen, Category = "Ability | Gameplay Attribute")
 	FGameplayAttributeData StaminaRegen;
 	ATTRIBUTE_ACCESSORS(UGaspAttributeSet, StaminaRegen);
+
+	UPROPERTY(BlueprintAssignable, Category = "Ability | Delegates")
+	FDiedDelegate OnDied;
 
 private:
 	UFUNCTION()

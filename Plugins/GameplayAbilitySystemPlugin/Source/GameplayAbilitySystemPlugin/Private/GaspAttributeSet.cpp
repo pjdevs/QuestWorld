@@ -42,15 +42,22 @@ void UGaspAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallba
 {
 	Super::PostGameplayEffectExecute(Data);
 
+		
 	if (Data.EvaluatedData.Attribute == GetHealthAttribute())
 	{
 		SetHealth(FMath::Clamp(GetHealth(), 0.0f, GetMaxHealth()));
+
+		if (GetHealth() <= 0.0f)
+		{
+			OnDied.Broadcast(GetOwningAbilitySystemComponentChecked()->GetAvatarActor());
+		}
 	}
 
 	if (Data.EvaluatedData.Attribute == GetStaminaAttribute())
 	{
 		SetStamina(FMath::Clamp(GetStamina(), 0.0f, GetMaxStamina()));
 	}
+
 }
 
 void UGaspAttributeSet::OnRep_Health(const FGameplayAttributeData& OldHealth) const
