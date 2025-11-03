@@ -35,7 +35,7 @@ void UCharacterMovementByTagComponent::BeginPlay()
 	}
 	else
 	{
-		OwnerCharacter->OnAscInitialized.BindUObject(this, &UCharacterMovementByTagComponent::OnOwnerAscInitialized);
+		OwnerCharacter->OnAscInitialized.AddDynamic(this, &UCharacterMovementByTagComponent::OnOwnerAscInitialized);
 	}
 }
 

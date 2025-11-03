@@ -22,7 +22,8 @@ public:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
-private:	
+private:
+	UFUNCTION()
 	void OnOwnerAscInitialized();
 	void OnMovementBlockedTagCountChanged(FGameplayTag GameplayTag, int TagCount);
 	

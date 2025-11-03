@@ -12,7 +12,7 @@ class UGaspAttributeSet;
 class UGameplayAbility;
 class UGaspAbilitySystemComponent;
 
-DECLARE_DELEGATE(FAscInitializedDelegate);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FAscInitializedDelegate);
 
 UCLASS()
 class GAMEPLAYABILITYSYSTEMPLUGIN_API AGaspCharacterBase : public ACharacter, public IAbilitySystemInterface
@@ -31,6 +31,7 @@ protected:
 	void ApplyDefaultPermanentEffects();
 
 public:
+	UPROPERTY(BlueprintAssignable)
 	FAscInitializedDelegate OnAscInitialized;
 	
 protected:
