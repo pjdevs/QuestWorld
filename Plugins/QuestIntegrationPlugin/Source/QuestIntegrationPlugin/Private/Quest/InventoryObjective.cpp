@@ -2,6 +2,8 @@
 
 
 #include "Quest/InventoryObjective.h"
+
+#include "InventoryComponent.h"
 #include "Quest/InventoryQuestEvent.h"
 #include "InventoryStatics.h"
 
@@ -18,7 +20,7 @@ int UInventoryObjective::GetCompletion_Implementation(UWorld* World)
 		return 0;
 	}
 	
-	return UInventoryStatics::GetTotalItemCountForAllPlayers(World, TargetItemId);
+	return UInventoryStatics::GetSharedInventory(World)->GetItemCount(TargetItemId);
 }
 
 int UInventoryObjective::GetTargetValue_Implementation()
