@@ -47,6 +47,18 @@ public:
 	FGameplayAttributeData MaxStamina;
 	ATTRIBUTE_ACCESSORS(UGaspAttributeSet, MaxStamina);
 
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing=OnRep_Strength, Category = "Ability | Gameplay Attribute")
+	FGameplayAttributeData Strength;
+	ATTRIBUTE_ACCESSORS(UGaspAttributeSet, Strength);
+
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing=OnRep_HealthRegen, Category = "Ability | Gameplay Attribute")
+	FGameplayAttributeData HealthRegen;
+	ATTRIBUTE_ACCESSORS(UGaspAttributeSet, HealthRegen);
+
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing=OnRep_StaminaRegen, Category = "Ability | Gameplay Attribute")
+	FGameplayAttributeData StaminaRegen;
+	ATTRIBUTE_ACCESSORS(UGaspAttributeSet, StaminaRegen);
+
 private:
 	UFUNCTION()
 	void OnRep_Health(const FGameplayAttributeData& OldHealth) const;
@@ -59,4 +71,13 @@ private:
 
 	UFUNCTION()
 	void OnRep_MaxStamina(const FGameplayAttributeData& OldMaxStamina) const;
+
+	UFUNCTION()
+	void OnRep_Strength(const FGameplayAttributeData& OldMaxStrength) const;
+
+	UFUNCTION()
+	void OnRep_HealthRegen(const FGameplayAttributeData& OldHealthRegen) const;
+
+	UFUNCTION()
+	void OnRep_StaminaRegen(const FGameplayAttributeData& OldStaminaRegen) const;
 };
