@@ -41,9 +41,15 @@ public:
 		const TObjectPtr<const UInputAction> InputAction = FindInputActionByName(MappingContext, ActionName);
 		
 		UIPActionWidget* ActionWidget = CreateWidget<UIPActionWidget>(OwnerTextBlock, ActionWidgetClass);
-		ActionWidget->SetAction(InputAction);
+
+		if (InputAction)
+		{
+			ActionWidget->SetAction(InputAction);
+		}
 		
-		return ActionWidget->TakeWidget();
+		return ActionWidget != nullptr
+			? ActionWidget->TakeWidget().ToSharedPtr()
+			: nullptr;
 	}
 
 private:
@@ -62,6 +68,11 @@ TObjectPtr<const UInputAction> FindInputActionByName(
 	const FString& ActionNameToFind
 )
 {
+	if (!MappingContext)
+	{
+		return nullptr;
+	}
+	
 	for (auto&& Mapping : MappingContext->GetMappings())
 	{
 		const FString& ActionName = Mapping.Action->GetName();

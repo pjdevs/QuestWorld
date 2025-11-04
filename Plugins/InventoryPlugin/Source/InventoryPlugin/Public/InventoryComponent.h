@@ -31,6 +31,7 @@ struct INVENTORYPLUGIN_API FInventoryItemEntry: public FFastArraySerializerItem
 	UPROPERTY()
 	int Quantity = 0;
 
+	UPROPERTY()
 	int LastQuantity = 0;
 };
 
@@ -105,11 +106,11 @@ public:
 	UFUNCTION()
 	void OnRep_InventoryList();
 
-private:
-	UPROPERTY(BlueprintAssignable, Category = Inventory, meta = (AllowPrivateAccess = true))
+public:
+	UPROPERTY(BlueprintAssignable, Category = Inventory)
 	FInventoryChangedDelegate OnItemAddedDelegate;
 
-	UPROPERTY(BlueprintAssignable, Category = Inventory, meta = (AllowPrivateAccess = true))
+	UPROPERTY(BlueprintAssignable, Category = Inventory)
 	FInventoryChangedDelegate OnItemRemovedDelegate;
 	
 private:

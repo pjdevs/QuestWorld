@@ -19,7 +19,7 @@ class INTERACTIONPLUGIN_API UIPActionWidget : public UUserWidget
 
 public:
 
-	virtual void NativeConstruct() override;
+	virtual void NativePreConstruct() override;
 
 	void SetAction(const UInputAction* InInputAction);
 	

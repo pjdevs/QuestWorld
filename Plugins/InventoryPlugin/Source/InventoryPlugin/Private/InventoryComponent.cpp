@@ -140,6 +140,7 @@ void UInventoryComponent::BeginPlay()
 	if (GetOwnerRole() == ROLE_Authority)
 	{
 		InventoryList.MarkArrayDirty();
+		OnRep_InventoryList();
 	}
 }
 
@@ -211,6 +212,8 @@ void UInventoryComponent::LoadItemsFromSave(const FInventorySaveData& InventoryS
 	{
 		InventoryList.AddItem(Item.ItemId, Item.Quantity);
 	}
+
+	OnRep_InventoryList();
 }
 
 FInventorySaveData UInventoryComponent::WriteItemsToSave()

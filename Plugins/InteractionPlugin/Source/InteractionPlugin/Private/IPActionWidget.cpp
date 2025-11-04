@@ -3,11 +3,14 @@
 
 #include "IPActionWidget.h"
 
-void UIPActionWidget::NativeConstruct()
+void UIPActionWidget::NativePreConstruct()
 {
 	Super::NativeConstruct();
 
-	SetActionVisual(InputAction);
+	if (InputAction)
+	{
+		SetActionVisual(InputAction);
+	}
 }
 
 void UIPActionWidget::SetAction(const UInputAction* InInputAction)
