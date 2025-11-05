@@ -5,9 +5,9 @@
 
 #include "InventoryComponent.h"
 #include "InventoryItemDataAsset.h"
-#include "PrimaryAssetTypes.h"
 #include "Engine/AssetManager.h"
 #include "GameFramework/GameStateBase.h"
+#include "GameFramework/PlayerState.h"
 
 UInventoryItemDataAsset* UInventoryStatics::GetItem(FInventoryItemId ItemId)
 {
@@ -53,14 +53,9 @@ int UInventoryStatics::GetTotalItemCountForAllPlayers(const UWorld* World, FInve
 		++PlayerControllerIt
 	)
 	{
-		const TWeakObjectPtr<APlayerController> PlayerController = *PlayerControllerIt;
-		
-		if (const TObjectPtr<APawn> Pawn = PlayerController->GetPawn())
+		if (const UInventoryComponent* Inventory = GetPlayerInventory(PlayerControllerIt->Get()))
 		{
-			if (const UInventoryComponent* Inventory = Pawn->GetComponentByClass<UInventoryComponent>())
-			{
-				TotalItemCount += Inventory->GetItemCount(ItemId);
-			}
+			TotalItemCount += Inventory->GetItemCount(ItemId);
 		}
 	}
 
@@ -79,6 +74,28 @@ UInventoryComponent* UInventoryStatics::GetSharedInventory(UObject* WorldContext
 	if (UInventoryComponent* SharedInventory = World->GetGameState()->FindComponentByClass<UInventoryComponent>())
 	{
 		return SharedInventory;
+	}
+
+	return nullptr;
+}
+
+UInventoryComponent* UInventoryStatics::GetPlayerInventory(const AActor* Actor)
+{
+	const APlayerState* PlayerState = nullptr;
+	
+	if (const APawn* Pawn = Cast<APawn>(Actor))
+	{
+		PlayerState = Pawn->GetPlayerState();
+	}
+
+	if (const AController* Controller = Cast<AController>(Actor))
+	{
+		PlayerState = Controller->PlayerState;
+	}
+
+	if (PlayerState)
+	{
+		return PlayerState->GetComponentByClass<UInventoryComponent>();
 	}
 
 	return nullptr;

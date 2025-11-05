@@ -15,7 +15,7 @@ FIPInteractionStatus AItemInteractive::GetInteractionStatusForActor_Implementati
 {
 	FText RequiredItemName;
 
-	if (UInventoryComponent* SharedInventory = UInventoryStatics::GetSharedInventory(GetWorld()))
+	if (const UInventoryComponent* SharedInventory = UInventoryStatics::GetSharedInventory(GetWorld()))
 	{
 		RequiredItemName = UInventoryStatics::GetItem(RequiredItem)->GetItemName();
 
@@ -27,8 +27,8 @@ FIPInteractionStatus AItemInteractive::GetInteractionStatusForActor_Implementati
 			};
 		}
 	}
-
-	if (const UInventoryComponent* Inventory = InteractionInstigator->GetComponentByClass<UInventoryComponent>())
+	
+	if (const UInventoryComponent* Inventory = UInventoryStatics::GetPlayerInventory(InteractionInstigator))
 	{
 		for (const FInventoryItemId& AdditionalItem : BonusHiddenItems)
 		{

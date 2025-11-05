@@ -8,6 +8,8 @@
 #include "InventoryQuestEventsComponent.generated.h"
 
 
+class UInventoryComponent;
+
 UCLASS(ClassGroup=(Inventory), meta=(BlueprintSpawnableComponent))
 class QUESTINTEGRATIONPLUGIN_API UInventoryQuestEventsComponent : public UActorComponent
 {
@@ -26,4 +28,7 @@ private:
 	void OnItemRemoved(FInventoryItemId ItemId, int ItemCount);
 
 	void SubmitItemCountChangedQuestEvent(FInventoryItemId ItemId) const;
+
+private:
+	UInventoryComponent* OwnerInventory;
 };

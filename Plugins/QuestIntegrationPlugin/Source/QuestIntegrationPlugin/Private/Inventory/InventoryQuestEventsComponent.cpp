@@ -9,6 +9,7 @@
 
 
 UInventoryQuestEventsComponent::UInventoryQuestEventsComponent()
+	: OwnerInventory(nullptr)
 {
 	PrimaryComponentTick.bCanEverTick = false;
 }
@@ -23,11 +24,15 @@ void UInventoryQuestEventsComponent::BeginPlay()
 		return;
 	}
 
-	if (UInventoryComponent* InventoryComponent = GetOwner()->GetComponentByClass<UInventoryComponent>())
+	OwnerInventory = GetOwner()->GetComponentByClass<UInventoryComponent>();
+
+	if (!OwnerInventory)
 	{
-		InventoryComponent->OnItemAddedDelegate.AddDynamic(this, &UInventoryQuestEventsComponent::OnItemAdded);
-		InventoryComponent->OnItemRemovedDelegate.AddDynamic(this, &UInventoryQuestEventsComponent::OnItemRemoved);
+		return;
 	}
+
+	OwnerInventory->OnItemAddedDelegate.AddDynamic(this, &UInventoryQuestEventsComponent::OnItemAdded);
+	OwnerInventory->OnItemRemovedDelegate.AddDynamic(this, &UInventoryQuestEventsComponent::OnItemRemoved);
 }
 
 void UInventoryQuestEventsComponent::OnItemAdded(FInventoryItemId ItemId, int ItemCount)
@@ -42,16 +47,14 @@ void UInventoryQuestEventsComponent::OnItemRemoved(FInventoryItemId ItemId, int 
 
 void UInventoryQuestEventsComponent::SubmitItemCountChangedQuestEvent(FInventoryItemId ItemId) const
 {
-	const UInventoryComponent* SharedInventory = UInventoryStatics::GetSharedInventory(GetWorld());
-
-	if (!SharedInventory)
+	if (!OwnerInventory)
 	{
 		return;
 	}
 	
 	UInventoryQuestEvent* Event = NewObject<UInventoryQuestEvent>();
 	Event->ItemId = ItemId;
-	Event->NewItemCount = SharedInventory->GetItemCount(ItemId);
+	Event->NewItemCount = OwnerInventory->GetItemCount(ItemId);
 
 	UQuestStatics::SubmitQuestEvent(GetWorld(), Event);
 }

@@ -30,4 +30,7 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = Inventory, meta=(WorldContext="WorldContextObject"))
 	static UInventoryComponent* GetSharedInventory(UObject* WorldContextObject);
+
+	UFUNCTION(BlueprintPure, Category = Inventory)
+	static UInventoryComponent* GetPlayerInventory(const AActor* Actor);
 };

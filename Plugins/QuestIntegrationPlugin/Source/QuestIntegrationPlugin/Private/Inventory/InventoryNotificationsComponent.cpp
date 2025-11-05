@@ -8,6 +8,7 @@
 #include "InventoryItemDataAsset.h"
 #include "InventoryStatics.h"
 #include "NotificationSubsystem.h"
+#include "GameFramework/PlayerState.h"
 
 
 UInventoryNotificationsComponent::UInventoryNotificationsComponent()
@@ -69,6 +70,14 @@ void UInventoryNotificationsComponent::SubmitNotification(FInventoryItemId ItemI
 
 bool UInventoryNotificationsComponent::IsLocal() const
 {
+	if (const APlayerState* OwnerPlayerState = Cast<APlayerState>(GetOwner()))
+	{
+		if (const APlayerController* OwnerController = Cast<APlayerController>(OwnerPlayerState->GetOwner()))
+		{
+			return OwnerController->IsLocalController();
+		}
+	}
+	
 	if (const APlayerController* OwnerController = Cast<APlayerController>(GetOwner()))
 	{
 		return OwnerController->IsLocalController();

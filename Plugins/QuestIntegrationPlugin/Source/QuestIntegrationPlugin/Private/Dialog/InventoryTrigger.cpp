@@ -16,7 +16,7 @@ void UInventoryTrigger::OnExecute_Implementation(AController* DialogController)
 	}
 	else
 	{
-		Inventory = DialogController->GetPawn()->GetComponentByClass<UInventoryComponent>();
+		Inventory = UInventoryStatics::GetPlayerInventory(DialogController);
 	}
 
 	if (!Inventory)
