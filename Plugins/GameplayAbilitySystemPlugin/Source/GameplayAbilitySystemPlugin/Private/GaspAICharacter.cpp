@@ -22,6 +22,5 @@ void AGaspAICharacter::BeginPlay()
 	GiveDefaultAbilities();
 	InitDefaultAttributes();
 	ApplyDefaultPermanentEffects();
-
-	OnAscInitialized.Broadcast();
+    CharacterInitialized();
 }

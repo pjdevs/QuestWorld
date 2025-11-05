@@ -81,3 +81,13 @@ void AGaspCharacterBase::ApplyDefaultPermanentEffects()
 		}
 	}
 }
+
+void AGaspCharacterBase::CharacterInitialized()
+{
+	OnAscInitialized.Broadcast();
+	OnCharacterInitialized();
+}
+
+void AGaspCharacterBase::OnCharacterInitialized_Implementation()
+{
+}

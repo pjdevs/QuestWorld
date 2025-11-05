@@ -19,6 +19,7 @@ void AGaspPlayerCharacter::PossessedBy(AController* NewController)
 	GiveDefaultAbilities(); // only give abilities on the server
 	InitDefaultAttributes();
 	ApplyDefaultPermanentEffects(); // only apply permanent effects on server?
+	CharacterInitialized();
 }
 
 void AGaspPlayerCharacter::OnRep_PlayerState()
@@ -27,6 +28,7 @@ void AGaspPlayerCharacter::OnRep_PlayerState()
 
 	InitAbilitySystemComponent();
 	InitDefaultAttributes();
+	CharacterInitialized();
 }
 
 void AGaspPlayerCharacter::InitAbilitySystemComponent()
@@ -36,7 +38,5 @@ void AGaspPlayerCharacter::InitAbilitySystemComponent()
 		AbilitySystemComponent = CastChecked<UGaspAbilitySystemComponent>(GaspPlayerState->GetAbilitySystemComponent());
 		AbilitySystemComponent->InitAbilityActorInfo(GaspPlayerState, this);
 		AttributeSet = GaspPlayerState->GetAttributeSet();
-
-		OnAscInitialized.Broadcast();
 	}
 }
