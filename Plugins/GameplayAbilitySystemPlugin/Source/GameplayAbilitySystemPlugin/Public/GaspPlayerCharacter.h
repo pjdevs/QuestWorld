@@ -19,4 +19,5 @@ public:
 
 private:
 	void InitAbilitySystemComponent();
+	void GiveGrantedAbilities() const;
 };

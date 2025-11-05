@@ -8,9 +8,9 @@ void ADemoPlayerState::CopyProperties(APlayerState* PlayerState)
 {
 	Super::CopyProperties(PlayerState);
 
-	if (ADemoPlayerState* NewPlayerState = Cast<ADemoPlayerState>(PlayerState))
+	if (ADemoPlayerState* NewDemoPlayerState = Cast<ADemoPlayerState>(PlayerState))
 	{
-		NewPlayerState->bIsInit = bIsInit;
-		NewPlayerState->PlayerIndex = PlayerIndex;
+		NewDemoPlayerState->bIsInit = bIsInit;
+		NewDemoPlayerState->PlayerIndex = PlayerIndex;
 	}
 }

@@ -4,18 +4,21 @@
 #include "Dialog/GrantAbilitiesTrigger.h"
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemInterface.h"
-#include "GameplayAbilitySpec.h"
+#include "GrantAbility.h"
+
+class IGrantAbility;
 
 void UGrantAbilitiesTrigger::OnExecute_Implementation(AController* DialogController)
 {
 	 if (const IAbilitySystemInterface* Asi = Cast<IAbilitySystemInterface>(DialogController->GetPawn()))
 	 {
-		if (UAbilitySystemComponent* AbilitySystemComponent = Asi->GetAbilitySystemComponent())
+		if (const UAbilitySystemComponent* AbilitySystemComponent = Asi->GetAbilitySystemComponent())
 		{
+			if (IGrantAbility* UnlockAbility = Cast<IGrantAbility>(AbilitySystemComponent->GetOwnerActor()))
+			
 	 		for (const TSubclassOf<UGameplayAbility>& AbilityClass : AbilitiesToGrant)
 			{
-				const FGameplayAbilitySpec AbilitySpec(AbilityClass, 1);
-				AbilitySystemComponent->GiveAbility(AbilitySpec);
+	 			UnlockAbility->GrantAbility(AbilityClass);
 			}
 		}
 	 }

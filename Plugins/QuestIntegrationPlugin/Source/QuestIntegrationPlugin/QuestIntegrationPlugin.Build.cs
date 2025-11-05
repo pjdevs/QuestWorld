@@ -28,10 +28,10 @@ public class QuestIntegrationPlugin : ModuleRules
 				"Core",
 				"DialogPlugin",
 				"InventoryPlugin",
-				"GameplayAbilities"
-				// ... add other public dependencies that you statically link with here ...
+				"GameplayAbilities",
+				"GameplayAbilitySystemPlugin"
 			}
-			);
+		);
 			
 		
 		PrivateDependencyModuleNames.AddRange(
@@ -41,13 +41,12 @@ public class QuestIntegrationPlugin : ModuleRules
 				"Engine",
 				"Slate",
 				"SlateCore",
-				// ... add private dependencies that you statically link with here ...
 				"UMG",
 				"QuestSystem",
 				"NotificationPlugin",
 				"InteractionPlugin",
 				"DialogPlugin",
-				"InventoryPlugin"
+				"InventoryPlugin",
 			}
 		);
 		

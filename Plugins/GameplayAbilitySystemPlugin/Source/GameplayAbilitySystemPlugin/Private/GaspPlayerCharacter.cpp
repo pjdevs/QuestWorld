@@ -17,6 +17,7 @@ void AGaspPlayerCharacter::PossessedBy(AController* NewController)
 
 	InitAbilitySystemComponent();
 	GiveDefaultAbilities(); // only give abilities on the server
+	GiveGrantedAbilities();
 	InitDefaultAttributes();
 	ApplyDefaultPermanentEffects(); // only apply permanent effects on server?
 	CharacterInitialized();
@@ -38,5 +39,13 @@ void AGaspPlayerCharacter::InitAbilitySystemComponent()
 		AbilitySystemComponent = CastChecked<UGaspAbilitySystemComponent>(GaspPlayerState->GetAbilitySystemComponent());
 		AbilitySystemComponent->InitAbilityActorInfo(GaspPlayerState, this);
 		AttributeSet = GaspPlayerState->GetAttributeSet();
+	}
+}
+
+void AGaspPlayerCharacter::GiveGrantedAbilities() const
+{
+	if (AGaspPlayerState* GaspPlayerState = Cast<AGaspPlayerState>(GetPlayerState()))
+	{
+		GaspPlayerState->GiveGrantedAbilities();
 	}
 }
