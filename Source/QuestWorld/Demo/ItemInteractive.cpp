@@ -13,12 +13,12 @@ FIPInteractionStatus AItemInteractive::GetInteractionStatusForActor_Implementati
 	const FIPInteractiveState& CurrentState
 ) const
 {
-	FText ItemName;
+	FText RequiredItemName;
 
 	if (UInventoryComponent* SharedInventory = UInventoryStatics::GetSharedInventory(GetWorld()))
 	{
-		ItemName = UInventoryStatics::GetItem(RequiredItem)->GetItemName();
-		
+		RequiredItemName = UInventoryStatics::GetItem(RequiredItem)->GetItemName();
+
 		if (SharedInventory->GetItemCount(RequiredItem) > 0)
 		{
 			return FIPInteractionStatus
@@ -28,9 +28,23 @@ FIPInteractionStatus AItemInteractive::GetInteractionStatusForActor_Implementati
 		}
 	}
 
+	if (const UInventoryComponent* Inventory = InteractionInstigator->GetComponentByClass<UInventoryComponent>())
+	{
+		for (const FInventoryItemId& AdditionalItem : BonusHiddenItems)
+		{
+			if (Inventory->GetItemCount(AdditionalItem) > 0)
+			{
+				return FIPInteractionStatus
+				{
+					.bCanStartInteraction = true
+				};
+			}
+		}
+	}
+
 	return FIPInteractionStatus
 	{
 		.bCanStartInteraction = false,
-		.ReasonText = FText::Format(RequiredItemTextFormat, ItemName)
+		.ReasonText = FText::Format(RequiredItemTextFormat, RequiredItemName)
 	};
 }

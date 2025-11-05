@@ -23,5 +23,8 @@ private:
 	FInventoryItemId RequiredItem;
 
 	UPROPERTY(EditAnywhere, Category = "Interaction|Item", meta = (AllowPrivateAccess = true))
+	TArray<FInventoryItemId> BonusHiddenItems;
+
+	UPROPERTY(EditAnywhere, Category = "Interaction|Item", meta = (AllowPrivateAccess = true))
 	FText RequiredItemTextFormat;
 };

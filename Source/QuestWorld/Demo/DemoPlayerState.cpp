@@ -3,6 +3,7 @@
 
 #include "DemoPlayerState.h"
 
+
 void ADemoPlayerState::CopyProperties(APlayerState* PlayerState)
 {
 	Super::CopyProperties(PlayerState);
