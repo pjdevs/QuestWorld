@@ -192,6 +192,11 @@ void UInventoryComponent::RemoveItem(FInventoryItemId ItemId, int ItemCountToRem
 	const int ItemCount = InventoryList.GetItemCount(ItemId);
 	const int RealCountToRemove = FMath::Min(ItemCountToRemove, ItemCount);
 
+	if (RealCountToRemove <= 0)
+	{
+		return;
+	}
+
 	InventoryList.RemoveItem(ItemId, RealCountToRemove);
 	OnItemRemovedDelegate.Broadcast(ItemId, RealCountToRemove);
 }
