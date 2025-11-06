@@ -102,7 +102,7 @@ void FInventoryList::PostReplicatedChange(const TArrayView<int32> ChangedIndices
 		{
 			OwnerComponent->OnItemAddedClient(Entry.ItemId, DeltaQuantity);
 		}
-		else
+		else if (DeltaQuantity < 0)
 		{
 			OwnerComponent->OnItemRemovedClient(Entry.ItemId, -DeltaQuantity);
 		}
@@ -256,7 +256,7 @@ void UInventoryComponent::OnItemRemovedClient(const FInventoryItemId& ItemId, in
 {
 	if (bInventoryReceived)
 	{
-		OnItemAddedDelegate.Broadcast(ItemId, ItemCountRemoved);
+		OnItemRemovedDelegate.Broadcast(ItemId, ItemCountRemoved);
 	}
 }
 
