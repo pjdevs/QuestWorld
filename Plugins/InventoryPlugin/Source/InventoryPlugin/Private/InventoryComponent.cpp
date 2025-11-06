@@ -135,8 +135,6 @@ void UInventoryComponent::BeginPlay()
 	Super::BeginPlay();
 
 	// Initial replication
-	// TODO load saved inventory
-
 	if (GetOwnerRole() == ROLE_Authority)
 	{
 		InventoryList.MarkArrayDirty();
