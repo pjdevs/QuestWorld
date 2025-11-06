@@ -63,6 +63,7 @@ void UDialogComponent::StartDialog(AActor* DialogActor, UDialogGraphAsset* Dialo
 
 TArray<FText> SetAvailableChoiceIndexes(
 	UWorld* World,
+	AController* OwnerController,
 	const UChoiceDialogNode* ChoiceDialogNode,
 	TArray<int>& AvailableIndexes
 )
@@ -76,7 +77,7 @@ TArray<FText> SetAvailableChoiceIndexes(
 	{
 		const UDialogChoice* Choice = AllChoices[i];
 			
-		if (Choice->GetNextDialog() && !Choice->GetNextDialog()->IsAvailable(World))
+		if (Choice->GetNextDialog() && !Choice->GetNextDialog()->IsAvailable(World, OwnerController))
 		{
 			continue;
 		}
@@ -98,7 +99,7 @@ void UDialogComponent::ExecuteCurrentDialogNode()
 		return;
 	}
 	
-	if (!CurrentNode || !CurrentNode->IsAvailable(World))
+	if (!CurrentNode || !CurrentNode->IsAvailable(World, OwnerController))
 	{
 		EndDialog();
 		return;
@@ -112,7 +113,12 @@ void UDialogComponent::ExecuteCurrentDialogNode()
 	}
 	else if (const UChoiceDialogNode* ChoiceDialogNode = Cast<UChoiceDialogNode>(CurrentNode))
 	{
-		const TArray<FText> AvailableChoices = SetAvailableChoiceIndexes(World, ChoiceDialogNode, AvailableChoiceIndexes);
+		const TArray<FText> AvailableChoices = SetAvailableChoiceIndexes(
+			World,
+			OwnerController,
+			ChoiceDialogNode,
+			AvailableChoiceIndexes
+		);
 
 		if (AvailableChoices.Num() <= 0)
 		{

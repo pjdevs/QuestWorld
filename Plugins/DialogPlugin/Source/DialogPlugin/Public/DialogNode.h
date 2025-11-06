@@ -24,11 +24,11 @@ public:
 	void AddCondition(UDialogCondition* Condition) { Conditions.Add(Condition); }
 	void AddTrigger(UDialogTrigger* Trigger) { Triggers.Add(Trigger); }
 	
-	virtual bool IsAvailable(UWorld* World) const;
+	virtual bool IsAvailable(UWorld* World, AController* DialogController) const;
 	void Trigger(UWorld* World, AController* DialogController);
 
-public:
 #if WITH_EDITORONLY_DATA
+public:
 	UPROPERTY()
 	FVector2f EditorNodePosition;
 #endif

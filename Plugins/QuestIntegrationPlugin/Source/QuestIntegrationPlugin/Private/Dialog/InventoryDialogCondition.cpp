@@ -1,14 +1,26 @@
 ﻿#include "Dialog/InventoryDialogCondition.h"
+
+#include "InventoryComponent.h"
 #include "InventoryStatics.h"
 
-bool UInventoryDialogCondition::IsSatisfied(UWorld* World)
+bool UInventoryDialogCondition::IsSatisfied_Implementation(AController* DialogController)
 {
-	if (!World)
-	{
-		return false;
-	}
+	int Total = 0;
 
-	const int Total = UInventoryStatics::GetTotalItemCountForAllPlayers(World, TargetItemId);
+	if (bShouldUseSharedInventory)
+	{
+		if (const UInventoryComponent* SharedInventory = UInventoryStatics::GetSharedInventory(GetWorld()))
+		{
+			Total = SharedInventory->GetItemCount(TargetItemId);
+		}
+	}
+	else
+	{
+		if (const UInventoryComponent* PlayerInventory = UInventoryStatics::GetPlayerInventory(DialogController))
+		{
+			Total = PlayerInventory->GetItemCount(TargetItemId);
+		}
+	}
 
 	switch (Behavior)
 	{

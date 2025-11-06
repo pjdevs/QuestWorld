@@ -5,9 +5,10 @@
 
 #include "Actions/PersistentActionsStatics.h"
 
-bool UPersistentActionCondition::IsSatisfied(UWorld* World)
+
+bool UPersistentActionCondition::IsSatisfied_Implementation(AController* DialogController)
 {
 	return bInvert
-		? !UPersistentActionsStatics::HasActionBeenDone(World, ActionToCheck)
-		: UPersistentActionsStatics::HasActionBeenDone(World, ActionToCheck);
+		? !UPersistentActionsStatics::HasActionBeenDone(GetWorld(), ActionToCheck)
+		: UPersistentActionsStatics::HasActionBeenDone(GetWorld(), ActionToCheck);
 }

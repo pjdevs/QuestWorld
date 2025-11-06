@@ -29,7 +29,7 @@ class QUESTINTEGRATIONPLUGIN_API UInventoryDialogCondition : public UDialogCondi
 	GENERATED_BODY()
 
 public:
-	virtual bool IsSatisfied(UWorld* World) override;
+	virtual bool IsSatisfied_Implementation(AController* DialogController) override;
 
 private:
 	UPROPERTY(EditDefaultsOnly, Category = Inventory, meta = (AllowPrivateAccess = true))
@@ -40,4 +40,7 @@ private:
 	
 	UPROPERTY(EditDefaultsOnly, Category = Inventory, meta = (AllowPrivateAccess = true))
 	int TargetItemCount = 1;
+
+	UPROPERTY(EditDefaultsOnly, Category = Inventory, meta = (AllowPrivateAccess = true))
+	bool bShouldUseSharedInventory = true;
 };

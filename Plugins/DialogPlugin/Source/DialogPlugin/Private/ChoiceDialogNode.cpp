@@ -5,7 +5,7 @@
 #include "DialogChoice.h"
 
 
-bool UChoiceDialogNode::IsAvailable(UWorld* World) const
+bool UChoiceDialogNode::IsAvailable(UWorld* World, AController* DialogController) const
 {
 	bool bHasAvailableChoices = false;
 
@@ -13,7 +13,7 @@ bool UChoiceDialogNode::IsAvailable(UWorld* World) const
 	{
 		if (const UDialogNode* NextDialog = Choice->GetNextDialog())
 		{
-			bHasAvailableChoices |= NextDialog->IsAvailable(World);
+			bHasAvailableChoices |= NextDialog->IsAvailable(World, DialogController);
 		}
 		else
 		{
@@ -21,5 +21,5 @@ bool UChoiceDialogNode::IsAvailable(UWorld* World) const
 		}
 	}
 
-	return bHasAvailableChoices && Super::IsAvailable(World);
+	return bHasAvailableChoices && Super::IsAvailable(World, DialogController);
 }

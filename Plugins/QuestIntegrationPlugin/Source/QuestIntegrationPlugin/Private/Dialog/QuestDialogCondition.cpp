@@ -7,9 +7,9 @@
 #include "QuestStatics.h"
 
 
-bool UQuestDialogCondition::IsSatisfied(UWorld* World)
+bool UQuestDialogCondition::IsSatisfied_Implementation(AController* DialogController)
 {
-	if (const UQuestComponent* QuestSubsystem = UQuestStatics::GetQuestComponent(World))
+	if (const UQuestComponent* QuestSubsystem = UQuestStatics::GetQuestComponent(GetWorld()))
 	{
 		switch (Behavior)
 		{

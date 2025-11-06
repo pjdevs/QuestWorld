@@ -15,6 +15,17 @@ class DIALOGPLUGIN_API UDialogCondition : public UObject
 	GENERATED_BODY()
 
 public:
-	// UFUNCTION(BlueprintImplementableEvent, Category = Dialog)
-	virtual bool IsSatisfied(UWorld* World) { return true; }
+	virtual UWorld* GetWorld() const override;
+	
+public:
+	bool IsSatisfied(UWorld* InWorld, AController* DialogController);
+
+protected:
+	UFUNCTION(BlueprintNativeEvent, Category = Dialog)
+	bool IsSatisfied(AController* DialogController);
+	virtual bool IsSatisfied_Implementation(AController* DialogController);
+
+private:
+	UPROPERTY(Transient)
+	UWorld* World = nullptr;
 };

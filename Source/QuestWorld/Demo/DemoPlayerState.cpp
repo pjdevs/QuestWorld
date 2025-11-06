@@ -3,6 +3,13 @@
 
 #include "DemoPlayerState.h"
 
+#include "InventoryComponent.h"
+
+
+ADemoPlayerState::ADemoPlayerState()
+{
+	PlayerInventory = CreateDefaultSubobject<UInventoryComponent>("PlayerInventory");
+}
 
 void ADemoPlayerState::CopyProperties(APlayerState* PlayerState)
 {
@@ -12,5 +19,16 @@ void ADemoPlayerState::CopyProperties(APlayerState* PlayerState)
 	{
 		NewDemoPlayerState->bIsInit = bIsInit;
 		NewDemoPlayerState->PlayerIndex = PlayerIndex;
+	}
+}
+
+void ADemoPlayerState::SeamlessTravelTo(APlayerState* NewPlayerState)
+{
+	Super::SeamlessTravelTo(NewPlayerState);
+
+	if (const ADemoPlayerState* NewDemoPlayerState = Cast<ADemoPlayerState>(NewPlayerState))
+	{
+		const FInventorySaveData InventorySave = PlayerInventory->WriteItemsToSave();
+		NewDemoPlayerState->PlayerInventory->LoadItemsFromSave(InventorySave);
 	}
 }

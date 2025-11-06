@@ -26,7 +26,7 @@ class QUESTINTEGRATIONPLUGIN_API UQuestDialogCondition : public UDialogCondition
 	GENERATED_BODY()
 
 public:
-	virtual bool IsSatisfied(UWorld* World) override;	
+	virtual bool IsSatisfied_Implementation(AController* DialogController) override;
 
 private:
 	UPROPERTY(EditDefaultsOnly, Category = Dialog, meta = (AllowPrivateAccess = true, AllowedTypes = Quest))
