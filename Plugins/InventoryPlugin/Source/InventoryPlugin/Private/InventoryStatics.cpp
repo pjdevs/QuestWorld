@@ -82,13 +82,16 @@ UInventoryComponent* UInventoryStatics::GetSharedInventory(UObject* WorldContext
 UInventoryComponent* UInventoryStatics::GetPlayerInventory(const AActor* Actor)
 {
 	const APlayerState* PlayerState = nullptr;
-	
-	if (const APawn* Pawn = Cast<APawn>(Actor))
+
+	if (const APlayerState* PlayerStateActor = Cast<APlayerState>(Actor))
+	{
+		PlayerState = PlayerStateActor;
+	}
+	else if (const APawn* Pawn = Cast<APawn>(Actor))
 	{
 		PlayerState = Pawn->GetPlayerState();
 	}
-
-	if (const AController* Controller = Cast<AController>(Actor))
+	else if (const AController* Controller = Cast<AController>(Actor))
 	{
 		PlayerState = Controller->PlayerState;
 	}

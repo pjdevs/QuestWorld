@@ -2,6 +2,7 @@
 
 
 #include "Save/IntegrationSaveSubsystem.h"
+#include "GaspPlayerState.h"
 #include "Save/IntegrationSaveGame.h"
 #include "IPWorldStateSaveSubsystem.h"
 #include "InventoryComponent.h"
@@ -11,12 +12,19 @@
 #include "Actions/PersistentActionsComponent.h"
 #include "Actions/PersistentActionsStatics.h"
 #include "Kismet/GameplayStatics.h"
+#include "Save/UIntegrationPlayerSaveGame.h"
 
 
 static TAutoConsoleVariable<FString> CVarWorldStateSaveGameSlot(
 	TEXT("Save.SaveGameSlot"),
-	"QuestWorldSave",
-	TEXT("Defines the slot to use for save subsystem.\n")
+	"WorldStateSave",
+	TEXT("Defines the slot to use for save subsystem (world).\n")
+);
+
+static TAutoConsoleVariable<FString> CVarPlayerStateSaveGameSlot(
+	TEXT("Save.PlayerSaveGameSlot"),
+	"PlayerStateSave",
+	TEXT("Defines the slot to use for save subsystem (players).\n")
 );
 
 static FAutoConsoleCommand Cmd_Save_Reset(
@@ -69,6 +77,21 @@ static FAutoConsoleCommand Cmd_Save_Load(
 		}
 	)
 );
+
+void UIntegrationSaveSubsystem::LoadSaveGame(const FString& SlotName)
+{
+	if (UGameplayStatics::DoesSaveGameExist(SlotName, 0))
+	{
+		SaveGameObject = Cast<UIntegrationSaveGame>(UGameplayStatics::LoadGameFromSlot(SlotName, 0));
+	}
+
+	if (!SaveGameObject)
+	{
+		SaveGameObject = Cast<UIntegrationSaveGame>(
+			UGameplayStatics::CreateSaveGameObject(UIntegrationSaveGame::StaticClass())
+		);
+	}
+}
 
 void UIntegrationSaveSubsystem::LoadSaveGameFromConfig()
 {
@@ -138,17 +161,55 @@ void UIntegrationSaveSubsystem::SaveGame()
 	UGameplayStatics::SaveGameToSlot(SaveGameObject, SlotName, 0);
 }
 
-void UIntegrationSaveSubsystem::LoadSaveGame(const FString& SlotName)
+FString GetPlayerSlotName(int PlayerIndex)
 {
-	if (UGameplayStatics::DoesSaveGameExist(SlotName, 0))
+	return FString::Printf(
+		TEXT("%s_%d"),
+		*CVarPlayerStateSaveGameSlot->GetString(),
+		PlayerIndex
+	);
+}
+
+void UIntegrationSaveSubsystem::LoadPlayer(APlayerState* PlayerState, int PlayerIndex)
+{
+	const FString& SlotName = GetPlayerSlotName(PlayerIndex);
+
+	if (!UGameplayStatics::DoesSaveGameExist(SlotName, 0))
 	{
-		SaveGameObject = Cast<UIntegrationSaveGame>(UGameplayStatics::LoadGameFromSlot(SlotName, 0));
+		return;
 	}
 
-	if (!SaveGameObject)
+	const UUIntegrationPlayerSaveGame* PlayerSaveGame = Cast<UUIntegrationPlayerSaveGame>(
+		UGameplayStatics::LoadGameFromSlot(SlotName, 0)
+	);
+
+	if (AGaspPlayerState* GaspPlayerState = Cast<AGaspPlayerState>(PlayerState))
 	{
-		SaveGameObject = Cast<UIntegrationSaveGame>(
-			UGameplayStatics::CreateSaveGameObject(UIntegrationSaveGame::StaticClass())
-		);
+		GaspPlayerState->LoadFromSave(PlayerSaveGame->GaspSaveData);
 	}
+
+	if (UInventoryComponent* InventoryComponent = UInventoryStatics::GetPlayerInventory(PlayerState))
+	{
+		InventoryComponent->LoadItemsFromSave(PlayerSaveGame->InventorySaveData);
+	}
+}
+
+void UIntegrationSaveSubsystem::SavePlayer(const APlayerState* PlayerState, int PlayerIndex)
+{
+	UUIntegrationPlayerSaveGame* PlayerSaveGame = Cast<UUIntegrationPlayerSaveGame>(
+		UGameplayStatics::CreateSaveGameObject(UUIntegrationPlayerSaveGame::StaticClass())
+	);
+
+	if (const AGaspPlayerState* GaspPlayerState = Cast<AGaspPlayerState>(PlayerState))
+	{
+		PlayerSaveGame->GaspSaveData = GaspPlayerState->WriteToSave();
+	}
+
+	if (UInventoryComponent* InventoryComponent = UInventoryStatics::GetPlayerInventory(PlayerState))
+	{
+		PlayerSaveGame->InventorySaveData = InventoryComponent->WriteItemsToSave();
+	}
+
+	const FString& SlotName = GetPlayerSlotName(PlayerIndex);
+	UGameplayStatics::SaveGameToSlot(PlayerSaveGame, SlotName, 0);
 }

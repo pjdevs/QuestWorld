@@ -5,6 +5,7 @@
 #include "GameFramework/PlayerStart.h"
 #include "DemoPlayerState.h"
 #include "Kismet/GameplayStatics.h"
+#include "Save/IntegrationSaveSubsystem.h"
 
 AActor* ADemoGameMode::ChoosePlayerStart_Implementation(AController* Player)
 {
@@ -50,5 +51,40 @@ AActor* ADemoGameMode::ChoosePlayerStart_Implementation(AController* Player)
 	}
 
 	return nullptr;
+}
+
+void ADemoGameMode::PostLogin(APlayerController* NewPlayer)
+{
+	if (ADemoPlayerState* DemoPlayerState = NewPlayer->GetPlayerState<ADemoPlayerState>())
+	{
+		if (UIntegrationSaveSubsystem* SaveSubsystem = GetGameInstance()->GetSubsystem<UIntegrationSaveSubsystem>())
+		{
+			SaveSubsystem->LoadPlayer(DemoPlayerState, DemoPlayerState->PlayerIndex);
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Player state not found in OnPostLogin."));
+	}
+
+	// do this after because it will possess pawn so load state before pawn possession
+	Super::PostLogin(NewPlayer);
+}
+
+void ADemoGameMode::Logout(AController* Exiting)
+{
+	Super::Logout(Exiting);
+
+	if (const ADemoPlayerState* DemoPlayerState = Exiting->GetPlayerState<ADemoPlayerState>())
+	{
+		if (UIntegrationSaveSubsystem* SaveSubsystem = GetGameInstance()->GetSubsystem<UIntegrationSaveSubsystem>())
+		{
+			SaveSubsystem->SavePlayer(DemoPlayerState, DemoPlayerState->PlayerIndex);
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Player state not found in Logout."));
+	}
 }
 

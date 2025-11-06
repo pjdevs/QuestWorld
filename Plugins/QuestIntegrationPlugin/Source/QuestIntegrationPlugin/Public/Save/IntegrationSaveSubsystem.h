@@ -27,6 +27,14 @@ public:
 	
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = Save)
 	void SaveGame();
+
+	// Player save, for now will say world is in slot 0 and players ion the others
+	
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = Save)
+	void LoadPlayer(APlayerState* PlayerState, int PlayerIndex);
+	
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = Save)
+	void SavePlayer(const APlayerState* PlayerState, int PlayerIndex);
 	
 private:
 	UPROPERTY()
