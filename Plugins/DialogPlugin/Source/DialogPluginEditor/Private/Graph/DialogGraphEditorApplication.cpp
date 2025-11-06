@@ -7,6 +7,8 @@
 #include "DialogGraphAsset.h"
 #include "DialogNode.h"
 #include "SingleDialogNode.h"
+#include "DialogTrigger.h"
+#include "DialogCondition.h"
 #include "Graph/DialogEdGraph.h"
 #include "Graph/DialogEdGraphNode.h"
 #include "EdGraph/EdGraphNode.h"
@@ -258,6 +260,7 @@ void FDialogGraphEditorApplication::UpdateAssetFromEdGraph(
 	CreateAssetNodesFromEdNode(DialogGraphAsset, RootDialogNode, RootDialogEdGraphNode);
 
 	DialogGraphAsset->SetDialogRoot(RootDialogNode);
+	DialogGraphAsset->Modify();
 }
 
 void FDialogGraphEditorApplication::CreateAssetNodesFromEdNode(
@@ -330,15 +333,17 @@ UDialogNode* FDialogGraphEditorApplication::CreateAssetNode(
 	}
 	
 	DialogNode->EditorNodePosition = DialogEdGraphNode->GetPosition();
+
+	// ! Duplicate objects with node as owner otherwise will be wiped on content cook
 	
 	for (auto&& Condition : DialogEdGraphNode->Conditions)
 	{
-		DialogNode->AddCondition(Condition);
+		DialogNode->AddCondition(DuplicateObject(Condition, DialogNode));
 	}
 	
 	for (auto&& Trigger : DialogEdGraphNode->Triggers)
 	{
-		DialogNode->AddTrigger(Trigger);
+		DialogNode->AddTrigger(DuplicateObject(Trigger, DialogNode));
 	}
 
 	return DialogNode;
