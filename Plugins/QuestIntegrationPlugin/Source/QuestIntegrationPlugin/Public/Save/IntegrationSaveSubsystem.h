@@ -46,6 +46,10 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = Save)
 	void SavePlayers();
 
+	// Helper function
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = Save, meta = (WorldContext = "WorldContextObject"))
+	void SaveAll(UObject* WorldContextObject);
+
 private:
 	static FString GetPlayerSlotName(const FString& SlotName, int PlayerIndex);
 	

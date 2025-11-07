@@ -11,7 +11,9 @@
 #include "QuestStatics.h"
 #include "Actions/PersistentActionsComponent.h"
 #include "Actions/PersistentActionsStatics.h"
+#include "GameFramework/GameStateBase.h"
 #include "Kismet/GameplayStatics.h"
+#include "Save/SavablePlayer.h"
 #include "Save/UIntegrationPlayerSaveGame.h"
 
 
@@ -169,7 +171,7 @@ void UIntegrationSaveSubsystem::LoadPlayerSaveGame(const FString& SlotName, int 
 	if (UGameplayStatics::DoesSaveGameExist(PlayerSlotName, 0))
 	{
 		PlayerSaveGameObject = Cast<UUIntegrationPlayerSaveGame>(
-			UGameplayStatics::LoadGameFromSlot(SlotName, 0)
+			UGameplayStatics::LoadGameFromSlot(PlayerSlotName, 0)
 		);
 	}
 
@@ -241,6 +243,35 @@ void UIntegrationSaveSubsystem::SavePlayers()
 		const FString& SlotName = GetPlayerSlotName(CVarPlayerStateSaveGameSlot->GetString(), PlayerIndex);
 		UGameplayStatics::SaveGameToSlot(PlayerSaveGameObject, SlotName, 0);
 	}
+}
+
+void UIntegrationSaveSubsystem::SaveAll(UObject* WorldContextObject)
+{
+	SaveGame();
+
+	const UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::ReturnNull);
+
+	if (!World)
+	{
+		return;
+	}
+
+	const AGameStateBase* GameState = World->GetGameState();
+
+	if (!GameState)
+	{
+		return;
+	}
+
+	for (APlayerState* PlayerState : GameState->PlayerArray)
+	{
+		if (ISavablePlayer* SavablePlayer = Cast<ISavablePlayer>(PlayerState))
+		{
+			SavePlayerSaveGame(PlayerState, SavablePlayer->GetPlayerIndex());
+		}
+	}
+
+	SavePlayers();
 }
 
 FString UIntegrationSaveSubsystem::GetPlayerSlotName(const FString& SlotName, int PlayerIndex)

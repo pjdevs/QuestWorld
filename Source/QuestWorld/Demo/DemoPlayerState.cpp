@@ -11,6 +11,11 @@ ADemoPlayerState::ADemoPlayerState()
 	PlayerInventory = CreateDefaultSubobject<UInventoryComponent>("PlayerInventory");
 }
 
+int ADemoPlayerState::GetPlayerIndex()
+{
+	return PlayerIndex;
+}
+
 void ADemoPlayerState::CopyProperties(APlayerState* PlayerState)
 {
 	Super::CopyProperties(PlayerState);
