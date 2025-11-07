@@ -23,7 +23,9 @@ protected:
 	virtual void SeamlessTravelTo(APlayerState* NewPlayerState) override;
 
 public:
+	UPROPERTY(BlueprintReadOnly, Category = PlayerState)
 	int PlayerIndex = 0;
+
 	bool bIsInit = false;
 
 protected:

@@ -53,6 +53,13 @@ void UInventoryNotificationsComponent::SubmitNotification(FInventoryItemId ItemI
 	}
 
 	const UInventoryItemDataAsset* Item = UInventoryStatics::GetItem(ItemId);
+
+	if (!Item)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Could not load item %s."), *ItemId.InventoryItemAssetId.ToString());
+		return;
+	}
+	
 	const FText& TemplateText = bIsRemove ? ItemRemovedTemplateText : ItemAddedTemplateText;
 	const FText NotificationText = FText::Format(TemplateText, Item->GetItemName(), ItemCount);
 

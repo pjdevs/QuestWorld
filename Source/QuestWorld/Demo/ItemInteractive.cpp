@@ -17,7 +17,16 @@ FIPInteractionStatus AItemInteractive::GetInteractionStatusForActor_Implementati
 
 	if (const UInventoryComponent* SharedInventory = UInventoryStatics::GetSharedInventory(GetWorld()))
 	{
-		RequiredItemName = UInventoryStatics::GetItem(RequiredItem)->GetItemName();
+		const UInventoryItemDataAsset* RequiredItemAsset = UInventoryStatics::GetItem(RequiredItem);
+		
+		if (RequiredItemAsset)
+		{
+			RequiredItemName = RequiredItemAsset->GetItemName();
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("Could not load item %s."), *RequiredItem.InventoryItemAssetId.ToString());
+		}
 
 		if (SharedInventory->GetItemCount(RequiredItem) > 0)
 		{
