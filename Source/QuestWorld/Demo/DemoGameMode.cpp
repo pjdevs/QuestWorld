@@ -75,16 +75,16 @@ void ADemoGameMode::Logout(AController* Exiting)
 {
 	Super::Logout(Exiting);
 
-	// if (const ADemoPlayerState* DemoPlayerState = Exiting->GetPlayerState<ADemoPlayerState>())
-	// {
-	// 	if (UIntegrationSaveSubsystem* SaveSubsystem = GetGameInstance()->GetSubsystem<UIntegrationSaveSubsystem>())
-	// 	{
-	// 		SaveSubsystem->SavePlayer(DemoPlayerState, DemoPlayerState->PlayerIndex);
-	// 	}
-	// }
-	// else
-	// {
-	// 	UE_LOG(LogTemp, Error, TEXT("Player state not found in Logout."));
-	// }
+	if (const ADemoPlayerState* DemoPlayerState = Exiting->GetPlayerState<ADemoPlayerState>())
+	{
+		if (UIntegrationSaveSubsystem* SaveSubsystem = GetGameInstance()->GetSubsystem<UIntegrationSaveSubsystem>())
+		{
+			SaveSubsystem->SavePlayerSaveGame(DemoPlayerState, DemoPlayerState->PlayerIndex);
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Player state not found in Logout."));
+	}
 }
 

@@ -161,55 +161,93 @@ void UIntegrationSaveSubsystem::SaveGame()
 	UGameplayStatics::SaveGameToSlot(SaveGameObject, SlotName, 0);
 }
 
-FString GetPlayerSlotName(int PlayerIndex)
+void UIntegrationSaveSubsystem::LoadPlayerSaveGame(const FString& SlotName, int PlayerIndex)
 {
-	return FString::Printf(
-		TEXT("%s_%d"),
-		*CVarPlayerStateSaveGameSlot->GetString(),
-		PlayerIndex
-	);
+	const FString& PlayerSlotName = GetPlayerSlotName(SlotName, PlayerIndex);
+	UUIntegrationPlayerSaveGame* PlayerSaveGameObject = nullptr;
+	
+	if (UGameplayStatics::DoesSaveGameExist(PlayerSlotName, 0))
+	{
+		PlayerSaveGameObject = Cast<UUIntegrationPlayerSaveGame>(
+			UGameplayStatics::LoadGameFromSlot(SlotName, 0)
+		);
+	}
+
+	if (!PlayerSaveGameObject)
+	{
+		PlayerSaveGameObject = Cast<UUIntegrationPlayerSaveGame>(
+			UGameplayStatics::CreateSaveGameObject(UUIntegrationPlayerSaveGame::StaticClass())
+		);
+	}
+
+	PlayerSaveGameObjects.Add(PlayerIndex, PlayerSaveGameObject);
+}
+
+void UIntegrationSaveSubsystem::LoadPlayerSaveGameFromConfig(int PlayerIndex)
+{
+	return LoadPlayerSaveGame(CVarPlayerStateSaveGameSlot->GetString(), PlayerIndex);
 }
 
 void UIntegrationSaveSubsystem::LoadPlayer(APlayerState* PlayerState, int PlayerIndex)
 {
-	const FString& SlotName = GetPlayerSlotName(PlayerIndex);
-
-	if (!UGameplayStatics::DoesSaveGameExist(SlotName, 0))
+	UUIntegrationPlayerSaveGame* PlayerSaveGameObject = PlayerSaveGameObjects.FindRef(PlayerIndex);
+	
+	if (!PlayerSaveGameObject)
 	{
-		return;
+		LoadPlayerSaveGameFromConfig(PlayerIndex);
 	}
 
-	const UUIntegrationPlayerSaveGame* PlayerSaveGame = Cast<UUIntegrationPlayerSaveGame>(
-		UGameplayStatics::LoadGameFromSlot(SlotName, 0)
-	);
-
+	PlayerSaveGameObject = PlayerSaveGameObjects.FindChecked(PlayerIndex);
+	
 	if (AGaspPlayerState* GaspPlayerState = Cast<AGaspPlayerState>(PlayerState))
 	{
-		GaspPlayerState->LoadFromSave(PlayerSaveGame->GaspSaveData);
+		GaspPlayerState->LoadFromSave(PlayerSaveGameObject->GaspSaveData);
 	}
 
 	if (UInventoryComponent* InventoryComponent = UInventoryStatics::GetPlayerInventory(PlayerState))
 	{
-		InventoryComponent->LoadItemsFromSave(PlayerSaveGame->InventorySaveData);
+		InventoryComponent->LoadItemsFromSave(PlayerSaveGameObject->InventorySaveData);
 	}
 }
 
-void UIntegrationSaveSubsystem::SavePlayer(const APlayerState* PlayerState, int PlayerIndex)
+void UIntegrationSaveSubsystem::SavePlayerSaveGame(const APlayerState* PlayerState, int PlayerIndex)
 {
-	UUIntegrationPlayerSaveGame* PlayerSaveGame = Cast<UUIntegrationPlayerSaveGame>(
-		UGameplayStatics::CreateSaveGameObject(UUIntegrationPlayerSaveGame::StaticClass())
-	);
+	UUIntegrationPlayerSaveGame* PlayerSaveGameObject = PlayerSaveGameObjects.FindRef(PlayerIndex);
+
+	if (!PlayerSaveGameObject)
+	{
+		PlayerSaveGameObject = Cast<UUIntegrationPlayerSaveGame>(
+			UGameplayStatics::CreateSaveGameObject(UUIntegrationPlayerSaveGame::StaticClass())
+		);
+	}
 
 	if (const AGaspPlayerState* GaspPlayerState = Cast<AGaspPlayerState>(PlayerState))
 	{
-		PlayerSaveGame->GaspSaveData = GaspPlayerState->WriteToSave();
+		PlayerSaveGameObject->GaspSaveData = GaspPlayerState->WriteToSave();
 	}
 
 	if (UInventoryComponent* InventoryComponent = UInventoryStatics::GetPlayerInventory(PlayerState))
 	{
-		PlayerSaveGame->InventorySaveData = InventoryComponent->WriteItemsToSave();
+		PlayerSaveGameObject->InventorySaveData = InventoryComponent->WriteItemsToSave();
 	}
 
-	const FString& SlotName = GetPlayerSlotName(PlayerIndex);
-	UGameplayStatics::SaveGameToSlot(PlayerSaveGame, SlotName, 0);
+	PlayerSaveGameObjects.Add(PlayerIndex, PlayerSaveGameObject);
+}
+
+void UIntegrationSaveSubsystem::SavePlayers()
+{
+	for (auto& [PlayerIndex, PlayerSaveGameObject] : PlayerSaveGameObjects)
+	{
+		const FString& SlotName = GetPlayerSlotName(CVarPlayerStateSaveGameSlot->GetString(), PlayerIndex);
+		UGameplayStatics::SaveGameToSlot(PlayerSaveGameObject, SlotName, 0);
+	}
+}
+
+FString UIntegrationSaveSubsystem::GetPlayerSlotName(const FString& SlotName, int PlayerIndex)
+{
+	return FString::Printf(
+		TEXT("%s_%d"),
+		*SlotName,
+		PlayerIndex
+	);
 }

@@ -6,6 +6,7 @@
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "IntegrationSaveSubsystem.generated.h"
 
+class UUIntegrationPlayerSaveGame;
 class UIntegrationSaveGame;
 /**
  * 
@@ -31,12 +32,27 @@ public:
 	// Player save, for now will say world is in slot 0 and players ion the others
 	
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = Save)
-	void LoadPlayer(APlayerState* PlayerState, int PlayerIndex);
+	void LoadPlayerSaveGame(const FString& SlotName, int PlayerIndex);
 	
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = Save)
-	void SavePlayer(const APlayerState* PlayerState, int PlayerIndex);
+	void LoadPlayerSaveGameFromConfig(int PlayerIndex);
+	
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = Save)
+	void LoadPlayer(APlayerState* PlayerState, int PlayerIndex);
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = Save)
+	void SavePlayerSaveGame(const APlayerState* PlayerState, int PlayerIndex);
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = Save)
+	void SavePlayers();
+
+private:
+	static FString GetPlayerSlotName(const FString& SlotName, int PlayerIndex);
 	
 private:
 	UPROPERTY()
-	UIntegrationSaveGame* SaveGameObject;
+	TObjectPtr<UIntegrationSaveGame> SaveGameObject;
+
+	UPROPERTY()
+	TMap<int, TObjectPtr<UUIntegrationPlayerSaveGame>> PlayerSaveGameObjects;
 };
