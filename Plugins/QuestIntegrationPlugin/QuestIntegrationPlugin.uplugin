@@ -41,8 +41,16 @@
         {
           "Name": "InventoryPlugin",
           "Enabled": true
+        },
+        {
+          "Name": "GameplayAbilities",
+          "Enabled": true
+        },
+        {
+          "Name": "GameplayAbilitySystemPlugin",
+          "Enabled": true
         }
-	],
+    ],
 	"AdditionalDefaultConfigFiles": [
 		"DefaultQuestIntegration.ini"
 	]
