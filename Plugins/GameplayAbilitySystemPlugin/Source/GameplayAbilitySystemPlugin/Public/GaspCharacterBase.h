@@ -29,12 +29,6 @@ protected:
 	void GiveDefaultAbilities();
 	void InitDefaultAttributes();
 	void ApplyDefaultPermanentEffects();
-	void CharacterInitialized();
-
-protected:
-	UFUNCTION(BlueprintNativeEvent, Category = PlayerState)
-	void OnCharacterInitialized();
-	virtual void OnCharacterInitialized_Implementation();
 
 public:
 	UPROPERTY(BlueprintAssignable)

@@ -19,8 +19,9 @@ void AGaspAICharacter::BeginPlay()
 	Super::BeginPlay();
 
 	AbilitySystemComponent->InitAbilityActorInfo(this, this);
+	OnAscInitialized.Broadcast();
+
 	GiveDefaultAbilities();
 	InitDefaultAttributes();
 	ApplyDefaultPermanentEffects();
-    CharacterInitialized();
 }
