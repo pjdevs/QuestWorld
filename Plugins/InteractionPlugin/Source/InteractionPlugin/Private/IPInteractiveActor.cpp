@@ -50,14 +50,14 @@ void AIPInteractiveActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 	for (const TWeakObjectPtr<UIPInteractorComponent>& Interactor : PossibleInteractors)
 	{
-		Interactor->RemoveInteractive(this);
-		Interactor->RemoveInteractiveIndication(this);
+		// Interactor->RemoveInteractive(this);
+		// Interactor->RemoveInteractiveIndication(this);
 		IndicatedInteractors.Remove(Interactor);
 	}
 
 	for (const TWeakObjectPtr<UIPInteractorComponent>& Interactor : IndicatedInteractors)
 	{
-		Interactor->RemoveInteractiveIndication(this);
+		// Interactor->RemoveInteractiveIndication(this);
 	}
 }
 
@@ -86,7 +86,7 @@ void AIPInteractiveActor::HandleInteractionTriggerBeginOverlap(
 	}
 
 	PossibleInteractors.Add(Interactor);
-	Interactor->AddInteractive(this);
+	// Interactor->AddInteractive(this);
 }
 
 void AIPInteractiveActor::HandleInteractionTriggerEndOverlap(
@@ -112,7 +112,7 @@ void AIPInteractiveActor::HandleInteractionTriggerEndOverlap(
 	}
 
 	PossibleInteractors.Remove(Interactor);
-	Interactor->RemoveInteractive(this);
+	// Interactor->RemoveInteractive(this);
 
 	// End interaction if was interacting with this actor and he left the zone
 	if (HasAuthority())
@@ -149,7 +149,7 @@ void AIPInteractiveActor::HandleIndicationTriggerBeginOverlap(
 	}
 
 	IndicatedInteractors.Add(Interactor);
-	Interactor->AddInteractiveIndication(this);
+	// Interactor->AddInteractiveIndication(this);
 }
 
 void AIPInteractiveActor::HandleIndicationTriggerEndOverlap(
@@ -175,7 +175,7 @@ void AIPInteractiveActor::HandleIndicationTriggerEndOverlap(
 	}
 
 	IndicatedInteractors.Remove(Interactor);
-	Interactor->RemoveInteractiveIndication(this);
+	// Interactor->RemoveInteractiveIndication(this);
 }
 
 void AIPInteractiveActor::PostInitializeComponents()
@@ -398,7 +398,7 @@ void AIPInteractiveActor::NotifyStateChanged()
 	// Only notify indicated interactors because possible interactors will be updated on interactor's Tick
 	for (const TWeakObjectPtr<UIPInteractorComponent>& Interactor : IndicatedInteractors)
 	{
-		Interactor->OnInteractiveStateChanged(this);
+		// Interactor->OnInteractiveStateChanged(this);
 	}
 }
 

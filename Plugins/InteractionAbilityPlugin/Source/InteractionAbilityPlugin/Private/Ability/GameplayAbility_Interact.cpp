@@ -38,14 +38,14 @@ void UGameplayAbility_Interact::ActivateAbility(
 		return;
 	}
 
-	const TWeakObjectPtr<AActor> MostRelevantActor = InteractorComponent->GetMostRelevantActor();
+	const TWeakObjectPtr<UIPInteractiveComponent> MostRelevantActor = InteractorComponent->GetMostRelevantInteractive();
 
 	if (!MostRelevantActor.IsValid())
 	{
 		return;
 	}
 
-	AAbilityInteractiveActor* InteractiveActor = Cast<AAbilityInteractiveActor>(MostRelevantActor.Get());
+	AAbilityInteractiveActor* InteractiveActor = nullptr; // Cast<AAbilityInteractiveActor>(MostRelevantActor.Get());
 
 	if (!InteractiveActor)
 	{

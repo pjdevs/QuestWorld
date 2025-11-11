@@ -7,6 +7,7 @@
 #include "Components/ActorComponent.h"
 #include "IPInteractorComponent.generated.h"
 
+class UIPInteractiveComponent;
 class UInputAction;
 class UIPInteractionWidget;
 class IIPInteractive;
@@ -35,9 +36,8 @@ class INTERACTIONPLUGIN_API UIPInteractorComponent : public UActorComponent
 public:
 	// Sets default values for this component's properties
 	UIPInteractorComponent();
-	
-	virtual void OnComponentDestroyed(bool bDestroyingHierarchy) override;
 
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void TickComponent(
 		float DeltaTime,
 		ELevelTick TickType,
@@ -62,32 +62,32 @@ public:
 	/**
 	 * Add an interactive to the list of possible interactives.
 	 */
-	void AddInteractive(IIPInteractive* Interactive);
+	void AddInteractive(UIPInteractiveComponent* Interactive);
 
 	/**
 	 * Remove an interactive from the list of possible interactives.
 	 */
-	void RemoveInteractive(IIPInteractive* Interactive);
+	void RemoveInteractive(UIPInteractiveComponent* Interactive);
 
 	/**
 	 * Add an indicator to the interactive to notify that is it interactive but not close enough.
 	 */
-	void AddInteractiveIndication(IIPInteractive* Interactive);
+	void AddInteractiveIndication(UIPInteractiveComponent* Interactive);
 
 	/**
 	 * Remove indicator from the interactive.
 	 */
-	void RemoveInteractiveIndication(IIPInteractive* Interactive);
+	void RemoveInteractiveIndication(UIPInteractiveComponent* Interactive);
 
 	/**
 	 * Called by an interactive when its state has changed and this interactor was in range.
 	 */
-	void OnInteractiveStateChanged(IIPInteractive* Interactive);
+	void OnInteractiveStateChanged(UIPInteractiveComponent* Interactive);
 
 	/**
 	 * Get the current most relevant actor that interactor would interact with in TryInteract.
 	 */
-	TWeakObjectPtr<AActor> GetMostRelevantActor() const;
+	TWeakObjectPtr<UIPInteractiveComponent> GetMostRelevantInteractive() const;
 
 protected:
 	/**
@@ -104,21 +104,21 @@ protected:
 
 	/**
 	 * Show interaction widget on client.
-	 * @param InteractiveActor The interactive actor with which component can interact.
+	 * @param Interactive The interactive actor with which component can interact.
 	 */
-	void ShowInteractionWidgetClient(AActor* InteractiveActor);
+	void ShowInteractionWidgetClient(UIPInteractiveComponent* Interactive);
 
 	/**
 	 * Show indication widget on client.
-	 * @param InteractiveActor The interactive actor on which we should show indication.
+	 * @param Interactive The interactive actor on which we should show indication.
 	 */
-	void ShowIndicationWidgetClient(AActor* InteractiveActor);
+	void ShowIndicationWidgetClient(UIPInteractiveComponent* Interactive);
 	
 	/**
 	 * Hide interaction widget on client.
-	 * @param InteractiveActor The interactive actor on which we should hide the widget.
+	 * @param Interactive The interactive actor on which we should hide the widget.
 	 */
-	void HideWidgetClient(AActor* InteractiveActor);
+	void HideWidgetClient(UIPInteractiveComponent* Interactive);
 
 	/**
 	 * Helper to check if we are on a local pawn.
@@ -139,7 +139,7 @@ private:
 	/**
 	 * Recompute the relevancy of each interactive by checking look angle, distance etc.
 	 */
-	AActor* FindNewMostRelevantActor() const;
+	UIPInteractiveComponent* FindNewMostRelevantActor() const;
 
 	// TODO expose this to designers?
 	/**
@@ -147,7 +147,7 @@ private:
 	 * The higher the score, the better.
 	 */
 	static FIPInteractionScore ComputeInteractionScore(
-		const IIPInteractive& Target,
+		const UIPInteractiveComponent& Target,
 		const FVector& EyesLocation,
 		const FVector& LookDirection
 	);
@@ -156,8 +156,8 @@ private:
 	 * Called internally when has authority when most relevant actor changed (to show widgets etc).
 	 */
 	void OnMostRelevantInteractiveChanged(
-		AActor* PreviousMostRelevantActor,
-		AActor* NewMostRelevantActor
+		UIPInteractiveComponent* PreviousMostRelevantInteractive,
+		UIPInteractiveComponent* NewMostRelevantInteractive
 	);
 
 private:
@@ -183,15 +183,15 @@ private:
 	/**
 	 * The list of all current possible interactives.
 	 */
-	TArray<TWeakInterfacePtr<IIPInteractive>> PossibleInteractives;
+	TArray<TWeakObjectPtr<UIPInteractiveComponent>> PossibleInteractives;
 
 	/**
 	 * The list of all indicated interactives (in range but not close enough).
 	 */
-	TArray<TWeakInterfacePtr<IIPInteractive>> IndicatedInteractives;
+	TArray<TWeakObjectPtr<UIPInteractiveComponent>> IndicatedInteractives;
 
 	/**
 	 * The current most relevant interactive to interact with.
 	 */
-	TWeakObjectPtr<AActor> MostRelevantActor;
+	TWeakObjectPtr<UIPInteractiveComponent> MostRelevantInteractive;
 };

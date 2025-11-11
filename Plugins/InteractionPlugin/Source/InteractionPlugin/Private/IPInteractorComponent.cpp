@@ -3,6 +3,7 @@
 #include "IPInteractorComponent.h"
 #include "IPInteractionWidget.h"
 #include "IPInteractive.h"
+#include "IPInteractiveComponent.h"
 #include "Components/WidgetComponent.h"
 #include "Blueprint/UserWidget.h"
 
@@ -13,13 +14,13 @@ UIPInteractorComponent::UIPInteractorComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 }
 
-void UIPInteractorComponent::OnComponentDestroyed(bool bDestroyingHierarchy)
+void UIPInteractorComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-	Super::OnComponentDestroyed(bDestroyingHierarchy);
+	Super::EndPlay(EndPlayReason);
 
-	if (MostRelevantActor.IsValid())
+	if (MostRelevantInteractive.IsValid())
 	{
-		HideWidgetClient(MostRelevantActor.Get());
+		HideWidgetClient(MostRelevantInteractive.Get());
 	}
 }
 
@@ -39,15 +40,13 @@ void UIPInteractorComponent::TickComponent(
 
 void UIPInteractorComponent::TryStartInteractionInput()
 {
-	IIPInteractive* Interactive = Cast<IIPInteractive>(MostRelevantActor);
-
-	if (!Interactive)
+	if (!MostRelevantInteractive.IsValid())
 	{
 		return;
 	}
 
 	// check that we can start interact! (on client and server)
-	const FIPInteractionStatus InteractionStatus = Interactive->GetInteractionStatus(GetOwner());
+	const FIPInteractionStatus InteractionStatus = MostRelevantInteractive->GetInteractionStatus(GetOwner());
 
 	if (!InteractionStatus.bCanStartInteraction)
 	{
@@ -62,19 +61,17 @@ void UIPInteractorComponent::TryStartInteractionInput()
 	}
 
 	// check on server if we really are in range to interact (is it really possible that it is not the case???)
-	if (!PossibleInteractives.Contains(Interactive))
+	if (!PossibleInteractives.Contains(MostRelevantInteractive))
 	{
 		return;
 	}
 
-	Interactive->StartInteractionInput(GetOwner());
+	MostRelevantInteractive->StartInteractionInput(GetOwner());
 }
 
 void UIPInteractorComponent::TryEndInteractionInput()
 {
-	IIPInteractive* Interactive = Cast<IIPInteractive>(MostRelevantActor);
-
-	if (!Interactive)
+	if (!MostRelevantInteractive.IsValid())
 	{
 		return;
 	}
@@ -87,15 +84,15 @@ void UIPInteractorComponent::TryEndInteractionInput()
 	}
 
 	// check on server if we really are in range to interact (is it really possible that it is not the case???)
-	if (!PossibleInteractives.Contains(Interactive))
+	if (!PossibleInteractives.Contains(MostRelevantInteractive))
 	{
 		return;
 	}
 
-	Interactive->EndInteractionInput(GetOwner());
+	MostRelevantInteractive->EndInteractionInput(GetOwner());
 }
 
-void UIPInteractorComponent::AddInteractive(IIPInteractive* Interactive)
+void UIPInteractorComponent::AddInteractive(UIPInteractiveComponent* Interactive)
 {
 	if (!Interactive)
 	{
@@ -111,16 +108,12 @@ void UIPInteractorComponent::AddInteractive(IIPInteractive* Interactive)
 	RecomputeInteractiveRelevancy();
 }
 
-void UIPInteractorComponent::RemoveInteractive(IIPInteractive* Interactive)
+void UIPInteractorComponent::RemoveInteractive(UIPInteractiveComponent* Interactive)
 {
 	const UWorld* World = GetWorld();
 
+	// If world tearing down nothing need to be done as everything will get destroyed
 	if (!IsValid(World) || World->bIsTearingDown)
-	{
-		return;
-	}
-	
-	if (!Interactive)
 	{
 		return;
 	}
@@ -128,19 +121,17 @@ void UIPInteractorComponent::RemoveInteractive(IIPInteractive* Interactive)
 	PossibleInteractives.Remove(Interactive);
 
 	// Interactive could be removed because it destroyed, so check that we can do widget stuff on it before
-	const AActor* InteractiveActor = Cast<AActor>(Interactive);
-	
-	if (IsValid(InteractiveActor))
+	if (IsValid(Interactive))
 	{
 		RecomputeInteractiveRelevancy();
 	}
-	else if (MostRelevantActor == InteractiveActor)
+	else if (MostRelevantInteractive == Interactive)
 	{
-		MostRelevantActor = nullptr;
+		MostRelevantInteractive = nullptr;
 	}
 }
 
-void UIPInteractorComponent::AddInteractiveIndication(IIPInteractive* Interactive)
+void UIPInteractorComponent::AddInteractiveIndication(UIPInteractiveComponent* Interactive)
 {
 	if (!Interactive)
 	{
@@ -148,10 +139,10 @@ void UIPInteractorComponent::AddInteractiveIndication(IIPInteractive* Interactiv
 	}
 
 	IndicatedInteractives.Add(Interactive);
-	ShowIndicationWidgetClient(Cast<AActor>(Interactive));
+	ShowIndicationWidgetClient(Interactive);
 }
 
-void UIPInteractorComponent::RemoveInteractiveIndication(IIPInteractive* Interactive)
+void UIPInteractorComponent::RemoveInteractiveIndication(UIPInteractiveComponent* Interactive)
 {
 	const UWorld* World = GetWorld();
 
@@ -168,27 +159,25 @@ void UIPInteractorComponent::RemoveInteractiveIndication(IIPInteractive* Interac
 	IndicatedInteractives.Remove(Interactive);
 
 	// Interactive could be removed because it destroyed, so check that we can do widget stuff on it before
-	AActor* InteractiveActor = Cast<AActor>(Interactive);
-	
-	if (IsValid(InteractiveActor))
+	if (IsValid(Interactive))
 	{
-		HideWidgetClient(InteractiveActor);
+		HideWidgetClient(Interactive);
 	}
 }
 
-void UIPInteractorComponent::OnInteractiveStateChanged(IIPInteractive* Interactive)
+void UIPInteractorComponent::OnInteractiveStateChanged(UIPInteractiveComponent* Interactive)
 {
 	if (!PossibleInteractives.Contains(Interactive) && IndicatedInteractives.Contains(Interactive))
 	{
-		ShowIndicationWidgetClient(Cast<AActor>(Interactive));
+		ShowIndicationWidgetClient(Interactive);
 	}
 	
 	RecomputeInteractiveRelevancy(true);
 }
 
-TWeakObjectPtr<AActor> UIPInteractorComponent::GetMostRelevantActor() const
+TWeakObjectPtr<UIPInteractiveComponent> UIPInteractorComponent::GetMostRelevantInteractive() const
 {
-	return MostRelevantActor;
+	return MostRelevantInteractive;
 }
 
 void UIPInteractorComponent::Server_TryStartInteractionInput_Implementation()
@@ -198,52 +187,51 @@ void UIPInteractorComponent::Server_TryStartInteractionInput_Implementation()
 
 void UIPInteractorComponent::RecomputeInteractiveRelevancy(bool bForceRefresh)
 {
-	AActor* PreviousMostRelevantInteractive = MostRelevantActor.IsValid()
-		? MostRelevantActor.Get()
+	UIPInteractiveComponent* PreviousMostRelevantInteractive = MostRelevantInteractive.IsValid()
+		? MostRelevantInteractive.Get()
 		: nullptr;
 
 	if (PossibleInteractives.IsEmpty())
 	{
-		MostRelevantActor = nullptr;
+		MostRelevantInteractive = nullptr;
 	}
 	else
 	{
 		PurgePossibleInteractives();
-		MostRelevantActor = FindNewMostRelevantActor();
+		MostRelevantInteractive = FindNewMostRelevantActor();
 	}
 
-	if (MostRelevantActor != PreviousMostRelevantInteractive || bForceRefresh)
+	if (MostRelevantInteractive != PreviousMostRelevantInteractive || bForceRefresh)
 	{
-		OnMostRelevantInteractiveChanged(PreviousMostRelevantInteractive, MostRelevantActor.Get());
+		OnMostRelevantInteractiveChanged(PreviousMostRelevantInteractive, MostRelevantInteractive.Get());
 	}
 }
 
 void UIPInteractorComponent::PurgePossibleInteractives()
 {
-	PossibleInteractives.RemoveAll([](const TWeakInterfacePtr<IIPInteractive>& Ptr)
+	PossibleInteractives.RemoveAll([](const TWeakObjectPtr<UIPInteractiveComponent>& Ptr)
 	{
 		return !Ptr.IsValid();
 	});
 }
 
-AActor* UIPInteractorComponent::FindNewMostRelevantActor() const
+UIPInteractiveComponent* UIPInteractorComponent::FindNewMostRelevantActor() const
 {
 	FVector EyesLocation;
 	FRotator EyesRotation;
 	GetOwner()->GetActorEyesViewPoint(EyesLocation, EyesRotation);
 	const FVector LookDirection = EyesRotation.Vector().GetSafeNormal();
 		
-	AActor* NewMostRelevantActor = nullptr;
+	UIPInteractiveComponent* NewMostRelevantInteractive = nullptr;
 	FIPInteractionScore NewMostRelevantInteractiveScore
 	{
 		.InteractionScore = 0.0f,
 	};
 
-	for (auto&& Interactive : PossibleInteractives)
+	for (const TWeakObjectPtr<UIPInteractiveComponent>& Interactive : PossibleInteractives)
 	{
 		const FIPInteractionScore Score = ComputeInteractionScore(*Interactive, EyesLocation, LookDirection);
 
-		// TODO Compute real angle and expose value?
 		if (Score.AngleFromTarget >= MaxInteractionAngleDegrees || Score.DistanceFromTarget >= MaxInteractionDistance)
 		{
 			continue;
@@ -251,50 +239,47 @@ AActor* UIPInteractorComponent::FindNewMostRelevantActor() const
 
 		if (Score.InteractionScore > NewMostRelevantInteractiveScore.InteractionScore)
 		{
-			NewMostRelevantActor = Cast<AActor>(Interactive.Get());
+			NewMostRelevantInteractive = Interactive.Get();
 			NewMostRelevantInteractiveScore = Score;
 		}
 	}
 
-	return NewMostRelevantActor;
+	return NewMostRelevantInteractive;
 }
 
 void UIPInteractorComponent::OnMostRelevantInteractiveChanged(
-	AActor* PreviousMostRelevantActor,
-	AActor* NewMostRelevantActor
+	UIPInteractiveComponent* PreviousMostRelevantInteractive,
+	UIPInteractiveComponent* NewMostRelevantInteractive
 )
 {
 	// Show hide interaction widgets
-	if (PreviousMostRelevantActor)
+	if (PreviousMostRelevantInteractive)
 	{
-		if (IndicatedInteractives.Contains(Cast<IIPInteractive>(PreviousMostRelevantActor)))
+		if (IndicatedInteractives.Contains(PreviousMostRelevantInteractive))
 		{
-			ShowIndicationWidgetClient(PreviousMostRelevantActor);
+			ShowIndicationWidgetClient(PreviousMostRelevantInteractive);
 		}
 		else
 		{
-			HideWidgetClient(PreviousMostRelevantActor);
+			HideWidgetClient(PreviousMostRelevantInteractive);
 		}
 	}
 
-	if (NewMostRelevantActor)
+	if (NewMostRelevantInteractive)
 	{
-		if (const IIPInteractive* Interactive = Cast<IIPInteractive>(NewMostRelevantActor))
+		if (NewMostRelevantInteractive->IsAutoInteractive() && GetOwnerRole() == ROLE_Authority)
 		{
-			if (Interactive->IsAutoInteractive() && GetOwnerRole() == ROLE_Authority)
-			{
-				TryStartInteractionInput();	
-			}
-			else
-			{
-				ShowInteractionWidgetClient(NewMostRelevantActor);
-			}
+			TryStartInteractionInput();	
+		}
+		else
+		{
+			ShowInteractionWidgetClient(NewMostRelevantInteractive);
 		}
 	}
 }
 
 FIPInteractionScore UIPInteractorComponent::ComputeInteractionScore(
-	const IIPInteractive& Target,
+	const UIPInteractiveComponent& Target,
 	const FVector& EyesLocation,
 	const FVector& LookDirection
 )
@@ -323,16 +308,14 @@ void UIPInteractorComponent::Server_TryEndInteractionInput_Implementation()
 	TryEndInteractionInput();
 }
 
-void UIPInteractorComponent::ShowInteractionWidgetClient(AActor* InteractiveActor)
+void UIPInteractorComponent::ShowInteractionWidgetClient(UIPInteractiveComponent* Interactive)
 {
 	if (!IsLocal())
 	{
 		return;
 	}
 
-	const auto* Interactive = Cast<IIPInteractive>(InteractiveActor);
-
-	if (!InteractiveActor)
+	if (!Interactive)
 	{
 		return;
 	}
@@ -371,16 +354,14 @@ void UIPInteractorComponent::ShowInteractionWidgetClient(AActor* InteractiveActo
 	WidgetComponent->SetWidget(WidgetInstance);
 }
 
-void UIPInteractorComponent::ShowIndicationWidgetClient(AActor* InteractiveActor)
+void UIPInteractorComponent::ShowIndicationWidgetClient(UIPInteractiveComponent* Interactive)
 {
 	if (!IsLocal())
 	{
 		return;
 	}
 
-	const auto* Interactive = Cast<IIPInteractive>(InteractiveActor);
-
-	if (!InteractiveActor)
+	if (!Interactive)
 	{
 		return;
 	}
@@ -416,19 +397,16 @@ void UIPInteractorComponent::ShowIndicationWidgetClient(AActor* InteractiveActor
 	WidgetComponent->SetWidget(WidgetInstance);
 }
 
-void UIPInteractorComponent::HideWidgetClient(AActor* InteractiveActor)
+void UIPInteractorComponent::HideWidgetClient(UIPInteractiveComponent* Interactive)
 {
 	if (!IsLocal())
 	{
 		return;
 	}
-
-	if (const IIPInteractive* Interactive = Cast<IIPInteractive>(InteractiveActor))
+	
+	if (UWidgetComponent* WidgetComponent = Interactive->GetWidgetComponent())
 	{
-		if (UWidgetComponent* WidgetComponent = Interactive->GetWidgetComponent())
-		{
-			WidgetComponent->SetWidget(nullptr);
-		}
+		WidgetComponent->SetWidget(nullptr);
 	}
 }
 
