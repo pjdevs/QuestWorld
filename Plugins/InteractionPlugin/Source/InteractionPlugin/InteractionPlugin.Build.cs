@@ -1,5 +1,6 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
+using System.IO;
 using UnrealBuildTool;
 
 public class InteractionPlugin : ModuleRules
@@ -8,20 +9,6 @@ public class InteractionPlugin : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 		
-		PublicIncludePaths.AddRange(
-			[
-				// ... add public include paths required here ...
-			]
-		);
-				
-		
-		PrivateIncludePaths.AddRange(
-			[
-				// ... add other private include paths required here ...
-			]
-		);
-			
-		
 		PublicDependencyModuleNames.AddRange(
 			[
 				"Core",
@@ -29,24 +16,32 @@ public class InteractionPlugin : ModuleRules
 				"Slate",
 				"SlateCore",
 				"EnhancedInput"
-				// ... add other public dependencies that you statically link with here ...
 			]
 		);
-			
 		
 		PrivateDependencyModuleNames.AddRange(
 			[
 				"CoreUObject",
 				"Engine"
-				// ... add private dependencies that you statically link with here ...	
 			]
 		);
-		
-		
-		DynamicallyLoadedModuleNames.AddRange(
+
+		// Look for SPUD and include it if found
+		string PluginsPath = Path.GetFullPath(Path.Combine(ModuleDirectory, "../../.."));
+		bool bShouldUseSpud = Directory.Exists(Path.Combine(PluginsPath, "SPUD"));
+
+		if (bShouldUseSpud)
+		{
+			PublicDefinitions.Add("WITH_SPUD=1");
+			PublicDependencyModuleNames.AddRange(
 			[
-				// ... add any modules that your module loads dynamically here ...
-			]
-		);
+					"SPUD"
+				]
+			);
+		}
+		else
+		{
+			PublicDefinitions.Add("WITH_SPUD=0");
+		}
 	}
 }

@@ -1,19 +1,14 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "QuestWorldCharacter.h"
-#include "Ability/GameplayAbility_Interact.h"
-#include "AbilitySystemComponent.h"
 #include "Engine/LocalPlayer.h"
-#include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/Controller.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "IPInteractorComponent.h"
-#include "Interactive/AbilityInteractiveActor.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -149,22 +144,6 @@ void AQuestWorldCharacter::Look(const FInputActionValue& Value)
 
 void AQuestWorldCharacter::InteractStarted(const FInputActionValue& Value)
 {
-	// if (const AAbilityInteractiveActor* Interactive = Cast<AAbilityInteractiveActor>(Interactor->GetMostRelevantActor()))
-	// {
-	// 	UAbilitySystemComponent* MyAbilitySystemComponent = GetAbilitySystemComponent();
-	//
-	// 	if (!MyAbilitySystemComponent)
-	// 	{
-	// 		return;
-	// 	}
-	//
-	// 	MyAbilitySystemComponent->TryActivateAbilityByClass(Interactive->GetRequiredAbilityClass());
-	// }
-	// else
-	// {
-	// 	Interactor->TryInteract();
-	// }
-
 	Interactor->TryStartInteractionInput();
 }
 

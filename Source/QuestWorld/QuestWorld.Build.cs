@@ -21,7 +21,6 @@ public class QuestWorld : ModuleRules
 			"InventoryPlugin",
 			"QuestIntegrationPlugin",
 			"GameplayAbilitySystemPlugin",
-			"InteractionAbilityPlugin",
 			"GameplayAbilities"
 		});
 	}

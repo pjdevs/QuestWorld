@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "IPInteractive.h"
-#include "IPInteractiveState.h"
 #include "Components/ActorComponent.h"
 #include "IPInteractiveComponent.generated.h"
 

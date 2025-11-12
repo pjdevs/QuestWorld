@@ -45,3 +45,15 @@ void UIPStatefulComponent::OnRep_State(const EIPState& OldState)
 {
 	IIPStateHandler::Execute_OnStateChangedClient(GetOwner(), OldState, State);
 }
+
+#if WITH_SPUD
+bool UIPStatefulComponent::ShouldSkip_Implementation() const
+{
+	return !bIsPersistent;
+}
+
+void UIPStatefulComponent::SpudPostRestore_Implementation(const USpudState* SpudState)
+{
+	OnRep_State(State);
+}
+#endif
