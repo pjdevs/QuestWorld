@@ -5,49 +5,12 @@
 #include "IPInteractionHandler.h"
 #include "IPInteractorComponent.h"
 #include "Components/WidgetComponent.h"
-#include "Net/UnrealNetwork.h"
 
-
-#define INTERACTION_HANDLER(FunctionName, ...) \
-if (GetOwner() && GetOwner()->Implements<UIPInteractionHandler>()) \
-{ \
-if (IIPInteractionHandler* Handler = Cast<IIPInteractionHandler>(GetOwner())) \
-{ \
-Handler->FunctionName(__VA_ARGS__); \
-} \
-else \
-{ \
-IIPInteractionHandler::Execute_##FunctionName(GetOwner(), __VA_ARGS__); \
-} \
-}
-
-#define INTERACTION_HANDLER_RETURN(FunctionName, DefaultValue, ...) \
-[&] \
-{ \
-	if (GetOwner() && GetOwner()->Implements<UIPInteractionHandler>()) \
-	{ \
-		if (IIPInteractionHandler* Handler = Cast<IIPInteractionHandler>(GetOwner())) \
-		{ \
-			return Handler->##FunctionName(__VA_ARGS__); \
-		} \
-		else \
-		{ \
-			return IIPInteractionHandler::Execute_##FunctionName(GetOwner(), __VA_ARGS__); \
-		} \
-	} \
-	return DefaultValue; \
-}()
 
 UIPInteractiveComponent::UIPInteractiveComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
-	SetIsReplicatedByDefault(true);
 
-	InteractiveState = FIPInteractiveState
-	{
-		.State = EIPInteractiveState::Ready,
-		.InteractionCount = 0
-	};
 	InteractiveName = FText::FromString("Interactive Actor");
 	InteractionDescription = FText::FromString("Interact");
 	bIsAutoInteractive = false;
@@ -110,15 +73,7 @@ void UIPInteractiveComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	Super::EndPlay(EndPlayReason);
 
-	PossibleInteractors.RemoveAll([](const TWeakObjectPtr<UIPInteractorComponent>& Interactor)
-	{
-		return !Interactor.IsValid();
-	});
-
-	IndicatedInteractors.RemoveAll([](const TWeakObjectPtr<UIPInteractorComponent>& Interactor)
-	{
-		return !Interactor.IsValid();
-	});
+	PurgeInvalidInteractors();
 
 	for (const TWeakObjectPtr<UIPInteractorComponent>& Interactor : PossibleInteractors)
 	{
@@ -133,13 +88,6 @@ void UIPInteractiveComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	}
 }
 
-void UIPInteractiveComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
-{
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-	DOREPLIFETIME(UIPInteractiveComponent, InteractiveState);
-}
-
 void UIPInteractiveComponent::StartInteractionInput(AActor* InteractionInstigator)
 {
 	if (GetOwnerRole() != ROLE_Authority)
@@ -147,7 +95,7 @@ void UIPInteractiveComponent::StartInteractionInput(AActor* InteractionInstigato
 		return;
 	}
 
-	const FIPInteractionStatus InteractionStatus = GetInteractionStatus(InteractionInstigator);
+	const FIPInteractionStatus InteractionStatus = GetInteractionStatusForActor(InteractionInstigator);
 
 	if (!InteractionStatus.bCanStartInteraction)
 	{
@@ -155,7 +103,7 @@ void UIPInteractiveComponent::StartInteractionInput(AActor* InteractionInstigato
 		return;
 	}
 
-	INTERACTION_HANDLER(OnStartInteractionInput, InteractionInstigator)
+	IIPInteractionHandler::Execute_OnStartInteractionInput(GetOwner(), InteractionInstigator);
 }
 
 void UIPInteractiveComponent::EndInteractionInput(AActor* InteractionInstigator)
@@ -165,32 +113,20 @@ void UIPInteractiveComponent::EndInteractionInput(AActor* InteractionInstigator)
 		return;
 	}
 	
-	if (InteractionInstigator != CurrentInteractor)
+	if (InteractionInstigator != CurrentInteractorActor)
 	{
 		return;
 	}
 
-	INTERACTION_HANDLER(OnEndInteractionInput, InteractionInstigator)
+	IIPInteractionHandler::Execute_OnEndInteractionInput(GetOwner(), InteractionInstigator);
 }
 
-FIPInteractionStatus UIPInteractiveComponent::GetInteractionStatus(AActor* InteractionInstigator) const
+FIPInteractionStatus UIPInteractiveComponent::GetInteractionStatusForActor(AActor* InteractionInstigator) const
 {
-	FIPInteractionStatus InteractionStatus
-	{
-		.bCanStartInteraction = InteractiveState.State == EIPInteractiveState::Ready,
-	};
-
-	const FIPInteractionStatus& AdditionalInteractionStatus = INTERACTION_HANDLER_RETURN(
-		GetInteractionStatusForActor,
-		FIPInteractionStatus { .bCanStartInteraction = true },
-		InteractionInstigator,
-		InteractiveState
+	return IIPInteractionHandler::Execute_GetInteractionStatusForActor(
+		GetOwner(),
+		InteractionInstigator
 	);
-
-	InteractionStatus.bCanStartInteraction &= AdditionalInteractionStatus.bCanStartInteraction;
-	InteractionStatus.ReasonText = AdditionalInteractionStatus.ReasonText;
-
-	return InteractionStatus;
 }
 
 FVector UIPInteractiveComponent::GetInteractiveLocation() const
@@ -244,53 +180,28 @@ void UIPInteractiveComponent::StartInteractionPhase(AActor* InteractionInstigato
 		return;
 	}
 	
-	CurrentInteractor = InteractionInstigator;
-	InteractiveState = FIPInteractiveState
-	{
-		.State = EIPInteractiveState::Busy,
-		.InteractionCount = InteractiveState.InteractionCount,
-	};
-
-	OnRep_InteractiveState();
+	CurrentInteractorActor = InteractionInstigator;
 }
 
-void UIPInteractiveComponent::EndInteractionPhase(EIPInteractiveState NextState)
+void UIPInteractiveComponent::EndInteractionPhase()
 {
 	if (GetOwnerRole() != ROLE_Authority)
 	{
 		return;
 	}
-	
-	const uint8 NextInteractionCount = InteractiveState.InteractionCount + 1;
-	InteractiveState = FIPInteractiveState
-	{
-		.State = NextState,
-		.InteractionCount = NextInteractionCount,
-	};
 
-	if (NextState == EIPInteractiveState::Destroyed)
-	{
-		GetOwner()->Destroy();
-	}
-	else
-	{
-		OnRep_InteractiveState();
-	}
-
-	CurrentInteractor = nullptr;
+	CurrentInteractorActor = nullptr;
 }
 
-void UIPInteractiveComponent::NotifyStateChanged()
+void UIPInteractiveComponent::NotifyStatusChanged()
 {
-	IndicatedInteractors.RemoveAll([](const TWeakObjectPtr<UIPInteractorComponent>& Interactor)
-{
-	return !Interactor.IsValid();
-});
+	PurgeInvalidInteractors();
 
-	// Only notify indicated interactors because possible interactors will be updated on interactor's Tick
-	for (const TWeakObjectPtr<UIPInteractorComponent>& Interactor : IndicatedInteractors)
+	const TSet<TWeakObjectPtr<UIPInteractorComponent>> AllInteractors = PossibleInteractors.Union(IndicatedInteractors);
+	
+	for (const TWeakObjectPtr<UIPInteractorComponent>& Interactor : AllInteractors)
 	{
-		Interactor->OnInteractiveStateChanged(this);
+		Interactor->OnInteractiveStatusChanged(this);
 	}
 }
 
@@ -346,7 +257,7 @@ void UIPInteractiveComponent::HandleInteractionTriggerEndOverlap(
 	// End interaction if was interacting with this actor and he left the zone
 	if (GetOwnerRole() == ROLE_Authority)
 	{
-		if (CurrentInteractor == OtherActor)
+		if (CurrentInteractorActor == OtherActor)
 		{
 			EndInteractionInput(OtherActor);	
 		}
@@ -403,8 +314,21 @@ void UIPInteractiveComponent::HandleIndicationTriggerEndOverlap(
 	Interactor->RemoveInteractiveIndication(this);
 }
 
-void UIPInteractiveComponent::OnRep_InteractiveState()
+void UIPInteractiveComponent::PurgeInvalidInteractors()
 {
-	NotifyStateChanged();
-	INTERACTION_HANDLER(DoInteractionFeedback, InteractiveState);
+	for (auto It = PossibleInteractors.CreateIterator(); It; ++It)
+	{
+		if (!It->IsValid())
+		{
+			It.RemoveCurrent();
+		}
+	}
+
+	for (auto It = IndicatedInteractors.CreateIterator(); It; ++It)
+	{
+		if (!It->IsValid())
+		{
+			It.RemoveCurrent();
+		}
+	}
 }

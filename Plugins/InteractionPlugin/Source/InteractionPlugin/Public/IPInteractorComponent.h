@@ -37,6 +37,7 @@ public:
 	// Sets default values for this component's properties
 	UIPInteractorComponent();
 
+	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void TickComponent(
 		float DeltaTime,
@@ -82,7 +83,7 @@ public:
 	/**
 	 * Called by an interactive when its state has changed and this interactor was in range.
 	 */
-	void OnInteractiveStateChanged(UIPInteractiveComponent* Interactive);
+	void OnInteractiveStatusChanged(UIPInteractiveComponent* Interactive);
 
 	/**
 	 * Get the current most relevant actor that interactor would interact with in TryInteract.
@@ -134,7 +135,7 @@ private:
 	/**
 	 * Remove all possibly destroyed object that was in the possibly interactive array.
 	 */
-	void PurgePossibleInteractives();
+	void PurgeInvalidInteractives();
 	
 	/**
 	 * Recompute the relevancy of each interactive by checking look angle, distance etc.
@@ -183,12 +184,12 @@ private:
 	/**
 	 * The list of all current possible interactives.
 	 */
-	TArray<TWeakObjectPtr<UIPInteractiveComponent>> PossibleInteractives;
+	TSet<TWeakObjectPtr<UIPInteractiveComponent>> PossibleInteractives;
 
 	/**
 	 * The list of all indicated interactives (in range but not close enough).
 	 */
-	TArray<TWeakObjectPtr<UIPInteractiveComponent>> IndicatedInteractives;
+	TSet<TWeakObjectPtr<UIPInteractiveComponent>> IndicatedInteractives;
 
 	/**
 	 * The current most relevant interactive to interact with.

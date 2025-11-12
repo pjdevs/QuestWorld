@@ -14,6 +14,17 @@ UIPInteractorComponent::UIPInteractorComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 }
 
+void UIPInteractorComponent::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (!IsLocal())
+	{
+		SetComponentTickEnabled(false);
+		SetActive(false);
+	}
+}
+
 void UIPInteractorComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	Super::EndPlay(EndPlayReason);
@@ -46,7 +57,7 @@ void UIPInteractorComponent::TryStartInteractionInput()
 	}
 
 	// check that we can start interact! (on client and server)
-	const FIPInteractionStatus InteractionStatus = MostRelevantInteractive->GetInteractionStatus(GetOwner());
+	const FIPInteractionStatus InteractionStatus = MostRelevantInteractive->GetInteractionStatusForActor(GetOwner());
 
 	if (!InteractionStatus.bCanStartInteraction)
 	{
@@ -165,7 +176,7 @@ void UIPInteractorComponent::RemoveInteractiveIndication(UIPInteractiveComponent
 	}
 }
 
-void UIPInteractorComponent::OnInteractiveStateChanged(UIPInteractiveComponent* Interactive)
+void UIPInteractorComponent::OnInteractiveStatusChanged(UIPInteractiveComponent* Interactive)
 {
 	if (!PossibleInteractives.Contains(Interactive) && IndicatedInteractives.Contains(Interactive))
 	{
@@ -197,7 +208,7 @@ void UIPInteractorComponent::RecomputeInteractiveRelevancy(bool bForceRefresh)
 	}
 	else
 	{
-		PurgePossibleInteractives();
+		PurgeInvalidInteractives();
 		MostRelevantInteractive = FindNewMostRelevantActor();
 	}
 
@@ -207,12 +218,23 @@ void UIPInteractorComponent::RecomputeInteractiveRelevancy(bool bForceRefresh)
 	}
 }
 
-void UIPInteractorComponent::PurgePossibleInteractives()
+void UIPInteractorComponent::PurgeInvalidInteractives()
 {
-	PossibleInteractives.RemoveAll([](const TWeakObjectPtr<UIPInteractiveComponent>& Ptr)
+	for (auto It = PossibleInteractives.CreateIterator(); It; ++It)
 	{
-		return !Ptr.IsValid();
-	});
+		if (!It->IsValid())
+		{
+			It.RemoveCurrent();
+		}
+	}
+
+	for (auto It = IndicatedInteractives.CreateIterator(); It; ++It)
+	{
+		if (!It->IsValid())
+		{
+			It.RemoveCurrent();
+		}
+	}
 }
 
 UIPInteractiveComponent* UIPInteractorComponent::FindNewMostRelevantActor() const
@@ -348,7 +370,7 @@ void UIPInteractorComponent::ShowInteractionWidgetClient(UIPInteractiveComponent
 		InteractionAction,
 		Interactive->GetInteractiveName(),
 		Interactive->GetInteractionDescription(),
-		Interactive->GetInteractionStatus(GetOwner())
+		Interactive->GetInteractionStatusForActor(GetOwner())
 	);
 
 	WidgetComponent->SetWidget(WidgetInstance);
@@ -374,7 +396,7 @@ void UIPInteractorComponent::ShowIndicationWidgetClient(UIPInteractiveComponent*
 		return;
 	}
 
-	const FIPInteractionStatus InteractionStatus = Interactive->GetInteractionStatus(GetOwner());
+	const FIPInteractionStatus InteractionStatus = Interactive->GetInteractionStatusForActor(GetOwner());
 	const TSubclassOf<UUserWidget> WidgetClass = InteractionStatus.bCanStartInteraction
 		? Interactive->GetIndicationWidgetClass()
 		: Interactive->GetIndicationBlockedWidgetClass();

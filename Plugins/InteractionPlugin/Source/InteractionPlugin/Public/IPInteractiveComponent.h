@@ -20,7 +20,6 @@ public:
 	
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	
 public: // UIPInteractiveComponent public interface
 	/**
@@ -36,7 +35,7 @@ public: // UIPInteractiveComponent public interface
 	/**
 	 * Check whether the object can be interacted or not by giving information on interaction status. 
 	 */
-	FIPInteractionStatus GetInteractionStatus(AActor* InteractionInstigator) const;
+	FIPInteractionStatus GetInteractionStatusForActor(AActor* InteractionInstigator) const;
 
 	/**
 	 * Get interactive's location. 
@@ -83,7 +82,7 @@ public: // UIPInteractiveComponent public interface
 	 * interacting/unavailable until EndInteractionPhase is called.
 	 * Will set InteractiveState.State to Busy.
 	 */
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly)
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = Interaction)
 	void StartInteractionPhase(AActor* InteractionInstigator);
 
 	/**
@@ -95,8 +94,8 @@ public: // UIPInteractiveComponent public interface
 	 * - Interacted: will not be interactive again.
 	 * - Destroy: will replicate the state to clients and then destroy.
 	 */
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly)
-	void EndInteractionPhase(EIPInteractiveState NextState);
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = Interaction)
+	void EndInteractionPhase();
 
 	/**
 	 * Function that can be called to notify interactors that state may have changed
@@ -104,7 +103,7 @@ public: // UIPInteractiveComponent public interface
 	 * Should be called on both client and server in OnRep_ (to handle new conditions and widgets).
 	 */
 	UFUNCTION(BlueprintCallable, Category = Interaction)
-	void NotifyStateChanged();
+	void NotifyStatusChanged();
 	
 protected:
 	UFUNCTION()
@@ -143,9 +142,8 @@ protected:
 		int32 OtherBodyIndex
 	);
 
-	UFUNCTION()
-	void OnRep_InteractiveState();
-
+	void PurgeInvalidInteractors();
+	
 protected:
 	/**
 	 * Class of the interaction widget.
@@ -201,27 +199,19 @@ protected:
 	 */
 	UPROPERTY()
 	TObjectPtr<UWidgetComponent> WidgetComponent;
-	
-	/**
-	 * Interaction state of the actor.
-	 */
-	UPROPERTY(VisibleInstanceOnly, Category = Interaction, ReplicatedUsing=OnRep_InteractiveState)
-	FIPInteractiveState InteractiveState;
-
-	/**
-	 * Current interactor that began interaction input.
-	 */
-	TWeakObjectPtr<AActor> CurrentInteractor; 
 
 	/**
 	 * The array of interactors that have been indicated.
 	 */
-	UPROPERTY(VisibleInstanceOnly, Category = Interaction)
-	TArray<TWeakObjectPtr<UIPInteractorComponent>> IndicatedInteractors;
+	TSet<TWeakObjectPtr<UIPInteractorComponent>> IndicatedInteractors;
 
 	/**
 	 * The array of possible interactors.
 	 */
-	UPROPERTY(VisibleInstanceOnly, Category = Interaction)
-	TArray<TWeakObjectPtr<UIPInteractorComponent>> PossibleInteractors;
+	TSet<TWeakObjectPtr<UIPInteractorComponent>> PossibleInteractors;
+
+	/**
+	 * Current interactor that began interaction input.
+	 */
+	TWeakObjectPtr<AActor> CurrentInteractorActor; 
 };
