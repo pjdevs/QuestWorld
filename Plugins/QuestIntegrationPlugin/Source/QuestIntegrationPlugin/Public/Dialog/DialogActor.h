@@ -19,7 +19,10 @@ public:
 	
 public: // Interactive actor
 	virtual void OnStartInteractionInput_Implementation(AActor* InteractionInstigator) override;
-	virtual FIPInteractionStatus GetInteractionStatus(AActor* InteractionInstigator) const override;
+	virtual FIPInteractionStatus GetExtraInteractionStatusForActor_Implementation(
+		AActor* InteractionInstigator,
+		EIPState CurrentState
+	) const override;
 
 public: // IDialogEvents interface
 	virtual void OnDialogStarted(AController* DialogController) override;

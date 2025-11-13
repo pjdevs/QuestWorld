@@ -2,11 +2,7 @@
 
 
 #include "IPStatefulActor.h"
-
 #include "IPStatefulComponent.h"
-#include "IPStateSaveData.h"
-#include "Net/UnrealNetwork.h"
-
 
 AIPStatefulActor::AIPStatefulActor()
 {
@@ -14,5 +10,5 @@ AIPStatefulActor::AIPStatefulActor()
 	PrimaryActorTick.bStartWithTickEnabled = false;
 	bReplicates = true;
 
-	StatefulComponent = CreateDefaultSubobject<UIPStatefulComponent>("StatefulComponent");
+	StatefulComponent = CreateDefaultSubobject<UIPStatefulComponent>("Stateful Component");
 }

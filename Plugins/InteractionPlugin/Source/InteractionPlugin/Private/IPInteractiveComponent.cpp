@@ -20,29 +20,47 @@ void UIPInteractiveComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (
-		TArray<UActorComponent*> InteractionTriggers = GetOwner()->GetComponentsByTag(
-			UPrimitiveComponent::StaticClass(),
-			FName("InteractionTrigger")
-		);
-		InteractionTriggers.Num() > 0
-	)
+	if (!InteractionTrigger)
 	{
-		InteractionTrigger = Cast<UPrimitiveComponent>(InteractionTriggers[0]); 
+		if (
+			TArray<UActorComponent*> InteractionTriggers = GetOwner()->GetComponentsByTag(
+				UPrimitiveComponent::StaticClass(),
+				FName("InteractionTrigger")
+			);
+			InteractionTriggers.Num() > 0
+		)
+		{
+			InteractionTrigger = Cast<UPrimitiveComponent>(InteractionTriggers[0]); 
+		}
 	}
 
-	if (
-		TArray<UActorComponent*> IndicationTriggers = GetOwner()->GetComponentsByTag(
-			UPrimitiveComponent::StaticClass(),
-			FName("IndicationTrigger")
-		);
-		IndicationTriggers.Num() > 0
-	)
+	if (!IndicationTrigger)
 	{
-		IndicationTrigger = Cast<UPrimitiveComponent>(IndicationTriggers[0]); 
+		if (
+			TArray<UActorComponent*> IndicationTriggers = GetOwner()->GetComponentsByTag(
+				UPrimitiveComponent::StaticClass(),
+				FName("IndicationTrigger")
+			);
+			IndicationTriggers.Num() > 0
+		)
+		{
+			IndicationTrigger = Cast<UPrimitiveComponent>(IndicationTriggers[0]); 
+		}
 	}
 
-	WidgetComponent = GetOwner()->GetComponentByClass<UWidgetComponent>();
+	if (!InteractionWidget)
+	{
+		if (
+			TArray<UActorComponent*> InteractionWidgets = GetOwner()->GetComponentsByTag(
+				UWidgetComponent::StaticClass(),
+				FName("InteractionWidget")
+			);
+			InteractionWidgets.Num() > 0
+		)
+		{
+			InteractionWidget = Cast<UWidgetComponent>(InteractionWidgets[0]); 
+		}
+	}
 	
 	if (InteractionTrigger)
 	{
@@ -88,6 +106,21 @@ void UIPInteractiveComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	}
 }
 
+void UIPInteractiveComponent::SetInteractionTrigger(UPrimitiveComponent* InInteractionTrigger)
+{
+	InteractionTrigger = InInteractionTrigger;
+}
+
+void UIPInteractiveComponent::SetIndicationTrigger(UPrimitiveComponent* InIndicationTrigger)
+{
+	IndicationTrigger = InIndicationTrigger;
+}
+
+void UIPInteractiveComponent::SetInteractionWidget(UWidgetComponent* InInteractionWidget)
+{
+	InteractionWidget = InInteractionWidget;
+}
+
 void UIPInteractiveComponent::StartInteractionInput(AActor* InteractionInstigator)
 {
 	if (GetOwnerRole() != ROLE_Authority)
@@ -131,8 +164,6 @@ FIPInteractionStatus UIPInteractiveComponent::GetInteractionStatusForActor(AActo
 
 FVector UIPInteractiveComponent::GetInteractiveLocation() const
 {
-	const UWidgetComponent* InteractionWidget = GetWidgetComponent();
-
 	return InteractionWidget != nullptr
 		? InteractionWidget->GetComponentLocation()
 		: GetOwner()->GetActorLocation();
@@ -140,7 +171,7 @@ FVector UIPInteractiveComponent::GetInteractiveLocation() const
 
 UWidgetComponent* UIPInteractiveComponent::GetWidgetComponent() const
 {
-	return WidgetComponent;
+	return InteractionWidget;
 }
 
 TSubclassOf<UIPInteractionWidget> UIPInteractiveComponent::GetInteractionWidgetClass() const

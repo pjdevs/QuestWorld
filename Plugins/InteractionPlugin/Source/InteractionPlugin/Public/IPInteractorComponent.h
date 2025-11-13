@@ -10,7 +10,6 @@
 class UIPInteractiveComponent;
 class UInputAction;
 class UIPInteractionWidget;
-class IIPInteractive;
 
 // TODO Only make calculations to show widget etc on client and find way to validate distance on server.
 // TODO Make a normal to the interactive and if angle with the normal is too high disable interaction, etc.

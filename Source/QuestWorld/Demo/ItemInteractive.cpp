@@ -2,15 +2,14 @@
 
 
 #include "ItemInteractive.h"
-
 #include "InventoryComponent.h"
 #include "InventoryItemDataAsset.h"
 #include "InventoryStatics.h"
 
 
-FIPInteractionStatus AItemInteractive::GetInteractionStatusForActor_Implementation(
+FIPInteractionStatus AItemInteractive::GetExtraInteractionStatusForActor_Implementation(
 	AActor* InteractionInstigator,
-	const FIPInteractiveState& CurrentState
+	EIPState CurrentState
 ) const
 {
 	FText RequiredItemName;

@@ -29,7 +29,8 @@ public class QuestIntegrationPlugin : ModuleRules
 				"DialogPlugin",
 				"InventoryPlugin",
 				"GameplayAbilities",
-				"GameplayAbilitySystemPlugin"
+				"GameplayAbilitySystemPlugin",
+				"SPUD"
 			}
 		);
 			

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "IPStateHandler.h"
 #include "ISpudObject.h"
 #include "GameFramework/Actor.h"
 #include "IPStatefulActor.generated.h"
@@ -10,10 +11,7 @@
 class UIPStatefulComponent;
 
 UCLASS()
-class INTERACTIONPLUGIN_API AIPStatefulActor : public AActor
-// #if WITH_SPUD
-	, public ISpudObject
-// #endif
+class INTERACTIONPLUGIN_API AIPStatefulActor : public AActor, public IIPStateHandler, public ISpudObject
 {
 	GENERATED_BODY()
 

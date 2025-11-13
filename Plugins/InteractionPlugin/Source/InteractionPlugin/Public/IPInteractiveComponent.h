@@ -3,8 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "IPInteractive.h"
+#include "IPInteractiveActor.h"
 #include "Components/ActorComponent.h"
+#include "Components/BoxComponent.h"
 #include "IPInteractiveComponent.generated.h"
 
 class UIPInteractorComponent;
@@ -21,6 +22,25 @@ public:
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	
 public: // UIPInteractiveComponent public interface
+
+	/**
+	 * Set interaction trigger to use.
+	 * @param InInteractionTrigger 
+	 */
+	void SetInteractionTrigger(UPrimitiveComponent* InInteractionTrigger);
+
+	/**
+	 * Set indication trigger to use.
+	 * @param InIndicationTrigger 
+	 */
+	void SetIndicationTrigger(UPrimitiveComponent* InIndicationTrigger);
+
+	/**
+	 * Set widget to use for displaying interaction prompt.
+	 * @param InInteractionWidget 
+	 */
+	void SetInteractionWidget(UWidgetComponent* InInteractionWidget);
+	
 	/**
 	 * Begin interaction input with the interactive object.
 	 */
@@ -103,7 +123,7 @@ public: // UIPInteractiveComponent public interface
 	 */
 	UFUNCTION(BlueprintCallable, Category = Interaction)
 	void NotifyStatusChanged();
-	
+
 protected:
 	UFUNCTION()
 	void HandleInteractionTriggerBeginOverlap(
@@ -197,7 +217,7 @@ protected:
 	 * The widget component to display interaction widgets inside.
 	 */
 	UPROPERTY()
-	TObjectPtr<UWidgetComponent> WidgetComponent;
+	TObjectPtr<UWidgetComponent> InteractionWidget;
 
 	/**
 	 * The array of interactors that have been indicated.

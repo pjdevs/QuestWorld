@@ -39,7 +39,6 @@ private:
 private:
 	TQueue<FGameNotification> QueuedMessages;
 
-	UPROPERTY()
 	TArray<TWeakObjectPtr<APlayerController>> Subscribers;
 
 	UPROPERTY()

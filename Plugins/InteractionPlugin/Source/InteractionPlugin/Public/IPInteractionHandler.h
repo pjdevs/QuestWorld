@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "IPInteractionStatus.h"
-#include "IPInteractiveState.h"
 #include "UObject/Interface.h"
 #include "IPInteractionHandler.generated.h"
 

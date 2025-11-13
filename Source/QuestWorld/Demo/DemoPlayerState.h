@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GaspPlayerState.h"
-#include "Save/SavablePlayer.h"
+#include "ISpudObject.h"
 #include "DemoPlayerState.generated.h"
 
 class UInventoryComponent;
@@ -12,25 +12,22 @@ class UInventoryComponent;
  * 
  */
 UCLASS()
-class QUESTWORLD_API ADemoPlayerState : public AGaspPlayerState, public ISavablePlayer
+class QUESTWORLD_API ADemoPlayerState : public AGaspPlayerState, public ISpudObject
 {
 	GENERATED_BODY()
 
 public:
 	ADemoPlayerState();
 
-public: // ISavablePlayer interface
-	virtual int GetPlayerIndex() override;
-	
-protected:
-	virtual void CopyProperties(APlayerState* PlayerState) override;
-	virtual void SeamlessTravelTo(APlayerState* NewPlayerState) override;
+public:
+	virtual FString OverrideName_Implementation() const override;
 
 public:
 	int PlayerIndex = 0;
+
 	bool bIsInit = false;
 
 protected:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Inventory)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, SaveGame, Category = Inventory)
 	UInventoryComponent* PlayerInventory;
 };

@@ -13,9 +13,9 @@ class QUESTWORLD_API AItemInteractive : public AIPInteractiveActor
 	GENERATED_BODY()
 
 public:
-	virtual FIPInteractionStatus GetInteractionStatusForActor_Implementation(
+	virtual FIPInteractionStatus GetExtraInteractionStatusForActor_Implementation(
 		AActor* InteractionInstigator,
-		const FIPInteractiveState& CurrentState
+		EIPState CurrentState
 	) const override;
 
 private:

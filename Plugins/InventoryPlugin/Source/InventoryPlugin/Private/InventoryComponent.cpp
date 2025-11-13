@@ -74,7 +74,7 @@ bool FInventoryList::NetDeltaSerialize(FNetDeltaSerializeInfo& DeltaParms)
 
 void FInventoryList::PostReplicatedAdd(const TArrayView<int32> AddedIndices, int32 FinalSize)
 {
-	if (!IsValid(OwnerComponent))
+	if (!OwnerComponent.IsValid())
 	{
 		return;
 	}
@@ -88,7 +88,7 @@ void FInventoryList::PostReplicatedAdd(const TArrayView<int32> AddedIndices, int
 
 void FInventoryList::PostReplicatedChange(const TArrayView<int32> ChangedIndices, int32 FinalSize)
 {
-	if (!IsValid(OwnerComponent))
+	if (OwnerComponent.IsValid())
 	{
 		return;
 	}
@@ -111,7 +111,7 @@ void FInventoryList::PostReplicatedChange(const TArrayView<int32> ChangedIndices
 
 void FInventoryList::PreReplicatedRemove(const TArrayView<int32> RemovedIndices, int32 FinalSize)
 {
-	if (!IsValid(OwnerComponent))
+	if (!OwnerComponent.IsValid())
 	{
 		return;
 	}
@@ -147,6 +147,16 @@ void UInventoryComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(UInventoryComponent, InventoryList);
+}
+
+void UInventoryComponent::SpudPostRestore_Implementation(const USpudState* SpudState)
+{
+	for (FInventoryItemEntry& Entry : InventoryList.GetItems())
+	{
+		Entry.LastQuantity = Entry.Quantity;
+	}
+	
+	OnRep_InventoryList();
 }
 
 void UInventoryComponent::AddItem(FInventoryItemId ItemId, int ItemCountToAdd)
@@ -202,44 +212,6 @@ void UInventoryComponent::RemoveItem(FInventoryItemId ItemId, int ItemCountToRem
 int UInventoryComponent::GetItemCount(FInventoryItemId ItemId) const
 {
 	return InventoryList.GetItemCount(ItemId);
-}
-
-void UInventoryComponent::LoadItemsFromSave(const FInventorySaveData& InventorySaveData)
-{
-	if (GetOwnerRole() != ROLE_Authority)
-	{
-		return;
-	}
-	
-	for (const FInventoryEntrySaveData& Item : InventorySaveData.Items)
-	{
-		InventoryList.AddItem(Item.ItemId, Item.Quantity);
-	}
-
-	OnRep_InventoryList();
-}
-
-FInventorySaveData UInventoryComponent::WriteItemsToSave()
-{
-	FInventorySaveData InventorySaveData;
-
-	if (GetOwnerRole() != ROLE_Authority)
-	{
-		return InventorySaveData;
-	}
-	
-	for (const auto& Entry : InventoryList.GetItems())
-	{
-		InventorySaveData.Items.Add(
-			FInventoryEntrySaveData
-			{
-				.ItemId = Entry.ItemId,
-				.Quantity = Entry.Quantity
-			}
-		);
-	}
-
-	return InventorySaveData;
 }
 
 void UInventoryComponent::OnItemAddedClient(const FInventoryItemId& ItemId, int ItemCountAdded)

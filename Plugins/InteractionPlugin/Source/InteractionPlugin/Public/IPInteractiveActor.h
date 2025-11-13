@@ -3,91 +3,50 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "IPStateSaveData.h"
 #include "IPInteractionStatus.h"
-#include "IPInteractive.h"
-#include "IPInteractiveState.h"
+#include "IPInteractionHandler.h"
 #include "IPInteractorComponent.h"
-#include "IPStateSavable.h"
+#include "IPStatefulActor.h"
 #include "IPInteractiveActor.generated.h"
 
+class UWidgetComponent;
 class UBoxComponent;
 
 /**
- * A base interactive Actor implementing IInteractive interface.
+ * A base interactive using stateful and interaction components.
  */
 UCLASS(Abstract)
-class INTERACTIONPLUGIN_API AIPInteractiveActor : public AActor, public IIPInteractive, public IIPStateSavable
+class INTERACTIONPLUGIN_API AIPInteractiveActor : public AIPStatefulActor, public IIPInteractionHandler
 {
 	GENERATED_BODY()
 	
 public:
 	AIPInteractiveActor();
 
-	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void PostInitializeComponents() override;
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-	
-public: // IIPInteractive interface
-	virtual void StartInteractionInput(AActor* InteractionInstigator) override;
-	virtual void EndInteractionInput(AActor* InteractionInstigator) override;
-	virtual FIPInteractionStatus GetInteractionStatus(AActor* InteractionInstigator) const override;
-	virtual FVector GetInteractiveLocation() const override;
-	virtual UWidgetComponent* GetWidgetComponent() const override final;
-	virtual TSubclassOf<UIPInteractionWidget> GetInteractionWidgetClass() const override;
-	virtual TSubclassOf<UUserWidget> GetIndicationWidgetClass() const override;
-	virtual TSubclassOf<UUserWidget> GetIndicationBlockedWidgetClass() const override;
-	virtual FText GetInteractiveName() const override;
-	virtual FText GetInteractionDescription() const override;
-	virtual bool IsAutoInteractive() const override;
 
-public: // IIPSavableInteractive interface
-	virtual FName GetUniqueId() const override;
-	virtual bool IsSavable() const override;
-	virtual void LoadFromSave(const FIPStateSaveData& SaveData) override;
-	virtual FIPStateSaveData WriteToSave() override;
+protected: // IIPStateHandler interface
+	virtual FIPInteractionStatus GetInteractionStatusForActor_Implementation(AActor* InteractionInstigator) override;
 	
 protected:
 	/**
-	 * Action to execute on the server for beginning of interaction input.
-	 */
-	UFUNCTION(BlueprintNativeEvent, BlueprintAuthorityOnly)
-	void OnStartInteractionInput(AActor* InteractionInstigator);
-	virtual void OnStartInteractionInput_Implementation(AActor* InteractionInstigator);
-
-	/**
-	 * Action to execute on the server for beginning of interaction input.
-	 */
-	UFUNCTION(BlueprintNativeEvent, BlueprintAuthorityOnly)
-	void OnEndInteractionInput(AActor* InteractionInstigator);
-	virtual void OnEndInteractionInput_Implementation(AActor* InteractionInstigator);
-	
-	/**
-	 * Feedback to execute on the client when state changed.
-	 */
-	UFUNCTION(BlueprintNativeEvent, BlueprintCosmetic)
-	void DoFeedback(const FIPInteractiveState& NewState);
-	virtual void DoFeedback_Implementation(const FIPInteractiveState& NewState);
-
-	/**
 	 * Start interaction phase which will make object currently
 	 * interacting/unavailable until EndInteractionPhase is called.
-	 * Will set InteractiveState.State to Busy.
+	 * Will set StatefulComponent.State to Activating.
 	 */
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = Interaction)
 	void StartInteractionPhase(AActor* InteractionInstigator);
 
 	/**
 	 * End interaction phase making object available again.
 	 * Can be called without calling StartInteractionPhase before.
 	 * Enum effects :
-	 * - Ready: will stay interactable.
-	 * - Busy: do not use, will stuck object (unless this is called again with something else).
-	 * - Interacted: will not be interactive again.
-	 * - Destroy: will replicate the state to clients and then destroy.
+	 * - Idle: will stay interactable.
+	 * - Activating: do not use, will stuck object.
+	 * - Activated: will not be interactive again.
 	 */
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly)
-	void EndInteractionPhase(EIPInteractiveState NextState);
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = Interaction)
+	void EndInteractionPhase(EIPState NextState);
 
 	/**
 	 * Additional conditions to core ones to decide whether this actor can be interacted or not.
@@ -95,150 +54,44 @@ protected:
 	 * If you subclass this to another type of interactive actor that can also be subclassed,
 	 * use native GetInteractionStatus.
 	 */
-	UFUNCTION(BlueprintNativeEvent)
-	FIPInteractionStatus GetInteractionStatusForActor(
+	UFUNCTION(BlueprintNativeEvent, Category = Interaction)
+	FIPInteractionStatus GetExtraInteractionStatusForActor(
 		AActor* InteractionInstigator,
-		const FIPInteractiveState& CurrentState
+		EIPState CurrentState
 	) const;
-	virtual FIPInteractionStatus GetInteractionStatusForActor_Implementation(
+	virtual FIPInteractionStatus GetExtraInteractionStatusForActor_Implementation(
 		AActor* InteractionInstigator,
-		const FIPInteractiveState& CurrentState
+		EIPState CurrentState
 	) const;
 
 	/**
-	 * Function that can be called to notify interactors that state may have changed
-	 * (to update can be interacted condition etc.).
-	 * Should be called on both client and server in OnRep_ (to handle new conditions and widgets).
+	 * Relay NotifyStatusChanged call to InteractiveComponent.
 	 */
 	UFUNCTION(BlueprintCallable, Category = Interaction)
-	void NotifyStateChanged();
-
-	UFUNCTION()
-	void HandleInteractionTriggerBeginOverlap(
-		UPrimitiveComponent* OverlappedComponent,
-		AActor* OtherActor,
-		UPrimitiveComponent* OtherComponent,
-		int32 OtherBodyIndex,
-		bool bFromSweep,
-		const FHitResult & SweepResult
-	);
-	UFUNCTION()
-	void HandleInteractionTriggerEndOverlap(
-		UPrimitiveComponent* OverlappedComponent,
-		AActor* OtherActor,
-		UPrimitiveComponent* OtherComponent,
-		int32 OtherBodyIndex
-	);
-
-	UFUNCTION()
-	void HandleIndicationTriggerBeginOverlap(
-		UPrimitiveComponent* OverlappedComponent,
-		AActor* OtherActor,
-		UPrimitiveComponent* OtherComponent,
-		int32 OtherBodyIndex,
-		bool bFromSweep,
-		const FHitResult & SweepResult
-	);
-	UFUNCTION()
-	void HandleIndicationTriggerEndOverlap(
-		UPrimitiveComponent* OverlappedComponent,
-		AActor* OtherActor,
-		UPrimitiveComponent* OtherComponent,
-		int32 OtherBodyIndex
-	);
-
-private:
-	UFUNCTION()
-	void OnRep_State();
+	void NotifyStatusChanged();
 
 protected:
+	/**
+	 * Interactive component.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Interaction)
+	TObjectPtr<UIPInteractiveComponent> InteractiveComponent;
+
 	/**
 	 * Trigger component used for interaction.
 	 */
-	UPROPERTY(EditDefaultsOnly, Category = Interaction)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Interaction)
 	TObjectPtr<UBoxComponent> InteractionTrigger;
 
 	/**
-	 * Trigger component showing indicator of possible interaction. Should be larger than InteractionTrigger!
+	 * Trigger component showing indicator of possible interaction. Should be larger than InteractionTrigger or zero!
 	 */
-	UPROPERTY(EditDefaultsOnly, Category = Interaction)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Interaction)
 	TObjectPtr<UBoxComponent> IndicationTrigger;
 
 	/**
-	 * The widget component to display interaction widgets inside.
-	 */
-	UPROPERTY(EditDefaultsOnly, Category = Interaction)
-	TObjectPtr<UWidgetComponent> WidgetComponent;
-	
-	/**
-	 * Class of the interaction widget.
-	 */
-	UPROPERTY(EditDefaultsOnly, Category = Interaction)
-	TSubclassOf<UIPInteractionWidget> InteractionWidgetClass;
-
-	/**
-	 * Class of the indication widget.
-	 */
-	UPROPERTY(EditDefaultsOnly, Category = Interaction)
-	TSubclassOf<UUserWidget> IndicationWidgetClass;
-
-	/**
-	 * Class of the indication widget when interaction is not possible.
-	 */
-	UPROPERTY(EditDefaultsOnly, Category = Interaction)
-	TSubclassOf<UUserWidget> IndicationBlockedWidgetClass;
-
-	/**
-	 * Name of the interactive actor to show in the interaction widget.
-	 */
-	UPROPERTY(EditDefaultsOnly, Category = Interaction)
-	FText InteractiveName;
-	
-	/**
-	 * Description of the interaction to show in the interaction widget.
-	 */
-	UPROPERTY(EditDefaultsOnly, Category = Interaction)
-	FText InteractionDescription;
-
-	/**
-	 * Whether to auto interact with the first interactor entering trigger area.
+	 * Interaction widget.
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Interaction)
-	bool bAutoInteract;
-
-	/**
-	 * Save unique ID of this interactive.
-	 */
-	UPROPERTY(EditAnywhere, Category = "Interaction|Save")
-	FName UniqueId;
-	
-	/**
-	 * Whether this interactive should be saved or not.
-	 */
-	UPROPERTY(EditAnywhere, Category = "Interaction|Save")
-	bool bIsSavable;
-
-protected:
-	/**
-	 * Interaction state of the actor.
-	 */
-	UPROPERTY(VisibleInstanceOnly, Category = Interaction, ReplicatedUsing=OnRep_State)
-	FIPInteractiveState InteractiveState;
-
-	/**
-	 * Current interactor that began interaction input.
-	 */
-	TWeakObjectPtr<AActor> CurrentInteractor; 
-
-	/**
-	 * The array of interactors that have been indicated.
-	 */
-	UPROPERTY(VisibleInstanceOnly, Category = Interaction)
-	TArray<TWeakObjectPtr<UIPInteractorComponent>> IndicatedInteractors;
-
-	/**
-	 * The array of possible interactors.
-	 */
-	UPROPERTY(VisibleInstanceOnly, Category = Interaction)
-	TArray<TWeakObjectPtr<UIPInteractorComponent>> PossibleInteractors;
+	TObjectPtr<UWidgetComponent> InteractionWidget;
 };

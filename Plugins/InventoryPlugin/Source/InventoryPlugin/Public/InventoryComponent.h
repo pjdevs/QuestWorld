@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "InventoryItemId.h"
 #include "InventorySaveData.h"
+#include "ISpudObject.h"
 #include "Net/Serialization/FastArraySerializer.h"
 #include "Components/ActorComponent.h"
 #include "InventoryComponent.generated.h"
@@ -25,10 +26,10 @@ struct INVENTORYPLUGIN_API FInventoryItemEntry: public FFastArraySerializerItem
 		return ItemId == OtherItemId;
 	}
 
-	UPROPERTY()
+	UPROPERTY(SaveGame)
 	FInventoryItemId ItemId = FInventoryItemId();
 
-	UPROPERTY()
+	UPROPERTY(SaveGame)
 	int Quantity = 0;
 
 	UPROPERTY()
@@ -47,7 +48,7 @@ public:
 	void AddItem(const FInventoryItemId& ItemId, int ItemCountToAdd);
 	void RemoveItem(const FInventoryItemId& ItemId, int ItemCountToRemove);
 	int GetItemCount(const FInventoryItemId& ItemId) const;
-	const TArray<FInventoryItemEntry>& GetItems() const { return Items; }
+	TArray<FInventoryItemEntry>& GetItems() { return Items; }
 
 public:
 	bool NetDeltaSerialize(FNetDeltaSerializeInfo& DeltaParms);
@@ -56,10 +57,9 @@ public:
 	void PreReplicatedRemove(const TArrayView<int32> RemovedIndices, int32 FinalSize);
 
 private:
-	UPROPERTY()
-	TObjectPtr<UInventoryComponent> OwnerComponent;
+	TWeakObjectPtr<UInventoryComponent> OwnerComponent;
 	
-	UPROPERTY()
+	UPROPERTY(SaveGame)
 	TArray<FInventoryItemEntry> Items;
 };
 
@@ -70,7 +70,7 @@ struct TStructOpsTypeTraits<FInventoryList> : public TStructOpsTypeTraitsBase2<F
 };
 
 UCLASS(ClassGroup=(Inventory), meta=(BlueprintSpawnableComponent))
-class INVENTORYPLUGIN_API UInventoryComponent : public UActorComponent
+class INVENTORYPLUGIN_API UInventoryComponent : public UActorComponent, public ISpudObject, public ISpudObjectCallback
 {
 	GENERATED_BODY()
 
@@ -80,6 +80,9 @@ public:
 	virtual void BeginPlay() override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
+public: // Spud
+	virtual void SpudPostRestore_Implementation(const USpudState* SpudState) override;
+	
 public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = Inventory)
 	void AddItem(FInventoryItemId ItemId, int ItemCountToAdd);
@@ -89,12 +92,6 @@ public:
 	
 	UFUNCTION(BlueprintPure, Category = Inventory)
 	int GetItemCount(FInventoryItemId ItemId) const;
-
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = Inventory)
-	void LoadItemsFromSave(const FInventorySaveData& InventorySaveData);
-
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = Inventory)
-	FInventorySaveData WriteItemsToSave();
 
 public:
 	UFUNCTION()
@@ -114,7 +111,7 @@ public:
 	FInventoryChangedDelegate OnItemRemovedDelegate;
 	
 private:
-	UPROPERTY(ReplicatedUsing=OnRep_InventoryList)
+	UPROPERTY(SaveGame, ReplicatedUsing=OnRep_InventoryList)
 	FInventoryList InventoryList;
 	
 	bool bInventoryReceived;

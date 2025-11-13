@@ -9,8 +9,6 @@
 UNotificationSubscriberComponent::UNotificationSubscriberComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
-
-	
 }
 
 void UNotificationSubscriberComponent::BeginPlay()

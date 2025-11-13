@@ -8,6 +8,7 @@
 
 
 UIPStatefulComponent::UIPStatefulComponent()
+	: bIsPersistent(false)
 {
 	PrimaryComponentTick.bCanEverTick = false;
 	SetIsReplicatedByDefault(true);
@@ -18,6 +19,11 @@ void UIPStatefulComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(UIPStatefulComponent, State);
+}
+
+EIPState UIPStatefulComponent::GetState() const
+{
+	return State;
 }
 
 void UIPStatefulComponent::SetState(EIPState NewState)
@@ -46,7 +52,6 @@ void UIPStatefulComponent::OnRep_State(const EIPState& OldState)
 	IIPStateHandler::Execute_OnStateChangedClient(GetOwner(), OldState, State);
 }
 
-#if WITH_SPUD
 bool UIPStatefulComponent::ShouldSkip_Implementation() const
 {
 	return !bIsPersistent;
@@ -56,4 +61,3 @@ void UIPStatefulComponent::SpudPostRestore_Implementation(const USpudState* Spud
 {
 	OnRep_State(State);
 }
-#endif

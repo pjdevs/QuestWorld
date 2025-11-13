@@ -2,7 +2,6 @@
 
 #include "IPInteractorComponent.h"
 #include "IPInteractionWidget.h"
-#include "IPInteractive.h"
 #include "IPInteractiveComponent.h"
 #include "Components/WidgetComponent.h"
 #include "Blueprint/UserWidget.h"

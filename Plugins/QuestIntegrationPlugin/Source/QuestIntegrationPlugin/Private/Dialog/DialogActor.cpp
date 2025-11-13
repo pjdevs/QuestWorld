@@ -34,12 +34,16 @@ void ADialogActor::OnStartInteractionInput_Implementation(AActor* InteractionIns
 	}
 }
 
-FIPInteractionStatus ADialogActor::GetInteractionStatus(AActor* InteractionInstigator) const
+FIPInteractionStatus ADialogActor::GetExtraInteractionStatusForActor_Implementation(
+	AActor* InteractionInstigator,
+	EIPState CurrentState
+) const
 {
-	FIPInteractionStatus BaseInteractionStatus = Super::GetInteractionStatus(InteractionInstigator);
-	BaseInteractionStatus.ReasonText = InDialogReasonText; // display talking reason (only one possible for now)
-
-	return BaseInteractionStatus;
+	return FIPInteractionStatus
+	{
+		.bCanStartInteraction = true,
+		.ReasonText = InDialogReasonText
+	};
 }
 
 void ADialogActor::OnDialogStarted(AController* DialogController)
@@ -49,5 +53,5 @@ void ADialogActor::OnDialogStarted(AController* DialogController)
 
 void ADialogActor::OnDialogEnded(AController* DialogController)
 {
-	EndInteractionPhase(EIPInteractiveState::Ready);
+	EndInteractionPhase(EIPState::Idle);
 }

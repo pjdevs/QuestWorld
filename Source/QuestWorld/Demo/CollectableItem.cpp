@@ -4,11 +4,12 @@
 #include "CollectableItem.h"
 #include "InventoryComponent.h"
 #include "InventoryStatics.h"
+#include "IPStatefulComponent.h"
 
 
 ACollectableItem::ACollectableItem()
 {
-	bIsSavable = true;
+	StatefulComponent->bIsPersistent = true;
 }
 
 void ACollectableItem::OnStartInteractionInput_Implementation(AActor* InteractionInstigator)
@@ -18,5 +19,5 @@ void ACollectableItem::OnStartInteractionInput_Implementation(AActor* Interactio
 		SharedInventory->AddItem(GivesItem, 1);
 	}
 
-	EndInteractionPhase(EIPInteractiveState::Destroyed);
+	Destroy();
 }
