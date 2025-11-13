@@ -21,4 +21,7 @@ public:
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, SaveGame, Category = Interaction)
 	TObjectPtr<UIPStatefulComponent> StatefulComponent;
+
+	UPROPERTY()
+	FGuid SpudGuid;
 };

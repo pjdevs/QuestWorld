@@ -70,11 +70,14 @@ void UIPInteractorComponent::TryStartInteractionInput()
 		return;
 	}
 
+	// Not sure if we do this check or not as this could make non movement replicated objects
+	// non interactive because of different positions on the client and server. 
+
 	// check on server if we really are in range to interact (is it really possible that it is not the case???)
-	if (!PossibleInteractives.Contains(MostRelevantInteractive))
-	{
-		return;
-	}
+	// if (!PossibleInteractives.Contains(MostRelevantInteractive))
+	// {
+	// 	return;
+	// }
 
 	MostRelevantInteractive->StartInteractionInput(GetOwner());
 }

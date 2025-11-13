@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "IPInteractiveActor.h"
 #include "Components/ActorComponent.h"
-#include "Components/BoxComponent.h"
 #include "IPInteractiveComponent.generated.h"
 
 class UIPInteractorComponent;
@@ -27,18 +26,21 @@ public: // UIPInteractiveComponent public interface
 	 * Set interaction trigger to use.
 	 * @param InInteractionTrigger 
 	 */
+	UFUNCTION(BlueprintCallable, Category = Interaction)
 	void SetInteractionTrigger(UPrimitiveComponent* InInteractionTrigger);
 
 	/**
 	 * Set indication trigger to use.
 	 * @param InIndicationTrigger 
 	 */
+	UFUNCTION(BlueprintCallable, Category = Interaction)
 	void SetIndicationTrigger(UPrimitiveComponent* InIndicationTrigger);
 
 	/**
 	 * Set widget to use for displaying interaction prompt.
 	 * @param InInteractionWidget 
 	 */
+	UFUNCTION(BlueprintCallable, Category = Interaction)
 	void SetInteractionWidget(UWidgetComponent* InInteractionWidget);
 	
 	/**
