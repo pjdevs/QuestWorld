@@ -2,20 +2,30 @@
 
 
 #include "NotificationSubsystem.h"
-
 #include "BaseNotificationWidget.h"
 #include "GameNotification.h"
+#include "SpudSubsystem.h"
 #include "Blueprint/UserWidget.h"
 
 
+void UNotificationSubsystem::Initialize(FSubsystemCollectionBase& Collection)
+{
+	Super::Initialize(Collection);
+
+	USpudSubsystem* SpudSubsystem = Collection.InitializeDependency<USpudSubsystem>();
+	SpudSubsystem->AddPersistentGlobalObjectWithName(this, "NotificationSubsystem");
+}
+
+void UNotificationSubsystem::SpudPostRestore_Implementation(const USpudState* State)
+{
+	// empty subscribers on reload of notif, we will showing pending notifications on subscribe
+	Subscribers.Empty();
+}
+
 void UNotificationSubsystem::QueueNotification(const FGameNotification& Message)
 {
-	QueuedMessages.Enqueue(Message);
-
-	if (!bIsDisplaying)
-	{
-		TryDisplayNextNotification();
-	}
+	QueuedMessages.Insert(Message, 0);
+	TryDisplayNextNotification();
 }
 
 void UNotificationSubsystem::Subscribe(APlayerController* PlayerController)
@@ -23,6 +33,7 @@ void UNotificationSubsystem::Subscribe(APlayerController* PlayerController)
 	if (IsValid(PlayerController))
 	{
 		Subscribers.Add(PlayerController);
+		TryDisplayNextNotification();
 	}
 }
 
@@ -36,12 +47,12 @@ void UNotificationSubsystem::Unsubscribe(APlayerController* PlayerController)
 
 void UNotificationSubsystem::TryDisplayNextNotification()
 {
-	FGameNotification NextNotification;
-
-	if (!QueuedMessages.Dequeue(NextNotification))
+	if (bIsDisplaying || QueuedMessages.IsEmpty() || Subscribers.IsEmpty())
 	{
 		return;
 	}
+
+	const FGameNotification NextNotification = QueuedMessages.Pop();
 
 	for (auto It = Subscribers.CreateIterator(); It; ++It)
 	{
@@ -77,19 +88,27 @@ void UNotificationSubsystem::DisplayNotification(
 	bIsDisplaying = true;
 	
 	NotificationWidget->OnNotificationEnded.BindUObject(this, &UNotificationSubsystem::OnNotificationEnded);
+	NotificationWidget->OnNotificationDestroyed.BindUObject(this, &UNotificationSubsystem::OnNotificationDestroyed);
 	NotificationWidget->AddToViewport();
 	NotificationWidget->SetNotification(Notification);
 }
 
 void UNotificationSubsystem::OnNotificationEnded()
 {
-	if (DisplayedWidget != nullptr && IsValid(DisplayedWidget))
+	if (IsValid(DisplayedWidget))
 	{
+		DisplayedWidget->OnNotificationEnded.Unbind();
+		DisplayedWidget->OnNotificationDestroyed.Unbind();
 		DisplayedWidget->RemoveFromParent();
 		DisplayedWidget = nullptr;
 	}
 
 	bIsDisplaying = false;
-
 	TryDisplayNextNotification();
+}
+
+void UNotificationSubsystem::OnNotificationDestroyed()
+{
+	DisplayedWidget = nullptr;
+	bIsDisplaying = false;
 }

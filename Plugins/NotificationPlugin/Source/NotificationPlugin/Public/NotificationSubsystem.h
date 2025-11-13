@@ -3,41 +3,51 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "ISpudObject.h"
 #include "Subsystems/GameInstanceSubsystem.h"
-#include "Containers/Queue.h"
 #include "NotificationSubsystem.generated.h"
 
 
 class UBaseNotificationWidget;
 struct FGameNotification;
 
+// TODO work on this as it does not really support multiple local players
+// because bIsDisplaying would lock other players etc.
+
 /**
  * 
  */
 UCLASS(Category = Notification)
-class NOTIFICATIONPLUGIN_API UNotificationSubsystem : public UGameInstanceSubsystem
+class NOTIFICATIONPLUGIN_API UNotificationSubsystem
+	: public UGameInstanceSubsystem, public ISpudObject, public ISpudObjectCallback
 {
 	GENERATED_BODY()
 
 public:
-	UFUNCTION(BlueprintCallable, Category = Notification)
+	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
+
+public: // Spud
+	virtual void SpudPostRestore_Implementation(const USpudState* State) override;
+	
+public:
+	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category = Notification)
 	void QueueNotification(const FGameNotification& Message);
 
-	UFUNCTION(BlueprintCallable, Category = Notification)
+	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category = Notification)
 	void Subscribe(APlayerController* PlayerController);
 
-	UFUNCTION(BlueprintCallable, Category = Notification)
+	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category = Notification)
 	void Unsubscribe(APlayerController* PlayerController);
-	
-	// void SaveToGame(USaveGame* SaveGame);
-	// void LoadFromGame(USaveGame* SaveGame);
+
 private:
 	void TryDisplayNextNotification();
 	void DisplayNotification(APlayerController* PlayerController, const FGameNotification& Notification);
 	void OnNotificationEnded();
-	
+	void OnNotificationDestroyed();
+
 private:
-	TQueue<FGameNotification> QueuedMessages;
+	UPROPERTY(SaveGame)
+	TArray<FGameNotification> QueuedMessages;
 
 	TSet<TWeakObjectPtr<APlayerController>> Subscribers;
 

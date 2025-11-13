@@ -3,7 +3,14 @@
 
 #include "BaseNotificationWidget.h"
 
+void UBaseNotificationWidget::NativeDestruct()
+{
+	Super::NativeDestruct();
+
+	OnNotificationDestroyed.ExecuteIfBound();
+}
+
 void UBaseNotificationWidget::NotificationEnded() const
 {
-	bool _ = OnNotificationEnded.ExecuteIfBound();
+	OnNotificationEnded.ExecuteIfBound();
 }

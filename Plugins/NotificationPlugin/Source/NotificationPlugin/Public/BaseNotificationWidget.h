@@ -6,7 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "BaseNotificationWidget.generated.h"
 
-DECLARE_DELEGATE(FNotificationEndedDelegate);
+DECLARE_DELEGATE(FNotificationDelegate);
 
 struct FGameNotification;
 /**
@@ -18,12 +18,14 @@ class NOTIFICATIONPLUGIN_API UBaseNotificationWidget : public UUserWidget
 	GENERATED_BODY()
 
 public:
-	// TODO Check if we can pass a delegate here and avoid calling another function (even if equivalent)
+	virtual void NativeDestruct() override;
+	
 	UFUNCTION(BlueprintImplementableEvent, Category = Notification)
 	void SetNotification(const FGameNotification& Notification);
 
 	UFUNCTION(BlueprintCallable, Category = Notification)
 	void NotificationEnded() const;
 
-	FNotificationEndedDelegate OnNotificationEnded;
+	FNotificationDelegate OnNotificationEnded;
+	FNotificationDelegate OnNotificationDestroyed;
 };
