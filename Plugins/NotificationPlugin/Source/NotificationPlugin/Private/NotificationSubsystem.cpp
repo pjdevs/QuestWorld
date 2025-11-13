@@ -39,17 +39,21 @@ void UNotificationSubsystem::TryDisplayNextNotification()
 	FGameNotification NextNotification;
 
 	if (!QueuedMessages.Dequeue(NextNotification))
+	{
 		return;
+	}
 
-	Subscribers.RemoveAll([](const TWeakObjectPtr<APlayerController>& Ptr)
+	for (auto It = Subscribers.CreateIterator(); It; ++It)
 	{
-		return !Ptr.IsValid();
-	});
-	
-	for (TWeakObjectPtr<APlayerController> WeakSubscriber : Subscribers)
-	{
-		APlayerController* Subscriber = WeakSubscriber.Get();
-		DisplayNotification(Subscriber, NextNotification);
+		if (It->IsValid())
+		{
+			APlayerController* Subscriber = It->Get();
+			DisplayNotification(Subscriber, NextNotification);
+		}
+		else
+		{
+			It.RemoveCurrent();
+		}
 	}
 }
 

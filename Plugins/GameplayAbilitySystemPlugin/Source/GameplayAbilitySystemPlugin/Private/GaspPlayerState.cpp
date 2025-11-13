@@ -15,16 +15,6 @@ AGaspPlayerState::AGaspPlayerState()
 	AttributeSet = CreateDefaultSubobject<UGaspAttributeSet>("AttributeSet");
 }
 
-void AGaspPlayerState::CopyProperties(APlayerState* PlayerState)
-{
-	Super::CopyProperties(PlayerState);
-
-	if (AGaspPlayerState* NewGaspPlayerState = Cast<AGaspPlayerState>(PlayerState))
-	{
-		NewGaspPlayerState->LoadFromSave(WriteToSave());
-	}
-}
-
 void AGaspPlayerState::GiveGrantedAbilities()
 {
 	if (!HasAuthority())
@@ -36,20 +26,6 @@ void AGaspPlayerState::GiveGrantedAbilities()
 	{
 		GiveAbilityToPlayer(AbilityClass);
 	}
-}
-
-FGaspPlayerSaveData AGaspPlayerState::WriteToSave() const
-{
-	return FGaspPlayerSaveData
-	{
-		.GrantedAbilities = GrantedAbilities
-	};
-}
-
-void AGaspPlayerState::LoadFromSave(const FGaspPlayerSaveData& SaveData)
-{
-	// For now does not grant abilities in addition because this will be done at pawn init but could see later
-	GrantedAbilities = SaveData.GrantedAbilities;
 }
 
 UAbilitySystemComponent* AGaspPlayerState::GetAbilitySystemComponent() const
@@ -66,6 +42,11 @@ void AGaspPlayerState::GrantAbility(TSubclassOf<UGameplayAbility> AbilityClass)
 	
 	GrantedAbilities.Add(AbilityClass);
 	GiveAbilityToPlayer(AbilityClass);
+}
+
+void AGaspPlayerState::SpudPostRestore_Implementation(const USpudState* State)
+{
+	GiveGrantedAbilities();
 }
 
 void AGaspPlayerState::GiveAbilityToPlayer(TSubclassOf<UGameplayAbility> AbilityClass)

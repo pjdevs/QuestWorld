@@ -31,6 +31,8 @@ public:
 	void SetState(EIPState NewState);
 
 private:
+	void OnStateChangedServer(EIPState OldState, EIPState NewState);
+	
 	UFUNCTION()
 	void OnRep_State(const EIPState& OldState);
 

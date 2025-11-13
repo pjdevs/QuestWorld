@@ -39,7 +39,7 @@ private:
 private:
 	TQueue<FGameNotification> QueuedMessages;
 
-	TArray<TWeakObjectPtr<APlayerController>> Subscribers;
+	TSet<TWeakObjectPtr<APlayerController>> Subscribers;
 
 	UPROPERTY()
 	TObjectPtr<UBaseNotificationWidget> DisplayedWidget;

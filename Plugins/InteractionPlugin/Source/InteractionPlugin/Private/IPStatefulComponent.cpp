@@ -35,7 +35,11 @@ void UIPStatefulComponent::SetState(EIPState NewState)
 
 	const EIPState OldState = State;
 	State = NewState;
+	OnStateChangedServer(OldState, State);
+}
 
+void UIPStatefulComponent::OnStateChangedServer(EIPState OldState, EIPState NewState)
+{
 	if (GetOwner()->IsNetMode(NM_DedicatedServer))
 	{
 		IIPStateHandler::Execute_OnStateChangedServer(GetOwner(), OldState, State);
@@ -59,5 +63,5 @@ bool UIPStatefulComponent::ShouldSkip_Implementation() const
 
 void UIPStatefulComponent::SpudPostRestore_Implementation(const USpudState* SpudState)
 {
-	OnRep_State(State);
+	OnStateChangedServer(State, State);
 }

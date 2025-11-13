@@ -2,7 +2,6 @@
 
 
 #include "DemoPlayerState.h"
-
 #include "InventoryComponent.h"
 
 

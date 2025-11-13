@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "GaspPlayerState.h"
-#include "ISpudObject.h"
 #include "DemoPlayerState.generated.h"
 
 class UInventoryComponent;
@@ -12,7 +11,7 @@ class UInventoryComponent;
  * 
  */
 UCLASS()
-class QUESTWORLD_API ADemoPlayerState : public AGaspPlayerState, public ISpudObject
+class QUESTWORLD_API ADemoPlayerState : public AGaspPlayerState
 {
 	GENERATED_BODY()
 
@@ -23,11 +22,12 @@ public:
 	virtual FString OverrideName_Implementation() const override;
 
 public:
+	UPROPERTY(BlueprintReadOnly, Category = PlayerState)
 	int PlayerIndex = 0;
 
 	bool bIsInit = false;
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, SaveGame, Category = Inventory)
-	UInventoryComponent* PlayerInventory;
+	TObjectPtr<UInventoryComponent> PlayerInventory;
 };
