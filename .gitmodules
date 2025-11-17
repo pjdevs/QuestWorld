@@ -1,3 +1,6 @@
 [submodule "Plugins/SPUD"]
 	path = Plugins/SPUD
 	url = https://github.com/sinbad/SPUD
+[submodule "Plugins/Flow"]
+	path = Plugins/Flow
+	url = https://github.com/MothCocoon/FlowGraph.git
