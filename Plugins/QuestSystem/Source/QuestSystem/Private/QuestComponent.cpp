@@ -2,10 +2,8 @@
 
 
 #include "QuestComponent.h"
-
 #include "QuestSaveGame.h"
 #include "QuestService.h"
-#include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 
 
@@ -21,6 +19,17 @@ void UQuestComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(UQuestComponent, ActiveQuests);
+	DOREPLIFETIME(UQuestComponent, CompletedQuests);
+}
+
+void UQuestComponent::SpudPostRestore_Implementation(const USpudState* State)
+{
+	LoadQuestsFromSave(QuestSaveData);
+}
+
+void UQuestComponent::SpudPreStore_Implementation(const USpudState* State)
+{
+	QuestSaveData = WriteQuestsToSave();
 }
 
 void UQuestComponent::StartQuest(FPrimaryAssetId QuestId)
@@ -177,7 +186,7 @@ void UQuestComponent::LoadQuestsFromSave(const FQuestSaveData& SaveData)
 	OnRep_CompletedQuests();
 }
 
-FQuestSaveData UQuestComponent::WriteQuestsToSave()
+FQuestSaveData UQuestComponent::WriteQuestsToSave() const
 {
 	return QuestService->GetQuestSave();
 }

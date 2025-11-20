@@ -16,24 +16,23 @@ UCLASS()
 class QUESTSYSTEM_API UQuestDataAsset : public UPrimaryDataAsset
 {
 	GENERATED_BODY()
-
-	UPROPERTY(EditDefaultsOnly, Category = "Quest", meta = (AllowPrivateAccess = "true"))
-	FText Title;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Quest", meta = (AllowPrivateAccess = "true"))
-	FText Description;
-	
-	UPROPERTY(EditDefaultsOnly, Instanced, Category = "Quest", meta = (AllowPrivateAccess = "true"))
-	TArray<TObjectPtr<UQuestObjective>> Objectives;
-	
-	UPROPERTY(EditDefaultsOnly, Category = "Quest", meta = (AllowPrivateAccess = "true"))
-	bool bIsSequential;
 	
 public:
-	const FText& GetTitle() const { return Title; }
-	const FText& GetDescription() const { return Description; }
-	const TArray<TObjectPtr<UQuestObjective>>& GetQuestObjectives() const { return Objectives; }
-	bool IsSequential() const { return bIsSequential; }
-	
 	virtual FPrimaryAssetId GetPrimaryAssetId() const override;
+
+public:
+	UPROPERTY(EditDefaultsOnly, Category = "Quest")
+	FGameplayTag QuestIdTag;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Quest")
+	FText Title;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Quest")
+	FText Description;
+	
+	UPROPERTY(EditDefaultsOnly, Instanced, Category = "Quest")
+	TArray<TObjectPtr<UQuestObjective>> Objectives;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Quest")
+	bool bShouldAutocomplete;
 };

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "ActiveQuestObjective.h"
+#include "QuestSaveGame.h"
 #include "ActiveQuest.generated.h"
 
 class UQuestDataAsset;
@@ -18,15 +19,20 @@ struct QUESTSYSTEM_API FActiveQuest
 
 public:
 	FActiveQuest() = default; // Needed for creating TArray etc. Will see if we use TUniquePtr or so later
-	FActiveQuest(const FPrimaryAssetId& QuestId, UQuestDataAsset* QuestDataAsset, UWorld* World);
+	FActiveQuest(const FPrimaryAssetId& QuestId, UQuestDataAsset* QuestDataAsset);
 
-	FActiveQuestObjective& GetObjective(int Index) { return Objectives[Index]; }
-	const TArray<FActiveQuestObjective>& GetObjectives() const { return Objectives; }
 	const FPrimaryAssetId& GetQuestId() const { return QuestId; }
 	bool IsCompleted() const { return bQuestCompleted; }
-	int GetCurrentObjectiveIndex() const { return CurrentObjectiveIndex; }
 
-	void RestoreCurrentObjectiveIndex(int ObjectiveIndex);
+	const FActiveQuestObjective* GetActiveObjective(const FGameplayTag& ObjectiveId) const { return ActiveObjectives.Find(ObjectiveId); }
+	const TMap<FGameplayTag, FActiveQuestObjective>& GetActiveObjectives() const { return ActiveObjectives; }
+	bool IsObjectiveCompleted(const FGameplayTag& ObjectiveId) const { return CompletedObjectives.Contains(ObjectiveId); }
+	
+	void StartObjective(const FGameplayTag& ObjectiveId, UWorld* World);
+	void CompleteObjective(const FGameplayTag& ObjectiveId);
+	void ProgressObjective(const FGameplayTag& ObjectiveId, int Progress);
+
+	void CompleteQuest();
 	
 	/**
 	 * Notify the quest of an emitted quest event.
@@ -39,12 +45,12 @@ public:
 private:
 	UPROPERTY()
 	TObjectPtr<UQuestDataAsset> QuestDataAsset;
-	
+
 	UPROPERTY()
-	TArray<FActiveQuestObjective> Objectives;
+	TMap<FGameplayTag, TObjectPtr<UQuestObjective>> ObjectiveAssets;
 
 	FPrimaryAssetId QuestId;
+	TMap<FGameplayTag, FActiveQuestObjective> ActiveObjectives;
+	TSet<FGameplayTag> CompletedObjectives;
 	bool bQuestCompleted;
-	bool bIsSequential;
-	int CurrentObjectiveIndex;
 };

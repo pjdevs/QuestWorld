@@ -3,36 +3,79 @@
 
 #include "ActiveQuest.h"
 #include "ActiveQuestObjective.h"
+#include "QuestSaveGame.h"
 #include "Assets/QuestDataAsset.h"
 
 
-FActiveQuest::FActiveQuest(const FPrimaryAssetId& QuestId, UQuestDataAsset* QuestDataAsset, UWorld* World)
-	: QuestDataAsset(QuestDataAsset), QuestId(QuestId),
-	bQuestCompleted(false), bIsSequential(QuestDataAsset->IsSequential()), CurrentObjectiveIndex(0)
+FActiveQuest::FActiveQuest(const FPrimaryAssetId& QuestId, UQuestDataAsset* QuestDataAsset)
+	: QuestDataAsset(QuestDataAsset), QuestId(QuestId), bQuestCompleted(false)
 {
-	bool bAllObjectivesCompleted = true; 
-	
-	for (auto& ObjectiveAsset : QuestDataAsset->GetQuestObjectives())
+	for (TObjectPtr<UQuestObjective>& ObjectiveAsset : QuestDataAsset->Objectives)
 	{
-		FActiveQuestObjective ActiveQuestObjective(ObjectiveAsset, World);
-		Objectives.Add(ActiveQuestObjective);
-
-		const bool bIsObjectiveCompleted = ActiveQuestObjective.IsObjectiveCompleted();
-
-		if (bIsObjectiveCompleted && bIsSequential)
-		{
-			CurrentObjectiveIndex++;
-		}
-		
-		bAllObjectivesCompleted &= bIsObjectiveCompleted;
+		ObjectiveAssets.Add(ObjectiveAsset->ObjectiveId, ObjectiveAsset);
 	}
-
-	bQuestCompleted = bAllObjectivesCompleted;
 }
 
-void FActiveQuest::RestoreCurrentObjectiveIndex(int ObjectiveIndex)
+void FActiveQuest::StartObjective(const FGameplayTag& ObjectiveId, UWorld* World)
 {
-	CurrentObjectiveIndex = ObjectiveIndex;
+	TObjectPtr<UQuestObjective>* ObjectiveAssetPtr = ObjectiveAssets.Find(ObjectiveId);
+	
+	if (!ObjectiveAssetPtr)
+	{
+		return;
+	}
+
+	const TObjectPtr<UQuestObjective> ObjectiveAsset = *ObjectiveAssetPtr;
+	FActiveQuestObjective& ActiveObjective = ActiveObjectives.Add(ObjectiveId, FActiveQuestObjective(ObjectiveAsset));
+	
+	if (ObjectiveAsset->bIsRetroCompletable)
+	{
+		ActiveObjective.SetCurrentProgress(ObjectiveAsset->GetCompletion(World));
+
+		if (ActiveObjective.IsObjectiveCompleted())
+		{
+			CompleteObjective(ObjectiveId);
+		}
+	}
+}
+
+void FActiveQuest::CompleteObjective(const FGameplayTag& ObjectiveId)
+{
+	FActiveQuestObjective* Objective = ActiveObjectives.Find(ObjectiveId);
+
+	if (!Objective)
+	{
+		return;
+	}
+
+	Objective->CompleteObjective();
+	
+	ActiveObjectives.Remove(ObjectiveId);
+	CompletedObjectives.Add(ObjectiveId);
+	
+	bool bAreAllObjectivesCompleted = CompletedObjectives.Num() == ObjectiveAssets.Num();
+
+	if (bAreAllObjectivesCompleted && QuestDataAsset->bShouldAutocomplete)
+	{
+		bQuestCompleted = true;
+	}
+}
+
+void FActiveQuest::ProgressObjective(const FGameplayTag& ObjectiveId, int Progress)
+{
+	FActiveQuestObjective* Objective = ActiveObjectives.Find(ObjectiveId);
+
+	if (!Objective)
+	{
+		return;
+	}
+
+	Objective->ProgressObjective(Progress);
+}
+
+void FActiveQuest::CompleteQuest()
+{
+	bQuestCompleted = true;
 }
 
 bool FActiveQuest::OnQuestEvent(UWorld* World, UBaseQuestEvent* Event)
@@ -43,37 +86,24 @@ bool FActiveQuest::OnQuestEvent(UWorld* World, UBaseQuestEvent* Event)
 	}
 	
 	bool bAnyObjectiveProgressed = false;
+	bool bAllObjectivesCompleted = true;
 
-	if (bIsSequential)
+	for (auto It = ActiveObjectives.CreateIterator(); It; ++It)
 	{
-		FActiveQuestObjective& CurrentObjective = Objectives[CurrentObjectiveIndex];
-		bAnyObjectiveProgressed |= CurrentObjective.OnQuestEvent(World, Event);
-
-		const bool bIsObjectiveCompleted = CurrentObjective.IsObjectiveCompleted();
+		FActiveQuestObjective& ActiveObjective = It.Value();
 		
-		if (bIsObjectiveCompleted)
+		if (ActiveObjective.IsObjectiveCompleted())
 		{
-			CurrentObjectiveIndex++;
+			continue;
 		}
 		
-		bQuestCompleted = bIsObjectiveCompleted && CurrentObjectiveIndex >= Objectives.Num();
+		bAnyObjectiveProgressed |= ActiveObjective.OnQuestEvent(World, Event);
+		bAllObjectivesCompleted &= ActiveObjective.IsObjectiveCompleted();
 	}
-	else
+
+	if (QuestDataAsset->bShouldAutocomplete && bAllObjectivesCompleted)
 	{
-		bool bAllObjectivesCompleted = true;
-
-		for (FActiveQuestObjective& ActiveQuestObjective : Objectives)
-		{
-			if (ActiveQuestObjective.IsObjectiveCompleted())
-			{
-				continue;
-			}
-			
-			bAnyObjectiveProgressed |= ActiveQuestObjective.OnQuestEvent(World, Event);
-			bAllObjectivesCompleted &= ActiveQuestObjective.IsObjectiveCompleted();
-		}
-
-		bQuestCompleted = bAllObjectivesCompleted;
+		CompleteQuest();
 	}
 
 	return bAnyObjectiveProgressed;

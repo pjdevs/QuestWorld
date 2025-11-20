@@ -51,7 +51,7 @@ void UQuestServiceImpl::StartQuest(const FPrimaryAssetId& QuestId, UWorld* World
 		return;
 	}
 	
-	const FActiveQuest ActiveQuest(QuestId, *QuestDataAssetPtr, World);
+	const FActiveQuest ActiveQuest(QuestId, *QuestDataAssetPtr);
 	ActiveQuestsById.Add(QuestId, ActiveQuest);
 	
 	bool _ = QuestStartedDelegate.ExecuteIfBound(GetQuestDescription(QuestId));
@@ -143,49 +143,50 @@ FQuestDescription UQuestServiceImpl::GetQuestDescription(const FPrimaryAssetId& 
 	}
 
 	const UQuestDataAsset* QuestDataAsset = *QuestDataAssetPtr;
-	const TArray<TObjectPtr<UQuestObjective>>& QuestObjectiveAssets = QuestDataAsset->GetQuestObjectives();
-	const int QuestObjectiveNumber = QuestObjectiveAssets.Num();
 	const bool bIsQuestActive = ActiveQuestsById.Contains(QuestId);
+	const bool bIsQuestCompleted = CompletedQuestIds.Contains(QuestId);
+	
 	TArray<FQuestObjectiveDescription> QuestObjectiveDescriptions;
-	const TArray<FActiveQuestObjective>* ActiveObjectives = nullptr;
-	int MaxObjectiveIndex = QuestObjectiveNumber - 1; // show only "unlocked" objectives if quest is sequential
 
-	if (bIsQuestActive)
+	for (const TObjectPtr<UQuestObjective>& ObjectiveAsset : QuestDataAsset->Objectives)
 	{
-		const FActiveQuest* ActiveQuest = ActiveQuestsById.Find(QuestId);
-		ActiveObjectives = &ActiveQuest->GetObjectives();
+		int CurrentProgress = 0;
+		bool bIsObjectiveCompleted = false;
 
-		if (QuestDataAsset->IsSequential())
+		if (bIsQuestActive)
 		{
-			MaxObjectiveIndex = ActiveQuest->GetCurrentObjectiveIndex();
+			const FActiveQuestObjective* ActiveObjective = ActiveQuestsById
+				.FindChecked(QuestId)
+				.GetActiveObjective(ObjectiveAsset->ObjectiveId);
+			
+			CurrentProgress = ActiveObjective->GetCurrentProgress();
+			bIsObjectiveCompleted = ActiveObjective->IsObjectiveCompleted();
 		}
-	}
+		else if (bIsQuestCompleted)
+		{
+			CurrentProgress = ObjectiveAsset->GetTargetValue();
+			bIsObjectiveCompleted = true;
+		}
+		// not started or completed, not found quest
+		else 
+		{
+			// show any objective??
+		}
 
-	for (int i = 0; i < QuestObjectiveNumber && i <= MaxObjectiveIndex; ++i)
-	{
-		const FActiveQuestObjective* ActiveObjective = bIsQuestActive
-			? &(*ActiveObjectives)[i]
-			: nullptr;
-		const TObjectPtr<UQuestObjective>& ObjectiveAsset = QuestObjectiveAssets[i];
-		
 		QuestObjectiveDescriptions.Add(FQuestObjectiveDescription
 		{
-			ObjectiveAsset->GetObjectiveDescription(),
-			bIsQuestActive
-				? ActiveObjective->GetCurrentProgress()
-				: ObjectiveAsset->GetTargetValue(),
+			ObjectiveAsset->ObjectiveDescription,
+			CurrentProgress,
 			ObjectiveAsset->GetTargetValue(),
-			bIsQuestActive
-				? ActiveObjective->IsObjectiveCompleted()
-				: true
+			bIsObjectiveCompleted
 		});
 	}
 
 	return FQuestDescription
 	{
 		QuestId,
-		QuestDataAsset->GetTitle(),
-		QuestDataAsset->GetDescription(),
+		QuestDataAsset->Title,
+		QuestDataAsset->Description,
 		QuestObjectiveDescriptions,
 		!bIsQuestActive
 	};
@@ -227,17 +228,14 @@ void UQuestServiceImpl::RestoreQuests(const FQuestSaveData& QuestSave, UWorld* W
 	{
 		const FPrimaryAssetId& QuestId = QuestData.QuestId;
 		UQuestDataAsset* QuestAsset = QuestAssetsById[QuestId];
-		FActiveQuest ActiveQuest = FActiveQuest(QuestId, QuestAsset, World);
+		FActiveQuest ActiveQuest = FActiveQuest(QuestId, QuestAsset);
 
-		for (int i = 0; i < QuestData.Objectives.Num(); ++i)
+		for (int i = 0; i < QuestData.ActiveObjectives.Num(); ++i)
 		{
-			const FActiveQuestObjectiveSaveData& ObjectiveData = QuestData.Objectives[i];
-			FActiveQuestObjective& ActiveObjective = ActiveQuest.GetObjective(i);
-
-			ActiveObjective.SetCurrentProgress(ObjectiveData.CurrentProgress);
+			const FActiveQuestObjectiveSaveData& ObjectiveData = QuestData.ActiveObjectives[i];
+			ActiveQuest.StartObjective(ObjectiveData.ObjectiveId, World);
+			ActiveQuest.ProgressObjective(ObjectiveData.ObjectiveId, ObjectiveData.CurrentProgress);
 		}
-
-		ActiveQuest.RestoreCurrentObjectiveIndex(QuestData.CurrentObjectiveIndex);
 		
 		ActiveQuestsById.Add(
 			QuestId,
@@ -257,17 +255,16 @@ FQuestSaveData UQuestServiceImpl::GetQuestSave() const
 		FActiveQuestSaveData ActiveQuestData
 		{
 			.QuestId = QuestId,
-			.Objectives = TArray<FActiveQuestObjectiveSaveData>(),
-			.CurrentObjectiveIndex = ActiveQuest.GetCurrentObjectiveIndex()
+			.ActiveObjectives = TArray<FActiveQuestObjectiveSaveData>()
 		};
 
-		for (const FActiveQuestObjective& ActiveObjective : ActiveQuest.GetObjectives())
+		for (auto It = ActiveQuest.GetActiveObjectives().CreateConstIterator(); It; ++It)
 		{
 			FActiveQuestObjectiveSaveData ActiveObjectiveData
 			{
-				.CurrentProgress = ActiveObjective.GetCurrentProgress()
+				.CurrentProgress = It.Value().GetCurrentProgress()
 			};
-			ActiveQuestData.Objectives.Add(ActiveObjectiveData);
+			ActiveQuestData.ActiveObjectives.Add(ActiveObjectiveData);
 		}
 
 		QuestSaveData.ActiveQuests.Add(ActiveQuestData);

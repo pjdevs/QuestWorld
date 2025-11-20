@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "ISpudObject.h"
 #include "QuestDescription.h"
 #include "QuestSaveGame.h"
 #include "Components/ActorComponent.h"
@@ -16,7 +17,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FQuestDynamicDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FQuestEventDynamicDelegate, const FQuestDescription&, Quest);
 
 UCLASS(ClassGroup=(Quest), meta=(BlueprintSpawnableComponent))
-class QUESTSYSTEM_API UQuestComponent : public UActorComponent
+class QUESTSYSTEM_API UQuestComponent : public UActorComponent, public ISpudObject, public ISpudObjectCallback
 {
 	GENERATED_BODY()
 
@@ -27,6 +28,10 @@ public:
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
+public: // Spud
+	virtual void SpudPostRestore_Implementation(const USpudState* State) override;
+	virtual void SpudPreStore_Implementation(const USpudState* State) override;
+	
 public:
 	// All server functions that interact with the service
 
@@ -53,10 +58,10 @@ public:
 	// Save functions, server only
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Quest|Save")
-	void LoadQuestsFromSave(const FQuestSaveData& SaveData);
+	void LoadQuestsFromSave(const FQuestSaveData& QuestSaveData);
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Quest|Save")
-	FQuestSaveData WriteQuestsToSave();
+	FQuestSaveData WriteQuestsToSave() const;
 
 	// Delegates
 
@@ -146,4 +151,8 @@ private:
 	 */
 	UPROPERTY(ReplicatedUsing=OnRep_CompletedQuests)
 	TArray<FQuestDescription> CompletedQuests;
+
+private:
+	UPROPERTY(SaveGame)
+	FQuestSaveData QuestSaveData;
 };

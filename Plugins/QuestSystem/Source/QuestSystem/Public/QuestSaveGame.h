@@ -3,13 +3,16 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/SaveGame.h"
+#include "GameplayTags.h"
 #include "QuestSaveGame.generated.h"
 
 USTRUCT(Blueprintable, BlueprintType)
 struct QUESTSYSTEM_API FActiveQuestObjectiveSaveData
 {
 	GENERATED_BODY()
+
+	UPROPERTY()
+	FGameplayTag ObjectiveId = FGameplayTag::EmptyTag;
 
 	UPROPERTY()
 	int CurrentProgress = 0;
@@ -24,10 +27,7 @@ struct QUESTSYSTEM_API FActiveQuestSaveData
 	FPrimaryAssetId QuestId = FPrimaryAssetId();
 
 	UPROPERTY()
-	TArray<FActiveQuestObjectiveSaveData> Objectives = TArray<FActiveQuestObjectiveSaveData>();
-
-	UPROPERTY()
-	int CurrentObjectiveIndex = 0;
+	TArray<FActiveQuestObjectiveSaveData> ActiveObjectives = TArray<FActiveQuestObjectiveSaveData>();
 };
 
 USTRUCT(Blueprintable, BlueprintType)

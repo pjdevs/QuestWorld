@@ -9,7 +9,7 @@
 
 UInventoryObjective::UInventoryObjective()
 {
-	bRetroCompletable = true;
+	bIsRetroCompletable = true;
 	bShouldAddProgress = false;
 }
 
