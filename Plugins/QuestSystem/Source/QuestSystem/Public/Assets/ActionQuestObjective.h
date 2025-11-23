@@ -24,9 +24,9 @@ protected:
 	virtual int TriggerProgress_Implementation(UWorld* World, UBaseQuestEvent* Event) override;
 
 private:
-	UPROPERTY(EditDefaultsOnly, Category = "Quest", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly, Category = "Action", meta = (AllowPrivateAccess = "true"))
 	FName ActionToDo;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Quest", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly, Category = "Action", meta = (AllowPrivateAccess = "true"))
 	int TimesToDoAction;
 };

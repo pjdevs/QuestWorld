@@ -19,7 +19,7 @@ struct QUESTSYSTEM_API FActiveQuest
 
 public:
 	FActiveQuest() = default; // Needed for creating TArray etc. Will see if we use TUniquePtr or so later
-	FActiveQuest(const FPrimaryAssetId& QuestId, UQuestDataAsset* QuestDataAsset);
+	FActiveQuest(UQuestDataAsset* QuestDataAsset);
 
 	const FPrimaryAssetId& GetQuestId() const { return QuestId; }
 	bool IsCompleted() const { return bQuestCompleted; }

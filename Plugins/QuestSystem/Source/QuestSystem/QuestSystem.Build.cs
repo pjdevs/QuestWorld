@@ -12,7 +12,8 @@ public class QuestSystem : ModuleRules
 			[
 				"Core",
 				"GameplayTags",
-				"SPUD"
+				"SPUD",
+				"Flow"
 			]
 		);
 		

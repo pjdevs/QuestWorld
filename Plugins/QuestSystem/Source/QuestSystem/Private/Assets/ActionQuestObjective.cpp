@@ -9,6 +9,7 @@ UActionQuestObjective::UActionQuestObjective()
 	: ActionToDo(FName("None")), TimesToDoAction(1)
 {
 	bIsRetroCompletable = false;
+	bShouldAddProgress = true;
 }
 
 int UActionQuestObjective::GetCompletion_Implementation(UWorld* World)

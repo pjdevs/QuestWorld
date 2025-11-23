@@ -33,6 +33,7 @@ class QUESTSYSTEM_API IQuestService
 public:
 	virtual void LoadQuests(FQuestLoadedDelegate CompletionDelegate = FQuestLoadedDelegate()) = 0;
 	virtual void StartQuest(const FPrimaryAssetId& QuestId, UWorld* World) = 0;
+	virtual void CompleteQuest(const FPrimaryAssetId& QuestId) = 0;
 	virtual TArray<FPrimaryAssetId> GetActiveQuests() const = 0;
 	virtual TArray<FPrimaryAssetId> GetCompletedQuests() const = 0;
 	virtual void SubmitQuestEvent(UWorld* World, UBaseQuestEvent* Event) = 0;
@@ -64,6 +65,7 @@ public:
 
 	virtual void LoadQuests(FQuestLoadedDelegate CompletionDelegate) override;
 	virtual void StartQuest(const FPrimaryAssetId& QuestId, UWorld* World) override;
+	virtual void CompleteQuest(const FPrimaryAssetId& QuestId) override;
 	virtual TArray<FPrimaryAssetId> GetActiveQuests() const override;
 	virtual TArray<FPrimaryAssetId> GetCompletedQuests() const override;
 	virtual void SubmitQuestEvent(UWorld* World, UBaseQuestEvent* Event) override;
@@ -82,7 +84,6 @@ public:
 	virtual FQuestSaveData GetQuestSave() const override;
 
 protected:
-	void CompleteQuest(const FPrimaryAssetId& QuestId);
 	void OnQuestsLoaded(const FQuestLoadedDelegate& CompletionDelegate);
 	
 private:

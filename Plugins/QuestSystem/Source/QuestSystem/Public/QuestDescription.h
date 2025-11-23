@@ -27,7 +27,7 @@ struct QUESTSYSTEM_API FQuestObjectiveDescription
 };
 
 /**
- * Description of a quest. Potentially to be user in UI.
+ * Description of a quest. Display only info to potentially be used in UI.
  */
 USTRUCT(BlueprintType)
 struct QUESTSYSTEM_API FQuestDescription

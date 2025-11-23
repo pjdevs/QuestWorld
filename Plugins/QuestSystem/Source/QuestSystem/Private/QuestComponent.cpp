@@ -92,16 +92,6 @@ void UQuestComponent::BeginPlay()
 	}
 }
 
-void UQuestComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
-{
-	Super::EndPlay(EndPlayReason);
-
-	if (GetOwnerRole() == ROLE_Authority)
-	{
-		WriteQuestsToSave();
-	}
-}
-
 void UQuestComponent::InitQuestService()
 {
 	QuestService = NewObject<UQuestServiceImpl>(this, FName("QuestService"));
@@ -172,8 +162,6 @@ void UQuestComponent::OnRep_CompletedQuests()
 {
 	OnCompletedQuestsUpdated.Broadcast();
 }
-
-// TODO Temp save test, expose save etc.
 
 void UQuestComponent::LoadQuestsFromSave(const FQuestSaveData& SaveData)
 {

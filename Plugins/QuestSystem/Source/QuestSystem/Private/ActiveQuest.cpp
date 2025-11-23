@@ -7,8 +7,8 @@
 #include "Assets/QuestDataAsset.h"
 
 
-FActiveQuest::FActiveQuest(const FPrimaryAssetId& QuestId, UQuestDataAsset* QuestDataAsset)
-	: QuestDataAsset(QuestDataAsset), QuestId(QuestId), bQuestCompleted(false)
+FActiveQuest::FActiveQuest(UQuestDataAsset* QuestDataAsset)
+	: QuestDataAsset(QuestDataAsset), QuestId(QuestDataAsset->GetPrimaryAssetId()), bQuestCompleted(false)
 {
 	for (TObjectPtr<UQuestObjective>& ObjectiveAsset : QuestDataAsset->Objectives)
 	{

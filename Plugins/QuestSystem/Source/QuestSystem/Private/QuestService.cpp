@@ -2,11 +2,14 @@
 
 #include "QuestService.h"
 #include "ActiveQuest.h"
+#include "FlowAsset.h"
+#include "FlowSubsystem.h"
 #include "PrimaryAssetTypes.h"
 #include "QuestDescription.h"
 #include "QuestSaveGame.h"
 #include "Assets/QuestDataAsset.h"
 #include "Engine/AssetManager.h"
+#include "Kismet/GameplayStatics.h"
 
 
 UQuestServiceImpl::UQuestServiceImpl() : QuestAssetType(PrimaryAssetTypes::Quest) { }
@@ -29,7 +32,17 @@ void UQuestServiceImpl::LoadQuests(FQuestLoadedDelegate CompletionDelegate)
 
 void UQuestServiceImpl::StartQuest(const FPrimaryAssetId& QuestId, UWorld* World)
 {
+	ensureMsgf(World != nullptr, TEXT("No world when starting quest."));
+	
 	UE_LOG(LogTemp, Display, TEXT("Starting Quest %s."), *QuestId.ToString());
+
+	UFlowSubsystem* FlowSubsystem = World->GetGameInstance()->GetSubsystem<UFlowSubsystem>();
+
+	if (!FlowSubsystem)
+	{
+		UE_LOG(LogTemp, Error, TEXT("No FlowSubsystem. Could not StartQuest %s."), *QuestId.ToString());
+		return;
+	}
 
 	if (CompletedQuestIds.Contains(QuestId))
 	{
@@ -51,18 +64,34 @@ void UQuestServiceImpl::StartQuest(const FPrimaryAssetId& QuestId, UWorld* World
 		return;
 	}
 	
-	const FActiveQuest ActiveQuest(QuestId, *QuestDataAssetPtr);
+	const FActiveQuest ActiveQuest(*QuestDataAssetPtr);
 	ActiveQuestsById.Add(QuestId, ActiveQuest);
 	
 	bool _ = QuestStartedDelegate.ExecuteIfBound(GetQuestDescription(QuestId));
-	
-	if (ActiveQuest.IsCompleted())
+
+	if (UFlowAsset* QuestFlowAsset = (*QuestDataAssetPtr)->QuestFlowAsset)
 	{
-		CompleteQuest(QuestId);
-		return;
+		FlowSubsystem->StartRootFlow(GetOuter(), QuestFlowAsset, false);
 	}
 
 	UE_LOG(LogTemp, Display, TEXT("Quest started."));
+}
+
+void UQuestServiceImpl::CompleteQuest(const FPrimaryAssetId& QuestId)
+{
+	if (!QuestAssetsById.Contains(QuestId) || CompletedQuestIds.Contains(QuestId))
+		return;
+
+	if (ActiveQuestsById.Contains(QuestId))
+	{
+		ActiveQuestsById.Remove(QuestId);
+	}
+	
+	CompletedQuestIds.Add(QuestId);
+
+	UE_LOG(LogTemp, Display, TEXT("Quest %s completed."), *QuestId.ToString());
+
+	bool _ = QuestCompletedDelegate.ExecuteIfBound(GetQuestDescription(QuestId));
 }
 
 TArray<FPrimaryAssetId> UQuestServiceImpl::GetActiveQuests() const
@@ -228,7 +257,7 @@ void UQuestServiceImpl::RestoreQuests(const FQuestSaveData& QuestSave, UWorld* W
 	{
 		const FPrimaryAssetId& QuestId = QuestData.QuestId;
 		UQuestDataAsset* QuestAsset = QuestAssetsById[QuestId];
-		FActiveQuest ActiveQuest = FActiveQuest(QuestId, QuestAsset);
+		FActiveQuest ActiveQuest(QuestAsset);
 
 		for (int i = 0; i < QuestData.ActiveObjectives.Num(); ++i)
 		{
@@ -276,23 +305,6 @@ FQuestSaveData UQuestServiceImpl::GetQuestSave() const
 	}
 
 	return QuestSaveData;
-}
-
-void UQuestServiceImpl::CompleteQuest(const FPrimaryAssetId& QuestId)
-{
-	if (!QuestAssetsById.Contains(QuestId) || CompletedQuestIds.Contains(QuestId))
-		return;
-
-	if (ActiveQuestsById.Contains(QuestId))
-	{
-		ActiveQuestsById.Remove(QuestId);
-	}
-	
-	CompletedQuestIds.Add(QuestId);
-
-	UE_LOG(LogTemp, Display, TEXT("Quest %s completed."), *QuestId.ToString());
-
-	bool _ = QuestCompletedDelegate.ExecuteIfBound(GetQuestDescription(QuestId));
 }
 
 void UQuestServiceImpl::OnQuestsLoaded(const FQuestLoadedDelegate& CompletionDelegate)

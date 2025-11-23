@@ -7,6 +7,7 @@
 #include "Engine/DataAsset.h"
 #include "QuestDataAsset.generated.h"
 
+class UFlowAsset;
 class UQuestObjective;
 
 /**
@@ -35,4 +36,7 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Quest")
 	bool bShouldAutocomplete;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Quest")
+	UFlowAsset* QuestFlowAsset;
 };
