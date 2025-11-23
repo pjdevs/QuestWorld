@@ -30,7 +30,8 @@ public class QuestIntegrationPlugin : ModuleRules
 				"InventoryPlugin",
 				"GameplayAbilities",
 				"GameplayAbilitySystemPlugin",
-				"SPUD"
+				"SPUD",
+				"Flow"
 			}
 		);
 			

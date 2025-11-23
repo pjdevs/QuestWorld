@@ -137,6 +137,8 @@ void UIPInteractiveComponent::StartInteractionInput(AActor* InteractionInstigato
 	}
 
 	IIPInteractionHandler::Execute_OnStartInteractionInput(GetOwner(), InteractionInstigator);
+
+	OnInteracted.Broadcast(InteractionInstigator);
 }
 
 void UIPInteractiveComponent::EndInteractionInput(AActor* InteractionInstigator)

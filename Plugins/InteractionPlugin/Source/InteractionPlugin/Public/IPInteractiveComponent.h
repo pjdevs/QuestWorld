@@ -9,6 +9,8 @@
 
 class UIPInteractorComponent;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FIPInteractionDelegate, AActor*, InteractionInstigator);
+
 UCLASS(ClassGroup=(Interaction), meta=(BlueprintSpawnableComponent))
 class INTERACTIONPLUGIN_API UIPInteractiveComponent : public UActorComponent
 {
@@ -26,21 +28,21 @@ public: // UIPInteractiveComponent public interface
 	 * Set interaction trigger to use.
 	 * @param InInteractionTrigger 
 	 */
-	UFUNCTION(BlueprintCallable, Category = Interaction)
+	UFUNCTION(BlueprintCallable, Category = "Interaction")
 	void SetInteractionTrigger(UPrimitiveComponent* InInteractionTrigger);
 
 	/**
 	 * Set indication trigger to use.
 	 * @param InIndicationTrigger 
 	 */
-	UFUNCTION(BlueprintCallable, Category = Interaction)
+	UFUNCTION(BlueprintCallable, Category = "Interaction")
 	void SetIndicationTrigger(UPrimitiveComponent* InIndicationTrigger);
 
 	/**
 	 * Set widget to use for displaying interaction prompt.
 	 * @param InInteractionWidget 
 	 */
-	UFUNCTION(BlueprintCallable, Category = Interaction)
+	UFUNCTION(BlueprintCallable, Category = "Interaction")
 	void SetInteractionWidget(UWidgetComponent* InInteractionWidget);
 	
 	/**
@@ -103,7 +105,7 @@ public: // UIPInteractiveComponent public interface
 	 * interacting/unavailable until EndInteractionPhase is called.
 	 * Will set InteractiveState.State to Busy.
 	 */
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = Interaction)
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Interaction")
 	void StartInteractionPhase(AActor* InteractionInstigator);
 
 	/**
@@ -115,7 +117,7 @@ public: // UIPInteractiveComponent public interface
 	 * - Interacted: will not be interactive again.
 	 * - Destroy: will replicate the state to clients and then destroy.
 	 */
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = Interaction)
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Interaction")
 	void EndInteractionPhase();
 
 	/**
@@ -123,9 +125,14 @@ public: // UIPInteractiveComponent public interface
 	 * (to update can be interacted condition etc.).
 	 * Should be called on both client and server in OnRep_ (to handle new conditions and widgets).
 	 */
-	UFUNCTION(BlueprintCallable, Category = Interaction)
+	UFUNCTION(BlueprintCallable, Category = "Interaction")
 	void NotifyStatusChanged();
 
+public:
+	/* Called when component has been interacted */
+	UPROPERTY(BlueprintAssignable, Category = "Interaction")
+	FIPInteractionDelegate OnInteracted;
+	
 protected:
 	UFUNCTION()
 	void HandleInteractionTriggerBeginOverlap(
@@ -169,37 +176,37 @@ protected:
 	/**
 	 * Class of the interaction widget.
 	 */
-	UPROPERTY(EditAnywhere, Category = Interaction)
+	UPROPERTY(EditAnywhere, Category = "Interaction")
 	TSubclassOf<UIPInteractionWidget> InteractionWidgetClass;
 
 	/**
 	 * Class of the indication widget.
 	 */
-	UPROPERTY(EditAnywhere, Category = Interaction)
+	UPROPERTY(EditAnywhere, Category = "Interaction")
 	TSubclassOf<UUserWidget> IndicationWidgetClass;
 
 	/**
 	 * Class of the indication widget when interaction is not possible.
 	 */
-	UPROPERTY(EditAnywhere, Category = Interaction)
+	UPROPERTY(EditAnywhere, Category = "Interaction")
 	TSubclassOf<UUserWidget> IndicationBlockedWidgetClass;
 
 	/**
 	 * Name of the interactive actor to show in the interaction widget.
 	 */
-	UPROPERTY(EditAnywhere, Category = Interaction)
+	UPROPERTY(EditAnywhere, Category = "Interaction")
 	FText InteractiveName;
 	
 	/**
 	 * Description of the interaction to show in the interaction widget.
 	 */
-	UPROPERTY(EditAnywhere, Category = Interaction)
+	UPROPERTY(EditAnywhere, Category = "Interaction")
 	FText InteractionDescription;
 
 	/**
 	 * Whether to auto interact with the first interactor entering trigger area.
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Interaction)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Interaction")
 	bool bIsAutoInteractive;
 
 protected:
