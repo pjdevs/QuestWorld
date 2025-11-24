@@ -6,58 +6,34 @@ public class QuestIntegrationPlugin : ModuleRules
 {
 	public QuestIntegrationPlugin(ReadOnlyTargetRules Target) : base(Target)
 	{
-		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
-		
-		PublicIncludePaths.AddRange(
-			new string[] {
-				// ... add public include paths required here ...
-			}
-		);
-				
-		
-		PrivateIncludePaths.AddRange(
-			new string[] {
-				// ... add other private include paths required here ...
-			}
-		);
-		
-		
+		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
+
 		PublicDependencyModuleNames.AddRange(
-			new string[]
-			{
+			[
 				"Core",
 				"DialogPlugin",
 				"InventoryPlugin",
 				"GameplayAbilities",
 				"GameplayAbilitySystemPlugin",
 				"SPUD",
-				"Flow"
-			}
+				"Flow",
+				"QuestSystem"
+			]
 		);
 			
 		
 		PrivateDependencyModuleNames.AddRange(
-			new string[]
-			{
+			[
 				"CoreUObject",
 				"Engine",
 				"Slate",
 				"SlateCore",
 				"UMG",
-				"QuestSystem",
 				"NotificationPlugin",
 				"InteractionPlugin",
 				"DialogPlugin",
-				"InventoryPlugin",
-			}
-		);
-		
-		
-		DynamicallyLoadedModuleNames.AddRange(
-			new string[]
-			{
-				// ... add any modules that your module loads dynamically here ...
-			}
+				"InventoryPlugin"
+			]
 		);
 	}
 }

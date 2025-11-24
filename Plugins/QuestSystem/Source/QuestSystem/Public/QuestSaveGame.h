@@ -3,7 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "FlowSave.h"
 #include "GameplayTags.h"
+#include "QuestId.h"
 #include "QuestSaveGame.generated.h"
 
 USTRUCT(Blueprintable, BlueprintType)
@@ -11,10 +13,10 @@ struct QUESTSYSTEM_API FActiveQuestObjectiveSaveData
 {
 	GENERATED_BODY()
 
-	UPROPERTY()
+	UPROPERTY(SaveGame)
 	FGameplayTag ObjectiveId = FGameplayTag::EmptyTag;
 
-	UPROPERTY()
+	UPROPERTY(SaveGame)
 	int CurrentProgress = 0;
 };
 
@@ -23,11 +25,14 @@ struct QUESTSYSTEM_API FActiveQuestSaveData
 {
 	GENERATED_BODY()
 
-	UPROPERTY()
-	FPrimaryAssetId QuestId = FPrimaryAssetId();
+	UPROPERTY(SaveGame)
+	FQuestId QuestId = FQuestId();
 
-	UPROPERTY()
+	UPROPERTY(SaveGame)
 	TArray<FActiveQuestObjectiveSaveData> ActiveObjectives = TArray<FActiveQuestObjectiveSaveData>();
+
+	UPROPERTY(SaveGame)
+	FFlowAssetSaveData QuestFlowSave = FFlowAssetSaveData();
 };
 
 USTRUCT(Blueprintable, BlueprintType)
@@ -35,9 +40,9 @@ struct QUESTSYSTEM_API FQuestSaveData
 {
 	GENERATED_BODY()
 
-	UPROPERTY()
+	UPROPERTY(SaveGame)
 	TArray<FActiveQuestSaveData> ActiveQuests = TArray<FActiveQuestSaveData>();
 
-	UPROPERTY()
-	TArray<FPrimaryAssetId> CompletedQuests = TArray<FPrimaryAssetId>();
+	UPROPERTY(SaveGame)
+	TArray<FQuestId> CompletedQuests = TArray<FQuestId>();
 };

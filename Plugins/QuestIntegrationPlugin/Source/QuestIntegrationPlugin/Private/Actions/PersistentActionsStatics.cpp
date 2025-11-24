@@ -1,9 +1,12 @@
-﻿#include "Actions/PersistentActionsStatics.h"
+﻿// Copyright pjdevs. All Rights Reserved.
 
-#include "QuestStatics.h"
+
+#include "Actions/PersistentActionsStatics.h"
+#include "QuestSubsystem.h"
 #include "Actions/PersistentActionsComponent.h"
 #include "Assets/ActionQuestEvent.h"
 #include "GameFramework/GameStateBase.h"
+
 
 UPersistentActionsComponent* UPersistentActionsStatics::GetPersistentActions(UObject* WorldContextObject)
 {
@@ -19,17 +22,19 @@ void UPersistentActionsStatics::SendPersistentAction(
 	AActor* ActionInstigator
 )
 {
+	const UWorld* World = GEngine->GetWorldFromContextObjectChecked(WorldContextObject);
+	
 	if (UPersistentActionsComponent* PersistentActions = GetPersistentActions(WorldContextObject))
 	{
 		PersistentActions->AddActionDone(ActionName);
 
-		if (UQuestComponent* QuestComponent = UQuestStatics::GetQuestComponent(WorldContextObject))
+		if (UQuestSubsystem* QuestSubsystem = World->GetGameInstance()->GetSubsystem<UQuestSubsystem>())
 		{
 			UActionQuestEvent* Event = NewObject<UActionQuestEvent>();
 			Event->ActionName = ActionName;
 			Event->ActionInstigator = ActionInstigator;
 
-			QuestComponent->SubmitQuestEvent(Event);
+			QuestSubsystem->SubmitQuestEvent(Event);
 		}
 	}
 }

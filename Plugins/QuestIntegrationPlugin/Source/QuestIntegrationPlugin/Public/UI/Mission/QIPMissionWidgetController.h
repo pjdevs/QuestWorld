@@ -21,6 +21,7 @@ class QUESTINTEGRATIONPLUGIN_API UQIPMissionWidgetController : public UObject
 	GENERATED_BODY()
 
 public:
+	UFUNCTION()
 	void InitializeWithGameState(AGameStateBase* InGameState);
 	void Cleanup();
 	void TriggerInitialEvents();
@@ -30,8 +31,10 @@ public:
 	FOnNoMissionDelegate OnNoMission;
 
 private:
+	void TryUpdateFirstMission() const;
+
 	UFUNCTION()
-	void OnActiveQuestsUpdated();
+	void OnQuestUpdated(const FQuestDescription& QuestDescription);
 	
 private:
 	UPROPERTY()

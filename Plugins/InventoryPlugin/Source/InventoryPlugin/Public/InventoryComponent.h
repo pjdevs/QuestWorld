@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "InventoryItemId.h"
-#include "InventorySaveData.h"
 #include "ISpudObject.h"
 #include "Net/Serialization/FastArraySerializer.h"
 #include "Components/ActorComponent.h"
@@ -20,11 +19,6 @@ USTRUCT(BlueprintType)
 struct INVENTORYPLUGIN_API FInventoryItemEntry: public FFastArraySerializerItem
 {
 	GENERATED_BODY()
-
-	bool operator==(const FInventoryItemId& OtherItemId) const
-	{
-		return ItemId == OtherItemId;
-	}
 
 	UPROPERTY(SaveGame)
 	FInventoryItemId ItemId = FInventoryItemId();

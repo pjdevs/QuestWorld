@@ -63,7 +63,12 @@ void FInventoryList::RemoveItem(const FInventoryItemId& ItemId, int ItemCountToR
 
 int FInventoryList::GetItemCount(const FInventoryItemId& ItemId) const
 {
-	const FInventoryItemEntry* Entry = Items.FindByKey(ItemId);
+	const FInventoryItemEntry* Entry = Items.FindByPredicate(
+		[&](const FInventoryItemEntry& InventoryEntry)
+		{
+			return InventoryEntry.ItemId == ItemId;
+		}
+	);
 	return Entry ? Entry->Quantity : 0;
 }
 

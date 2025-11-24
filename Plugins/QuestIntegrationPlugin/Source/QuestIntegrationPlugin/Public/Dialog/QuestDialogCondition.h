@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "DialogCondition.h"
+#include "QuestId.h"
 #include "QuestDialogCondition.generated.h"
 
 /**
@@ -29,9 +30,9 @@ public:
 	virtual bool IsSatisfied_Implementation(AController* DialogController) override;
 
 private:
-	UPROPERTY(EditDefaultsOnly, Category = Dialog, meta = (AllowPrivateAccess = true, AllowedTypes = Quest))
-	FPrimaryAssetId QuestId;
+	UPROPERTY(EditDefaultsOnly, Category = "Dialog", meta = (AllowPrivateAccess = true))
+	FQuestId QuestId;
 
-	UPROPERTY(EditDefaultsOnly, Category = Dialog)
+	UPROPERTY(EditDefaultsOnly, Category = "Dialog")
 	EQuestConditionBehavior Behavior;
 };

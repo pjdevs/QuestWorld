@@ -11,8 +11,8 @@ void UQIPMissionWidgetController::InitializeWithGameState(AGameStateBase* InGame
 
 	if (IsValid(QuestComponent))
 	{
-		OnActiveQuestsUpdated();
-		QuestComponent->OnActiveQuestsUpdated.AddDynamic(this, &UQIPMissionWidgetController::OnActiveQuestsUpdated);
+		TryUpdateFirstMission();
+		QuestComponent->OnQuestUpdated.AddDynamic(this, &UQIPMissionWidgetController::OnQuestUpdated);
 	}
 }
 
@@ -20,7 +20,7 @@ void UQIPMissionWidgetController::Cleanup()
 {
 	if (IsValid(QuestComponent))
 	{
-		QuestComponent->OnActiveQuestsUpdated.RemoveDynamic(this, &UQIPMissionWidgetController::OnActiveQuestsUpdated);
+		QuestComponent->OnQuestUpdated.RemoveDynamic(this, &UQIPMissionWidgetController::OnQuestUpdated);
 	}
 }
 
@@ -28,11 +28,11 @@ void UQIPMissionWidgetController::TriggerInitialEvents()
 {
 	if (IsValid(QuestComponent))
 	{
-		OnActiveQuestsUpdated();
+		TryUpdateFirstMission();
 	}
 }
 
-void UQIPMissionWidgetController::OnActiveQuestsUpdated()
+void UQIPMissionWidgetController::TryUpdateFirstMission() const
 {
 	const TArray<FQuestDescription>& ActiveQuests = QuestComponent->GetActiveQuests();
 
@@ -43,5 +43,13 @@ void UQIPMissionWidgetController::OnActiveQuestsUpdated()
 	else
 	{
 		OnNoMission.Broadcast();
+	}
+}
+
+void UQIPMissionWidgetController::OnQuestUpdated(const FQuestDescription& QuestDescription)
+{
+	if (IsValid(QuestComponent))
+	{
+		TryUpdateFirstMission();
 	}
 }

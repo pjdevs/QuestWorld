@@ -2,14 +2,12 @@
 
 
 #include "Dialog/QuestDialogCondition.h"
-
-#include "QuestComponent.h"
-#include "QuestStatics.h"
+#include "QuestSubsystem.h"
 
 
 bool UQuestDialogCondition::IsSatisfied_Implementation(AController* DialogController)
 {
-	if (const UQuestComponent* QuestSubsystem = UQuestStatics::GetQuestComponent(GetWorld()))
+	if (const UQuestSubsystem* QuestSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<UQuestSubsystem>())
 	{
 		switch (Behavior)
 		{

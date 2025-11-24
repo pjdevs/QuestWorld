@@ -2,16 +2,55 @@
 
 
 #include "QuestComponent.h"
-#include "QuestSaveGame.h"
-#include "QuestService.h"
+#include "QuestSubsystem.h"
 #include "Net/UnrealNetwork.h"
 
 
 UQuestComponent::UQuestComponent()
-	: QuestService(nullptr)
 {
 	PrimaryComponentTick.bCanEverTick = false;
 	SetIsReplicatedByDefault(true);
+
+	ActiveQuests.OnQuestAddedClient.BindLambda([&](const FQuestDescription& QuestDescription)
+	{
+		OnQuestStarted.Broadcast(QuestDescription);
+	});
+	ActiveQuests.OnQuestUpdatedClient.BindLambda([&](const FQuestDescription& QuestDescription)
+	{
+		OnQuestUpdated.Broadcast(QuestDescription);
+	});
+
+	CompletedQuests.OnQuestAddedClient.BindLambda([&](const FQuestDescription& QuestDescription)
+	{
+		OnQuestCompleted.Broadcast(QuestDescription);
+	});
+}
+
+void UQuestComponent::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (GetOwnerRole() != ROLE_Authority)
+	{
+		if (UQuestSubsystem* QuestSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<UQuestSubsystem>())
+		{
+			QuestSubsystem->OnQuestStarted.BindUObject(this, &UQuestComponent::OnQuestStartedServer);
+			QuestSubsystem->OnQuestCompleted.BindUObject(this, &UQuestComponent::OnQuestCompletedServer);
+			QuestSubsystem->OnQuestUpdated.BindUObject(this, &UQuestComponent::OnQuestUpdatedServer);
+
+			for (const FQuestId& ActiveQuestId : QuestSubsystem->GetActiveQuests())
+			{
+				const FQuestDescription& QuestDescription = QuestSubsystem->GetQuestDescription(ActiveQuestId);
+				ActiveQuests.AddOrUpdateQuest(QuestDescription);
+			}
+
+			for (const FQuestId& CompletedQuestId : QuestSubsystem->GetCompletedQuests())
+			{
+				const FQuestDescription& QuestDescription = QuestSubsystem->GetQuestDescription(CompletedQuestId);
+				ActiveQuests.AddOrUpdateQuest(QuestDescription);
+			}
+		}
+	}
 }
 
 void UQuestComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -22,159 +61,52 @@ void UQuestComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 	DOREPLIFETIME(UQuestComponent, CompletedQuests);
 }
 
-void UQuestComponent::SpudPostRestore_Implementation(const USpudState* State)
-{
-	LoadQuestsFromSave(QuestSaveData);
-}
-
-void UQuestComponent::SpudPreStore_Implementation(const USpudState* State)
-{
-	QuestSaveData = WriteQuestsToSave();
-}
-
-void UQuestComponent::StartQuest(FPrimaryAssetId QuestId)
-{
-	if (GetOwnerRole() != ROLE_Authority)
-	{
-		return;
-	}
-
-	QuestService->StartQuest(QuestId, GetWorld());
-}
-
 TArray<FQuestDescription> UQuestComponent::GetActiveQuests() const
 {
-	return ActiveQuests;
+	return ActiveQuests.GetQuests();
 }
 
 TArray<FQuestDescription> UQuestComponent::GetCompletedQuests() const
 {
-	return CompletedQuests;
+	return CompletedQuests.GetQuests();
 }
 
-bool UQuestComponent::IsQuestCompleted(FPrimaryAssetId QuestId) const
+void UQuestComponent::OnQuestStartedServer(const FQuestId& StartedQuestId)
 {
-	return CompletedQuests.ContainsByPredicate(
-		[&QuestId](const FQuestDescription& Quest)
-		{
-			return Quest.QuestId == QuestId;		
-		}
-	);
-}
-
-bool UQuestComponent::IsQuestActive(FPrimaryAssetId QuestId) const
-{
-	return ActiveQuests.ContainsByPredicate(
-		[&QuestId](const FQuestDescription& Quest)
-		{
-			return Quest.QuestId == QuestId;		
-		}
-	);
-}
-
-void UQuestComponent::SubmitQuestEvent(UBaseQuestEvent* Event)
-{
-	if (GetOwnerRole() != ROLE_Authority)
+	if (UQuestSubsystem* QuestSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<UQuestSubsystem>())
 	{
-		return;
-	}
-
-	QuestService->SubmitQuestEvent(GetWorld(), Event);
-}
-
-void UQuestComponent::BeginPlay()
-{
-	Super::BeginPlay();
-
-	if (GetOwnerRole() == ROLE_Authority)
-	{
-		InitQuestService();
+		const FQuestDescription& QuestDescription = QuestSubsystem->GetQuestDescription(StartedQuestId);
+		ActiveQuests.AddOrUpdateQuest(QuestDescription);
+		OnQuestStarted.Broadcast(QuestDescription);
 	}
 }
 
-void UQuestComponent::InitQuestService()
+void UQuestComponent::OnQuestCompletedServer(const FQuestId& CompletedQuestId)
 {
-	QuestService = NewObject<UQuestServiceImpl>(this, FName("QuestService"));
-	QuestService->SetQuestStartedDelegate(FQuestEventDelegate::CreateUObject(this, &UQuestComponent::OnQuestStartedServer));
-	QuestService->SetQuestCompletedDelegate(FQuestEventDelegate::CreateUObject(this, &UQuestComponent::OnQuestCompletedServer));
-	QuestService->SetQuestUpdatedDelegate(FQuestEventDelegate::CreateUObject(this, &UQuestComponent::OnQuestUpdatedServer));
-	QuestService->LoadQuests(FQuestLoadedDelegate::CreateUObject(this, &UQuestComponent::OnQuestsLoadedServer));
+	if (UQuestSubsystem* QuestSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<UQuestSubsystem>())
+	{
+		ActiveQuests.RemoveQuest(CompletedQuestId);
+
+		const FQuestDescription& QuestDescription = QuestSubsystem->GetQuestDescription(CompletedQuestId);
+		CompletedQuests.AddOrUpdateQuest(QuestDescription);
+	}
 }
 
-void UQuestComponent::OnQuestsLoadedServer()
+void UQuestComponent::OnQuestUpdatedServer(const FQuestId& UpdatedQuestId)
 {
-	OnQuestsLoaded.Broadcast();
-	
-	ActiveQuests = QuestService->GetActiveQuestDescriptions();
-	CompletedQuests = QuestService->GetCompletedQuestDescriptions();
-	
-	OnRep_ActiveQuests();
-	OnRep_CompletedQuests();
-}
-
-void UQuestComponent::OnQuestStartedServer(const FQuestDescription& StartedQuest)
-{
-	ActiveQuests = QuestService->GetActiveQuestDescriptions();
-	
-	OnRep_ActiveQuests();
-	Multicast_QuestStarted(StartedQuest);
-}
-
-void UQuestComponent::OnQuestCompletedServer(const FQuestDescription& CompletedQuest)
-{
-	ActiveQuests = QuestService->GetActiveQuestDescriptions();
-	CompletedQuests = QuestService->GetCompletedQuestDescriptions();
-
-	OnRep_ActiveQuests();
-	OnRep_CompletedQuests();
-	Multicast_QuestCompleted(CompletedQuest);
-}
-
-void UQuestComponent::OnQuestUpdatedServer(const FQuestDescription& UpdatedQuest)
-{
-	ActiveQuests = QuestService->GetActiveQuestDescriptions();
-
-	OnRep_ActiveQuests();
-	Multicast_QuestUpdated(UpdatedQuest);
-}
-
-void UQuestComponent::Multicast_QuestCompleted_Implementation(const FQuestDescription& StartedQuest)
-{
-	OnQuestCompleted.Broadcast(StartedQuest);
-}
-
-void UQuestComponent::Multicast_QuestStarted_Implementation(const FQuestDescription& StartedQuest)
-{
-	OnQuestStarted.Broadcast(StartedQuest);
-}
-
-void UQuestComponent::Multicast_QuestUpdated_Implementation(const FQuestDescription& StartedQuest)
-{
-	OnQuestUpdated.Broadcast(StartedQuest);
+	if (UQuestSubsystem* QuestSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<UQuestSubsystem>())
+	{
+		const FQuestDescription& QuestDescription = QuestSubsystem->GetQuestDescription(UpdatedQuestId);
+		ActiveQuests.AddOrUpdateQuest(QuestDescription);
+	}
 }
 
 void UQuestComponent::OnRep_ActiveQuests()
 {
-	OnActiveQuestsUpdated.Broadcast();	
+	bActiveQuestsReceived = true;
 }
 
 void UQuestComponent::OnRep_CompletedQuests()
 {
-	OnCompletedQuestsUpdated.Broadcast();
-}
-
-void UQuestComponent::LoadQuestsFromSave(const FQuestSaveData& SaveData)
-{
-	QuestService->RestoreQuests(SaveData, GetWorld());
-
-	ActiveQuests = QuestService->GetActiveQuestDescriptions();
-	CompletedQuests = QuestService->GetCompletedQuestDescriptions();
-
-	OnRep_ActiveQuests();
-	OnRep_CompletedQuests();
-}
-
-FQuestSaveData UQuestComponent::WriteQuestsToSave() const
-{
-	return QuestService->GetQuestSave();
+	bCompletedQuestsReceived = true;
 }

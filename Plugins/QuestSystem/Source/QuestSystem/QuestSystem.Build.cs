@@ -11,6 +11,7 @@ public class QuestSystem : ModuleRules
 		PublicDependencyModuleNames.AddRange(
 			[
 				"Core",
+				"NetCore",
 				"GameplayTags",
 				"SPUD",
 				"Flow"

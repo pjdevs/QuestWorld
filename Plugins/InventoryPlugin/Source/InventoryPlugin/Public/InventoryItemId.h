@@ -25,6 +25,6 @@ public:
 	}
 
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = true, AllowedTypes = InventoryItem))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowedTypes = InventoryItem))
 	FPrimaryAssetId InventoryItemAssetId;
 };

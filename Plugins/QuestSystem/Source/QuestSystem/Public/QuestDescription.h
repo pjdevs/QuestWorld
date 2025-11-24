@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "QuestId.h"
 #include "QuestDescription.generated.h"
 
 /**
@@ -13,16 +14,16 @@ struct QUESTSYSTEM_API FQuestObjectiveDescription
 {
 	GENERATED_BODY()
 
-	UPROPERTY(BlueprintReadOnly, Category = Quest)
+	UPROPERTY(BlueprintReadOnly, Category = "Quest")
 	FText Description = FText();
 
-	UPROPERTY(BlueprintReadOnly, Category = Quest)
+	UPROPERTY(BlueprintReadOnly, Category = "Quest")
 	int CurrentValue = 0;
 
-	UPROPERTY(BlueprintReadOnly, Category = Quest)
+	UPROPERTY(BlueprintReadOnly, Category = "Quest")
 	int TargetValue = 1;
 
-	UPROPERTY(BlueprintReadOnly, Category = Quest)
+	UPROPERTY(BlueprintReadOnly, Category = "Quest")
 	bool bIsCompleted = false;
 };
 
@@ -34,18 +35,18 @@ struct QUESTSYSTEM_API FQuestDescription
 {
 	GENERATED_BODY()
 
-	UPROPERTY(BlueprintReadOnly, Category = Quest)
-	FPrimaryAssetId QuestId = FPrimaryAssetId();
+	UPROPERTY(BlueprintReadOnly, Category = "Quest")
+	FQuestId QuestId = FQuestId();
 
-	UPROPERTY(BlueprintReadOnly, Category = Quest)
+	UPROPERTY(BlueprintReadOnly, Category = "Quest")
 	FText Title = FText();
 
-	UPROPERTY(BlueprintReadOnly, Category = Quest)
+	UPROPERTY(BlueprintReadOnly, Category = "Quest")
 	FText Description = FText();
 
-	UPROPERTY(BlueprintReadOnly, Category = Quest)
+	UPROPERTY(BlueprintReadOnly, Category = "Quest")
 	TArray<FQuestObjectiveDescription> Objectives = TArray<FQuestObjectiveDescription>();
 
-	UPROPERTY(BlueprintReadOnly, Category = Quest)
+	UPROPERTY(BlueprintReadOnly, Category = "Quest")
 	bool bIsCompleted = false;
 };

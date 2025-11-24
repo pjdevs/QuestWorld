@@ -5,6 +5,7 @@
 #include "InventoryComponent.h"
 #include "InventoryStatics.h"
 #include "QuestStatics.h"
+#include "QuestSubsystem.h"
 #include "Quest/InventoryQuestEvent.h"
 
 
@@ -56,5 +57,8 @@ void UInventoryQuestEventsComponent::SubmitItemCountChangedQuestEvent(FInventory
 	Event->ItemId = ItemId;
 	Event->NewItemCount = OwnerInventory->GetItemCount(ItemId);
 
-	UQuestStatics::SubmitQuestEvent(GetWorld(), Event);
+	if (UQuestSubsystem* QuestSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<UQuestSubsystem>())
+	{
+		QuestSubsystem->SubmitQuestEvent(Event);
+	}
 }
