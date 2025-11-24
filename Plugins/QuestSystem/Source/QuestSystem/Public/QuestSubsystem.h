@@ -41,6 +41,15 @@ public: // QuestSubsystem public interface
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Quest")
 	void CompleteQuest(FQuestId QuestId);
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Quest")
+	void StartObjective(FQuestId QuestId, const FGameplayTag& ObjectiveId);
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Quest")
+	void CompleteObjective(FQuestId QuestId, const FGameplayTag& ObjectiveId);
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Quest")
+	void ProgressObjective(FQuestId QuestId, const FGameplayTag& ObjectiveId, int Progress);
 	
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Quest")
 	void SubmitQuestEvent(UBaseQuestEvent* Event);
@@ -65,6 +74,9 @@ public: // QuestSubsystem public interface
 
 	UFUNCTION(BlueprintPure, BlueprintAuthorityOnly, Category = "Quest")
 	FQuestSaveData GetQuestSave() const;
+
+	UFUNCTION(BlueprintPure, BlueprintAuthorityOnly, Category = "Quest")
+	FQuestId GetQuestIdFromFlow(UFlowAsset* QuestFlowInstance) const;
 	
 public: // Delegates
 	FQuestEventDelegate OnQuestStarted;
@@ -80,10 +92,14 @@ private:
 
 	UPROPERTY()
 	TMap<FQuestId, TObjectPtr<UQuestDataAsset>> QuestAssetsById;
-	TMap<FQuestId, FActiveQuest> ActiveQuestsById;
-	TMap<FQuestId, TObjectPtr<UFlowAsset>> ActiveQuestFlowsById;
-	TArray<FQuestId> CompletedQuestIds;
 	
+	TMap<FQuestId, FActiveQuest> ActiveQuestsById;
+
+	UPROPERTY()
+	TMap<FQuestId, TObjectPtr<UFlowAsset>> ActiveQuestFlowsById;
+
+	TArray<FQuestId> CompletedQuestIds;
+
 	UPROPERTY(SaveGame)
 	FQuestSaveData SpudQuestSaveData;
 };

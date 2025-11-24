@@ -39,14 +39,6 @@ void UQuestSubsystem::StartQuest(FQuestId QuestId)
 {
 	UE_LOG(LogTemp, Display, TEXT("Starting Quest %s."), *QuestId.ToString());
 
-	UFlowSubsystem* FlowSubsystem = GetGameInstance()->GetSubsystem<UFlowSubsystem>();
-
-	if (!FlowSubsystem)
-	{
-		UE_LOG(LogTemp, Error, TEXT("No FlowSubsystem. Could not StartQuest %s."), *QuestId.ToString());
-		return;
-	}
-
 	if (CompletedQuestIds.Contains(QuestId))
 	{
 		UE_LOG(LogTemp, Display, TEXT("Quest already completed."));
@@ -72,11 +64,14 @@ void UQuestSubsystem::StartQuest(FQuestId QuestId)
 	
 	OnQuestStarted.ExecuteIfBound(QuestId);
 
-	if (UFlowAsset* QuestFlowAsset = QuestDataAsset->QuestFlowAsset)
+	if (UFlowSubsystem* FlowSubsystem = GetGameInstance()->GetSubsystem<UFlowSubsystem>())
 	{
-		UFlowAsset* QuestFlowInstance = FlowSubsystem->CreateRootFlow(this, QuestFlowAsset, false);
-		QuestFlowInstance->StartFlow();
-		ActiveQuestFlowsById.Add(QuestId, QuestFlowInstance);
+		if (UFlowAsset* QuestFlowAsset = QuestDataAsset->QuestFlowAsset)
+		{
+			UFlowAsset* QuestFlowInstance = FlowSubsystem->CreateRootFlow(this, QuestFlowAsset, false);
+			QuestFlowInstance->StartFlow();
+			ActiveQuestFlowsById.Add(QuestId, QuestFlowInstance);
+		}
 	}
 
 	UE_LOG(LogTemp, Display, TEXT("Quest started."));
@@ -95,12 +90,60 @@ void UQuestSubsystem::CompleteQuest(FQuestId QuestId)
 	{
 		ActiveQuestsById.Remove(QuestId);
 	}
+
+	if (UFlowSubsystem* FlowSubsystem = GetGameInstance()->GetSubsystem<UFlowSubsystem>())
+	{
+		if (UFlowAsset* QuestFlowAsset = QuestDataAsset->QuestFlowAsset)
+		{
+			FlowSubsystem->FinishRootFlow(this, QuestFlowAsset, EFlowFinishPolicy::Abort);
+			ActiveQuestFlowsById.Remove(QuestId);
+		}
+	}
 	
 	CompletedQuestIds.Add(QuestId);
 
 	UE_LOG(LogTemp, Display, TEXT("Quest %s completed."), *QuestId.ToString());
 
 	OnQuestCompleted.ExecuteIfBound(QuestId);
+}
+
+void UQuestSubsystem::StartObjective(FQuestId QuestId, const FGameplayTag& ObjectiveId)
+{
+	if (!ActiveQuestsById.Contains(QuestId))
+	{
+		return;
+	}
+
+	FActiveQuest& ActiveQuest = ActiveQuestsById[QuestId];
+	ActiveQuest.StartObjective(ObjectiveId, GetWorld());
+
+	OnQuestUpdated.ExecuteIfBound(QuestId);
+}
+
+void UQuestSubsystem::CompleteObjective(FQuestId QuestId, const FGameplayTag& ObjectiveId)
+{
+	if (!ActiveQuestsById.Contains(QuestId))
+	{
+		return;
+	}
+
+	FActiveQuest& ActiveQuest = ActiveQuestsById[QuestId];
+	ActiveQuest.CompleteObjective(ObjectiveId);
+
+	OnQuestUpdated.ExecuteIfBound(QuestId);
+}
+
+void UQuestSubsystem::ProgressObjective(FQuestId QuestId, const FGameplayTag& ObjectiveId, int Progress)
+{
+	if (!ActiveQuestsById.Contains(QuestId))
+	{
+		return;
+	}
+
+	FActiveQuest& ActiveQuest = ActiveQuestsById[QuestId];
+	ActiveQuest.ProgressObjective(ObjectiveId, Progress);
+
+	OnQuestUpdated.ExecuteIfBound(QuestId);
 }
 
 TArray<FQuestId> UQuestSubsystem::GetActiveQuests() const
@@ -171,6 +214,11 @@ FQuestDescription UQuestSubsystem::GetQuestDescription(const FQuestId& QuestId)
 			const FActiveQuestObjective* ActiveObjective = ActiveQuestsById
 				.FindChecked(QuestId)
 				.GetActiveObjective(ObjectiveAsset->ObjectiveId);
+
+			if (ActiveObjective == nullptr)
+			{
+				continue;
+			}
 			
 			CurrentProgress = ActiveObjective->GetCurrentProgress();
 			bIsObjectiveCompleted = ActiveObjective->IsObjectiveCompleted();
@@ -283,6 +331,12 @@ FQuestSaveData UQuestSubsystem::GetQuestSave() const
 	}
 
 	return QuestSaveData;
+}
+
+FQuestId UQuestSubsystem::GetQuestIdFromFlow(UFlowAsset* QuestFlowInstance) const
+{
+	const FQuestId* QuestIdPtr = ActiveQuestFlowsById.FindKey(QuestFlowInstance);
+	return QuestIdPtr != nullptr ? *QuestIdPtr : FQuestId();
 }
 
 UQuestDataAsset* UQuestSubsystem::GetQuestAsset(const FQuestId& QuestId)

@@ -13,16 +13,25 @@ UQuestComponent::UQuestComponent()
 
 	ActiveQuests.OnQuestAddedClient.BindLambda([&](const FQuestDescription& QuestDescription)
 	{
-		OnQuestStarted.Broadcast(QuestDescription);
+		if (bActiveQuestsReceived && bCompletedQuestsReceived)
+		{
+			OnQuestStarted.Broadcast(QuestDescription);
+		}
 	});
 	ActiveQuests.OnQuestUpdatedClient.BindLambda([&](const FQuestDescription& QuestDescription)
 	{
-		OnQuestUpdated.Broadcast(QuestDescription);
+		if (bActiveQuestsReceived && bCompletedQuestsReceived)
+		{
+			OnQuestUpdated.Broadcast(QuestDescription);
+		}
 	});
 
 	CompletedQuests.OnQuestAddedClient.BindLambda([&](const FQuestDescription& QuestDescription)
 	{
-		OnQuestCompleted.Broadcast(QuestDescription);
+		if (bActiveQuestsReceived && bCompletedQuestsReceived)
+		{
+			OnQuestCompleted.Broadcast(QuestDescription);
+		}
 	});
 }
 
@@ -30,7 +39,7 @@ void UQuestComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (GetOwnerRole() != ROLE_Authority)
+	if (GetOwnerRole() == ROLE_Authority)
 	{
 		if (UQuestSubsystem* QuestSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<UQuestSubsystem>())
 		{
@@ -77,6 +86,7 @@ void UQuestComponent::OnQuestStartedServer(const FQuestId& StartedQuestId)
 	{
 		const FQuestDescription& QuestDescription = QuestSubsystem->GetQuestDescription(StartedQuestId);
 		ActiveQuests.AddOrUpdateQuest(QuestDescription);
+
 		OnQuestStarted.Broadcast(QuestDescription);
 	}
 }
@@ -89,6 +99,8 @@ void UQuestComponent::OnQuestCompletedServer(const FQuestId& CompletedQuestId)
 
 		const FQuestDescription& QuestDescription = QuestSubsystem->GetQuestDescription(CompletedQuestId);
 		CompletedQuests.AddOrUpdateQuest(QuestDescription);
+
+		OnQuestCompleted.Broadcast(QuestDescription);
 	}
 }
 
@@ -98,6 +110,8 @@ void UQuestComponent::OnQuestUpdatedServer(const FQuestId& UpdatedQuestId)
 	{
 		const FQuestDescription& QuestDescription = QuestSubsystem->GetQuestDescription(UpdatedQuestId);
 		ActiveQuests.AddOrUpdateQuest(QuestDescription);
+
+		OnQuestUpdated.Broadcast(QuestDescription);
 	}
 }
 

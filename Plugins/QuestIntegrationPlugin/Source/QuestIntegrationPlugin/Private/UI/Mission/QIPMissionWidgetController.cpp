@@ -12,6 +12,8 @@ void UQIPMissionWidgetController::InitializeWithGameState(AGameStateBase* InGame
 	if (IsValid(QuestComponent))
 	{
 		TryUpdateFirstMission();
+		QuestComponent->OnQuestStarted.AddDynamic(this, &UQIPMissionWidgetController::OnQuestUpdated);
+		QuestComponent->OnQuestCompleted.AddDynamic(this, &UQIPMissionWidgetController::OnQuestUpdated);
 		QuestComponent->OnQuestUpdated.AddDynamic(this, &UQIPMissionWidgetController::OnQuestUpdated);
 	}
 }
@@ -20,6 +22,8 @@ void UQIPMissionWidgetController::Cleanup()
 {
 	if (IsValid(QuestComponent))
 	{
+		QuestComponent->OnQuestStarted.RemoveDynamic(this, &UQIPMissionWidgetController::OnQuestUpdated);
+		QuestComponent->OnQuestCompleted.RemoveDynamic(this, &UQIPMissionWidgetController::OnQuestUpdated);
 		QuestComponent->OnQuestUpdated.RemoveDynamic(this, &UQIPMissionWidgetController::OnQuestUpdated);
 	}
 }

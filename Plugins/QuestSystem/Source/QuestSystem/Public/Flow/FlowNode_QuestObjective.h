@@ -4,19 +4,19 @@
 
 #include "CoreMinimal.h"
 #include "Nodes/FlowNode.h"
-#include "FlowNode_Quest.generated.h"
+#include "FlowNode_QuestObjective.generated.h"
 
 /**
  * 
  */
-UCLASS(NotBlueprintable, meta = (DisplayName = "Quest"))
-class QUESTSYSTEM_API UFlowNode_Quest : public UFlowNode
+UCLASS(NotBlueprintable, meta = (DisplayName = "Quest Objective"))
+class QUESTSYSTEM_API UFlowNode_QuestObjective : public UFlowNode
 {
 	GENERATED_BODY()
 
 public:
-	UFlowNode_Quest(const FObjectInitializer& ObjectInitializer);
-
+	UFlowNode_QuestObjective(const FObjectInitializer& ObjectInitializer);
+	
 	virtual void ExecuteInput(const FName& PinName) override;
 
 #if WITH_EDITOR
@@ -24,8 +24,8 @@ public:
 	virtual FString GetNodeDescription() const override;
 	virtual EDataValidationResult ValidateNode() override;
 #endif
-	
+
 protected:
-	UPROPERTY(EditAnywhere, Category = "Quest", meta = (AllowedTypes = Quest))
-	FPrimaryAssetId QuestId;
+	UPROPERTY(EditAnywhere, Category = "Quest")
+	FGameplayTag ObjectiveId;
 };
