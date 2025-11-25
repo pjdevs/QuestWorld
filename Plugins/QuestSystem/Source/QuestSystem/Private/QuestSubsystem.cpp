@@ -81,7 +81,7 @@ void UQuestSubsystem::CompleteQuest(FQuestId QuestId)
 		return;
 	}
 
-	const FQuestState& Quest = QuestStatesById[QuestId];
+	FQuestState& Quest = QuestStatesById[QuestId];
 	
 	if (Quest.IsCompleted())
 	{
@@ -89,6 +89,8 @@ void UQuestSubsystem::CompleteQuest(FQuestId QuestId)
 		return;
 	}
 
+	Quest.CompleteQuest();
+	
 	if (UFlowSubsystem* FlowSubsystem = GetGameInstance()->GetSubsystem<UFlowSubsystem>())
 	{
 		if (UFlowAsset* QuestFlowAsset = Quest.GetQuestAsset()->QuestFlowAsset)
@@ -299,15 +301,16 @@ FQuestSaveData UQuestSubsystem::GetQuestSave() const
 	FQuestSaveData QuestSaveData;
 	QuestSaveData.QuestStates = TArray<FQuestStateSaveData>();
 
-	for (const auto& [QuestId, ActiveQuest] : QuestStatesById)
+	for (const auto& [QuestId, Quest] : QuestStatesById)
 	{
 		FQuestStateSaveData QuestStateData
 		{
 			.QuestId = QuestId,
-			.ObjectiveStates = TArray<FQuestObjectiveSateSaveData>()
+			.ObjectiveStates = TArray<FQuestObjectiveSateSaveData>(),
+			.bIsCompleted = Quest.IsCompleted()
 		};
 
-		for (auto& [ObjectiveId, Objective] : ActiveQuest.GetObjectives())
+		for (auto& [ObjectiveId, Objective] : Quest.GetObjectives())
 		{
 			FQuestObjectiveSateSaveData ObjectiveStateData
 			{
