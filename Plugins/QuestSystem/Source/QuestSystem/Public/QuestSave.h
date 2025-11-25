@@ -6,10 +6,10 @@
 #include "FlowSave.h"
 #include "GameplayTags.h"
 #include "QuestId.h"
-#include "QuestSaveGame.generated.h"
+#include "QuestSave.generated.h"
 
 USTRUCT(Blueprintable, BlueprintType)
-struct QUESTSYSTEM_API FActiveQuestObjectiveSaveData
+struct QUESTSYSTEM_API FQuestObjectiveSateSaveData
 {
 	GENERATED_BODY()
 
@@ -18,10 +18,13 @@ struct QUESTSYSTEM_API FActiveQuestObjectiveSaveData
 
 	UPROPERTY(SaveGame)
 	int CurrentProgress = 0;
+
+	UPROPERTY(SaveGame)
+	bool bIsCompleted = false;
 };
 
 USTRUCT(Blueprintable, BlueprintType)
-struct QUESTSYSTEM_API FActiveQuestSaveData
+struct QUESTSYSTEM_API FQuestStateSaveData
 {
 	GENERATED_BODY()
 
@@ -29,10 +32,13 @@ struct QUESTSYSTEM_API FActiveQuestSaveData
 	FQuestId QuestId = FQuestId();
 
 	UPROPERTY(SaveGame)
-	TArray<FActiveQuestObjectiveSaveData> ActiveObjectives = TArray<FActiveQuestObjectiveSaveData>();
+	TArray<FQuestObjectiveSateSaveData> ObjectiveStates = TArray<FQuestObjectiveSateSaveData>();
 
 	UPROPERTY(SaveGame)
 	FFlowAssetSaveData QuestFlowSave = FFlowAssetSaveData();
+
+	UPROPERTY(SaveGame)
+	bool bIsCompleted;
 };
 
 USTRUCT(Blueprintable, BlueprintType)
@@ -41,8 +47,5 @@ struct QUESTSYSTEM_API FQuestSaveData
 	GENERATED_BODY()
 
 	UPROPERTY(SaveGame)
-	TArray<FActiveQuestSaveData> ActiveQuests = TArray<FActiveQuestSaveData>();
-
-	UPROPERTY(SaveGame)
-	TArray<FQuestId> CompletedQuests = TArray<FQuestId>();
+	TArray<FQuestStateSaveData> QuestStates = TArray<FQuestStateSaveData>();
 };

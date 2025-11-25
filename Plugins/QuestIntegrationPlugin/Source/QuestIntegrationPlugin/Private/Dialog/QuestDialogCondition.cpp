@@ -12,9 +12,9 @@ bool UQuestDialogCondition::IsSatisfied_Implementation(AController* DialogContro
 		switch (Behavior)
 		{
 		case EQuestConditionBehavior::QuestNotStartNorCompleted:
-			return !QuestSubsystem->IsQuestCompleted(QuestId) && !QuestSubsystem->IsQuestActive(QuestId);
+			return !QuestSubsystem->IsQuestCompleted(QuestId) && !QuestSubsystem->IsQuestStarted(QuestId);
 		case EQuestConditionBehavior::QuestStarted:
-			return QuestSubsystem->IsQuestActive(QuestId);
+			return QuestSubsystem->IsQuestStarted(QuestId);
 		case EQuestConditionBehavior::QuestCompleted:
 			return QuestSubsystem->IsQuestCompleted(QuestId);
 		}

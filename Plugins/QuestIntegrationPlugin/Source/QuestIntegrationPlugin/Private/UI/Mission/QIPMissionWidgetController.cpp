@@ -38,11 +38,11 @@ void UQIPMissionWidgetController::TriggerInitialEvents()
 
 void UQIPMissionWidgetController::TryUpdateFirstMission() const
 {
-	const TArray<FQuestDescription>& ActiveQuests = QuestComponent->GetActiveQuests();
+	const TArray<FQuestDescription>& Quests = QuestComponent->GetKnownQuests();
 
-	if (ActiveQuests.Num() > 0)
+	if (Quests.Num() > 0 && !Quests[0].bIsCompleted)
 	{
-		OnMissionUpdated.Broadcast(ActiveQuests[0]);
+		OnMissionUpdated.Broadcast(Quests[0]);
 	}
 	else
 	{

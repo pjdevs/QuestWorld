@@ -13,7 +13,7 @@ UInventoryObjective::UInventoryObjective()
 	bShouldAddProgress = false;
 }
 
-int UInventoryObjective::GetCompletion_Implementation(UWorld* World)
+int UInventoryObjective::GetCompletion_Implementation(UWorld* World) const
 {
 	if (!World)
 	{
@@ -23,12 +23,12 @@ int UInventoryObjective::GetCompletion_Implementation(UWorld* World)
 	return UInventoryStatics::GetSharedInventory(World)->GetItemCount(TargetItemId);
 }
 
-int UInventoryObjective::GetTargetValue_Implementation()
+int UInventoryObjective::GetTargetValue_Implementation() const
 {
 	return TargetItemCount;
 }
 
-int UInventoryObjective::TriggerProgress_Implementation(UWorld* World, UBaseQuestEvent* Event)
+int UInventoryObjective::TriggerProgress_Implementation(UWorld* World, UBaseQuestEvent* Event) const
 {
 	if (const UInventoryQuestEvent* InventoryEvent = Cast<UInventoryQuestEvent>(Event))
 	{

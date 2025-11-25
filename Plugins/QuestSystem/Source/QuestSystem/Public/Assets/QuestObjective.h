@@ -23,13 +23,13 @@ public:
 	 * The current objective progression to TargetValue. Only for retro completable objectives.
 	 */
 	UFUNCTION(BlueprintNativeEvent)
-	int GetCompletion(UWorld* World);
+	int GetCompletion(UWorld* World) const;
 
 	/**
 	 * The target progression value to complete this objective.
 	 */
 	UFUNCTION(BlueprintNativeEvent)
-	int GetTargetValue();
+	int GetTargetValue() const;
 	
 	/**
 	 * Try progress this objective with the given quest event.
@@ -37,14 +37,14 @@ public:
 	 * Will use the return value as new progress if bShouldAddProgress instead of adding.
 	 */
 	UFUNCTION(BlueprintNativeEvent)
-	int TriggerProgress(UWorld* World, UBaseQuestEvent* Event);
+	int TriggerProgress(UWorld* World, UBaseQuestEvent* Event) const;
 	
 protected:
-	virtual int GetCompletion_Implementation(UWorld* World) { return 0; }
+	virtual int GetCompletion_Implementation(UWorld* World) const { return 0; }
 
-	virtual int GetTargetValue_Implementation() { return 0; }
+	virtual int GetTargetValue_Implementation() const { return 0; }
 	
-	virtual int TriggerProgress_Implementation(UWorld* World, UBaseQuestEvent* Event) { return 0; }
+	virtual int TriggerProgress_Implementation(UWorld* World, UBaseQuestEvent* Event) const { return 0; }
 
 public:
 	/**

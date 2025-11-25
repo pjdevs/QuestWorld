@@ -7,6 +7,8 @@
 
 static const FName StartPinName(TEXT("Start"));
 static const FName CompletePinName(TEXT("Complete"));
+static const FName CompletedPinName(TEXT("Completed"));
+static const FName StartedPinName(TEXT("Started"));
 
 UFlowNode_QuestObjective::UFlowNode_QuestObjective(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -15,6 +17,7 @@ UFlowNode_QuestObjective::UFlowNode_QuestObjective(const FObjectInitializer& Obj
 	Category = TEXT("Quest");
 #endif
 	InputPins = { FFlowPin(StartPinName), FFlowPin(CompletePinName) };
+	OutputPins = { FFlowPin(CompletedPinName), FFlowPin(StartedPinName) };
 }
 
 void UFlowNode_QuestObjective::ExecuteInput(const FName& PinName)
@@ -30,13 +33,14 @@ void UFlowNode_QuestObjective::ExecuteInput(const FName& PinName)
 	if (PinName == StartPinName)
 	{
 		QuestSubsystem->StartObjective(QuestId, ObjectiveId);
+		TriggerOutput(StartedPinName);
 	}
 	else if (PinName == CompletePinName)
 	{
 		QuestSubsystem->CompleteObjective(QuestId, ObjectiveId);
+		TriggerOutput(CompletedPinName, true);
 	}
 
-	TriggerFirstOutput(true);
 }
 
 #if WITH_EDITOR

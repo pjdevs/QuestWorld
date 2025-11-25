@@ -3,11 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "ActiveQuest.h"
+#include "QuestState.h"
 #include "ISpudObject.h"
 #include "QuestDescription.h"
 #include "QuestId.h"
-#include "QuestSaveGame.h"
+#include "QuestSave.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "QuestSubsystem.generated.h"
 
@@ -55,16 +55,13 @@ public: // QuestSubsystem public interface
 	void SubmitQuestEvent(UBaseQuestEvent* Event);
 
 	UFUNCTION(BlueprintPure, BlueprintAuthorityOnly, Category = "Quest")
-	TArray<FQuestId> GetActiveQuests() const;
+	TArray<FQuestId>GetKnownQuests() const;
 
 	UFUNCTION(BlueprintPure, BlueprintAuthorityOnly, Category = "Quest")
-	TArray<FQuestId> GetCompletedQuests() const;
+	bool IsQuestStarted(const FQuestId& QuestId) const;
 
 	UFUNCTION(BlueprintPure, BlueprintAuthorityOnly, Category = "Quest")
-	bool IsQuestActive(const FQuestId& QuestId) const { return ActiveQuestsById.Contains(QuestId); }
-
-	UFUNCTION(BlueprintPure, BlueprintAuthorityOnly, Category = "Quest")
-	bool IsQuestCompleted(const FQuestId& QuestId) const { return CompletedQuestIds.Contains(QuestId); }
+	bool IsQuestCompleted(const FQuestId& QuestId) const;
 
 	UFUNCTION(BlueprintPure, BlueprintAuthorityOnly, Category = "Quest")
 	FQuestDescription GetQuestDescription(const FQuestId& QuestId);
@@ -77,28 +74,26 @@ public: // QuestSubsystem public interface
 
 	UFUNCTION(BlueprintPure, BlueprintAuthorityOnly, Category = "Quest")
 	FQuestId GetQuestIdFromFlow(UFlowAsset* QuestFlowInstance) const;
-	
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Quest")
+	UQuestDataAsset* GetQuestAsset(const FQuestId& QuestId);
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Quest")
+	void UnloadAll();
+
 public: // Delegates
 	FQuestEventDelegate OnQuestStarted;
 	FQuestEventDelegate OnQuestCompleted;
 	FQuestEventDelegate OnQuestUpdated;
 
 private:
-	UQuestDataAsset* GetQuestAsset(const FQuestId& QuestId);
-	void UnloadAll();
-
-private:
-	FPrimaryAssetType QuestAssetType;
-
 	UPROPERTY()
 	TMap<FQuestId, TObjectPtr<UQuestDataAsset>> QuestAssetsById;
 	
-	TMap<FQuestId, FActiveQuest> ActiveQuestsById;
+	TMap<FQuestId, FQuestState> QuestStatesById;
 
 	UPROPERTY()
-	TMap<FQuestId, TObjectPtr<UFlowAsset>> ActiveQuestFlowsById;
-
-	TArray<FQuestId> CompletedQuestIds;
+	TMap<FQuestId, TObjectPtr<UFlowAsset>> QuestFlowsById;
 
 	UPROPERTY(SaveGame)
 	FQuestSaveData SpudQuestSaveData;

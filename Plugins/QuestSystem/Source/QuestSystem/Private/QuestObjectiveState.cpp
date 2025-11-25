@@ -1,26 +1,26 @@
 ﻿// Copyright pjdevs. All Rights Reserved.
 
 
-#include "ActiveQuestObjective.h"
+#include "QuestObjectiveState.h"
 #include "Assets/QuestObjective.h"
 
-FActiveQuestObjective::FActiveQuestObjective(UQuestObjective* ObjectiveAsset)
-	: ObjectiveAsset(ObjectiveAsset), CurrentProgress(0), bIsObjectiveCompleted(false)
+FQuestObjectiveState::FQuestObjectiveState(const UQuestObjective* ObjectiveAsset)
+	: ObjectiveAsset(ObjectiveAsset), CurrentProgress(0), bIsCompleted(false)
 {
 	ensureMsgf(ObjectiveAsset != nullptr, TEXT("ObjectiveAsset should not be null"));
 }
 
-void FActiveQuestObjective::SetCurrentProgress(int Progress)
+void FQuestObjectiveState::SetCurrentProgress(int Progress)
 {
 	CurrentProgress = Progress;
 
 	if (CurrentProgress >= ObjectiveAsset->GetTargetValue())
 	{
-		bIsObjectiveCompleted = true;
+		bIsCompleted = true;
 	}
 }
 
-void FActiveQuestObjective::ProgressObjective(int Progress)
+void FQuestObjectiveState::ProgressObjective(int Progress)
 {
 	if (ObjectiveAsset->bShouldAddProgress)
 	{
@@ -32,12 +32,12 @@ void FActiveQuestObjective::ProgressObjective(int Progress)
 	}
 }
 
-void FActiveQuestObjective::CompleteObjective()
+void FQuestObjectiveState::CompleteObjective()
 {
-	bIsObjectiveCompleted = true;
+	bIsCompleted = true;
 }
 
-bool FActiveQuestObjective::OnQuestEvent(UWorld* World, UBaseQuestEvent* Event)
+bool FQuestObjectiveState::OnQuestEvent(UWorld* World, UBaseQuestEvent* Event)
 {
 	const int OldProgress = CurrentProgress;
 	const int Progress = ObjectiveAsset->TriggerProgress(World, Event);

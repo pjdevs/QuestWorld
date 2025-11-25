@@ -22,16 +22,14 @@ public:
 	UQuestComponent();
 
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	
 public:
 	// Functions to access replicated quests
 	
 	UFUNCTION(BlueprintPure, Category = "Quest")
-	TArray<FQuestDescription> GetActiveQuests() const;
-	
-	UFUNCTION(BlueprintPure, Category = "Quest")
-	TArray<FQuestDescription> GetCompletedQuests() const;
+	TArray<FQuestDescription> GetKnownQuests() const;
 
 	// Delegates
 	// TODO also use FFastArraySerializer to replicate only needed quests
@@ -50,33 +48,18 @@ private:
 	 * Function called when active quest array is replicated on client.
 	 */
 	UFUNCTION()
-	void OnRep_ActiveQuests();
-
-	/**
-	 * Function called when completed quest array is replicated on client.
-	 */
-	UFUNCTION()
-	void OnRep_CompletedQuests();
+	void OnRep_KnownQuests();
 
 	// Callbacks
 
-	void OnQuestStartedServer(const FQuestId& StartedQuestId);
-	void OnQuestCompletedServer(const FQuestId& CompletedQuestId);
 	void OnQuestUpdatedServer(const FQuestId& UpdatedQuestId);
 
 private:
 	/**
 	 * Replicated array of currently active quests.
 	 */
-	UPROPERTY(ReplicatedUsing=OnRep_ActiveQuests)
-	FFastQuestDescriptionArray ActiveQuests;
+	UPROPERTY(ReplicatedUsing=OnRep_KnownQuests)
+	FFastQuestDescriptionArray KnownQuests;
 
-	/**
-	 * Replicated array of already completed quests.
-	 */
-	UPROPERTY(ReplicatedUsing=OnRep_CompletedQuests)
-	FFastQuestDescriptionArray CompletedQuests;
-
-	bool bActiveQuestsReceived;
-	bool bCompletedQuestsReceived;
+	bool bKnownQuestsReceived;
 };

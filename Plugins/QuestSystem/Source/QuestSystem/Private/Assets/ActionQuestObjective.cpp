@@ -12,17 +12,17 @@ UActionQuestObjective::UActionQuestObjective()
 	bShouldAddProgress = true;
 }
 
-int UActionQuestObjective::GetCompletion_Implementation(UWorld* World)
+int UActionQuestObjective::GetCompletion_Implementation(UWorld* World) const
 {
 	return 0;
 }
 
-int UActionQuestObjective::GetTargetValue_Implementation()
+int UActionQuestObjective::GetTargetValue_Implementation() const
 {
 	return TimesToDoAction;
 }
 
-int UActionQuestObjective::TriggerProgress_Implementation(UWorld* World, UBaseQuestEvent* Event)
+int UActionQuestObjective::TriggerProgress_Implementation(UWorld* World, UBaseQuestEvent* Event) const
 {
 	if (const UActionQuestEvent* ActionEvent = Cast<UActionQuestEvent>(Event))
 	{
