@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Assets/QuestPhaseReference.h"
 #include "Nodes/FlowNode.h"
 #include "FlowNode_QuestObjective.generated.h"
 
@@ -28,4 +29,7 @@ public:
 protected:
 	UPROPERTY(EditAnywhere, Category = "Quest")
 	FGameplayTag ObjectiveId;
+
+	UPROPERTY(EditAnywhere, Instanced, Category = "Quest")
+	UQuestPhaseReference* Phase;
 };

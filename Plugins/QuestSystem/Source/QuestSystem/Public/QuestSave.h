@@ -38,7 +38,7 @@ struct QUESTSYSTEM_API FQuestStateSaveData
 	FFlowAssetSaveData QuestFlowSave = FFlowAssetSaveData();
 
 	UPROPERTY(SaveGame)
-	bool bIsCompleted;
+	bool bIsCompleted = false;
 };
 
 USTRUCT(Blueprintable, BlueprintType)

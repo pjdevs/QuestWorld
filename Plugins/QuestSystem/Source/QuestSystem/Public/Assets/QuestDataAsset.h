@@ -21,9 +21,20 @@ class QUESTSYSTEM_API UQuestDataAsset : public UPrimaryDataAsset
 public:
 	virtual FPrimaryAssetId GetPrimaryAssetId() const override;
 
+#if WITH_EDITOR
+public:
+	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent) override;
+#endif
+
 public:
 	UPROPERTY(EditDefaultsOnly, Category = "Quest")
 	FGameplayTag QuestIdTag;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Quest")
+	TArray<FGameplayTag> Phases;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Quest")
+	TSet<FName> PhaseNames;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Quest")
 	FText Title;

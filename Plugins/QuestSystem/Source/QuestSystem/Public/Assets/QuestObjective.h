@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
+#include "QuestOwnedObjectInterface.h"
+#include "QuestPhaseList.h"
 #include "UObject/Object.h"
 #include "QuestObjective.generated.h"
 
@@ -14,7 +16,7 @@ class UBaseQuestEvent;
  * Can be subclassed to use counter functionality or use this one for manual completion.
  */
 UCLASS(Blueprintable, EditInlineNew, DefaultToInstanced)
-class QUESTSYSTEM_API UQuestObjective : public UObject
+class QUESTSYSTEM_API UQuestObjective : public UObject, public IQuestOwnedObjectInterface
 {
 	GENERATED_BODY()
 
@@ -46,13 +48,23 @@ protected:
 	
 	virtual int TriggerProgress_Implementation(UWorld* World, UBaseQuestEvent* Event) const { return 0; }
 
+#if WITH_EDITOR
 public:
+	virtual UQuestDataAsset* GetOwningQuest() const override;
+#endif
+	
 	/**
 	 * Id of the objective.
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Objective")
 	FGameplayTag ObjectiveId;
-	
+
+	/**
+	 * Quest phases in which objective should be active.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Objective")
+	FQuestPhaseList Phases;
+
 	/**
 	 * Can the objective be completed before this quest objective start and hence be checked right after it started.
 	 */

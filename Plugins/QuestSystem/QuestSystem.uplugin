@@ -19,12 +19,17 @@
 			"Name": "QuestSystem",
 			"Type": "Runtime",
 			"LoadingPhase": "Default"
+		},
+		{
+			"Name": "QuestSystemEditor",
+			"Type": "Editor",
+			"LoadingPhase": "Default"
 		}
 	],
-    "Plugins": [
-      {
-        "Name": "Flow",
-        "Enabled": true
-      }
-    ]
+	"Plugins": [
+		{
+			"Name": "Flow",
+			"Enabled": true
+		}
+	]
 }
