@@ -6,7 +6,6 @@
 #include "FastQuestDescriptionArray.h"
 #include "QuestDescription.h"
 #include "QuestId.h"
-#include "QuestSubsystem.h"
 #include "Components/ActorComponent.h"
 #include "QuestComponent.generated.h"
 

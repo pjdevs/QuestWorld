@@ -70,7 +70,13 @@ public:
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Objective")
 	FText ObjectiveDescription;
-
+	
+	/**
+	 * Is the objective optional. UI only for now.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Objective")
+	bool bIsOptional = false;
+	
 	/**
 	 * Can the objective be completed before this quest objective start and hence be checked right after it started.
 	 */

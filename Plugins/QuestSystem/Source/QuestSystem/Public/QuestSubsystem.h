@@ -89,8 +89,8 @@ public: // Delegates
 	FQuestObjectiveDelegate OnObjectiveCompleted;
 
 private:
-	void StartListenQuestEvents(FQuestState& Quest) const;
-	void StopListenQuestEvents(FQuestState& Quest) const;
+	void StartListeningQuestEvents(FQuestState& QuestState) const;
+	void StopListeningQuestEvents(FQuestState& QuestState) const;
 
 private:
 	UPROPERTY()

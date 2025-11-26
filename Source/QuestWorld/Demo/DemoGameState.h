@@ -3,15 +3,18 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "ISpudObject.h"
 #include "GameFramework/GameStateBase.h"
 #include "DemoGameState.generated.h"
 
+class UInventoryComponent;
 class UQuestComponent;
+
 /**
  * 
  */
 UCLASS()
-class QUESTWORLD_API ADemoGameState : public AGameStateBase
+class QUESTWORLD_API ADemoGameState : public AGameStateBase, public ISpudObject
 {
 	GENERATED_BODY()
 
@@ -20,5 +23,8 @@ public:
 	
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Quest)
-	UQuestComponent* QuestComponent;
+	TObjectPtr<UQuestComponent> QuestComponent;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, SaveGame, Category = Quest)
+	TObjectPtr<UInventoryComponent> SharedInventory;
 };

@@ -54,7 +54,8 @@ void UQuestSubsystem::StartQuest(FQuestId QuestId)
 		return;
 	}
 	
-	QuestStatesById.Add(QuestId, FQuestState(QuestId, QuestDataAsset));
+	FQuestState& QuestState = QuestStatesById.Add(QuestId, FQuestState(QuestId, QuestDataAsset));
+	StartListeningQuestEvents(QuestState);
 
 	if (UFlowSubsystem* FlowSubsystem = GetGameInstance()->GetSubsystem<UFlowSubsystem>())
 	{
@@ -81,19 +82,20 @@ void UQuestSubsystem::CompleteQuest(FQuestId QuestId)
 		return;
 	}
 
-	FQuestState& Quest = QuestStatesById[QuestId];
+	FQuestState& QuestState = QuestStatesById[QuestId];
 	
-	if (Quest.IsCompleted())
+	if (QuestState.IsCompleted())
 	{
 		UE_LOG(LogQuest, Verbose, TEXT("Quest already completed."));
 		return;
 	}
 
-	Quest.CompleteQuest();
+	QuestState.CompleteQuest();
+	StopListeningQuestEvents(QuestState);
 	
 	if (UFlowSubsystem* FlowSubsystem = GetGameInstance()->GetSubsystem<UFlowSubsystem>())
 	{
-		if (UFlowAsset* QuestFlowAsset = Quest.GetQuestAsset()->QuestFlowAsset)
+		if (UFlowAsset* QuestFlowAsset = QuestState.GetQuestAsset()->QuestFlowAsset)
 		{
 			FlowSubsystem->FinishRootFlow(this, QuestFlowAsset, EFlowFinishPolicy::Abort);
 			QuestFlowsById.Remove(QuestId);
@@ -253,9 +255,11 @@ FQuestDescription UQuestSubsystem::GetQuestDescription(const FQuestId& QuestId)
 	};
 }
 
+// TODO Unify with start quest
+
 void UQuestSubsystem::RestoreQuests(const FQuestSaveData& QuestSave)
 {
-	QuestStatesById.Empty();
+	UnloadAll();
 
 	for (const FQuestStateSaveData& QuestData : QuestSave.QuestStates)
 	{
@@ -277,6 +281,10 @@ void UQuestSubsystem::RestoreQuests(const FQuestSaveData& QuestSave)
 		if (QuestData.bIsCompleted)
 		{
 			QuestState.CompleteQuest();
+		}
+		else
+		{
+			StartListeningQuestEvents(QuestState);
 		}
 		
 		QuestStatesById.Add(
@@ -374,20 +382,22 @@ void UQuestSubsystem::UnloadAll()
 	{
 		FlowSubsystem->FinishAllRootFlows(this, EFlowFinishPolicy::Abort);
 	}
-	
+
 	QuestAssetsById.Empty();
+	QuestAssetsById.Empty();
+	QuestFlowsById.Empty();
 }
 
-void UQuestSubsystem::StartListenQuestEvents(FQuestState& Quest) const
+void UQuestSubsystem::StartListeningQuestEvents(FQuestState& QuestState) const
 {
-	const FQuestId& QuestId = Quest.GetQuestId();
-	Quest.OnObjectiveCompleted.BindLambda([this, QuestId](const FGameplayTag& ObjectiveId)
+	const FQuestId& QuestId = QuestState.GetQuestId();
+	QuestState.OnObjectiveCompleted.BindLambda([this, QuestId](const FGameplayTag& ObjectiveId)
 	{
 		OnObjectiveCompleted.Broadcast(QuestId, ObjectiveId);
 	});
 }
 
-void UQuestSubsystem::StopListenQuestEvents(FQuestState& Quest) const
+void UQuestSubsystem::StopListeningQuestEvents(FQuestState& QuestState) const
 {
-	Quest.OnObjectiveCompleted.Unbind();
+	QuestState.OnObjectiveCompleted.Unbind();
 }

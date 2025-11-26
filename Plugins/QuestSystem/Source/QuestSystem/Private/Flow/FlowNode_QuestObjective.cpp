@@ -25,22 +25,26 @@ void UFlowNode_QuestObjective::ExecuteInput(const FName& PinName)
 	UQuestSubsystem* QuestSubsystem = GetQuestSubsystem();
 	const FQuestId QuestId = QuestSubsystem->GetQuestIdFromFlow(GetFlowAsset());
 
-	ObjectiveCompletedDelegateHandle = QuestSubsystem->OnObjectiveCompleted.AddUObject(
-		this,
-		&UFlowNode_QuestObjective::OnObjectiveCompleted
-	);
-
 	if (PinName == StartPinName)
 	{
+		ObjectiveCompletedDelegateHandle = QuestSubsystem->OnObjectiveCompleted.AddUObject(
+			this,
+			&UFlowNode_QuestObjective::OnObjectiveCompleted
+		);
+
 		QuestSubsystem->StartObjective(QuestId, ObjectiveId);
 		TriggerOutput(StartedPinName);
 	}
 	else if (PinName == CompletePinName)
 	{
-		QuestSubsystem->OnObjectiveCompleted.Remove(ObjectiveCompletedDelegateHandle);
-		ObjectiveCompletedDelegateHandle.Reset();
+		if (ObjectiveCompletedDelegateHandle.IsValid())
+		{
+			QuestSubsystem->OnObjectiveCompleted.Remove(ObjectiveCompletedDelegateHandle);
+			ObjectiveCompletedDelegateHandle.Reset();
+		}
+
 		QuestSubsystem->CompleteObjective(QuestId, ObjectiveId);
-		TriggerOutput(CompletePinName, true);
+		TriggerOutput(CompletedPinName, true);
 	}
 }
 
@@ -52,24 +56,8 @@ void UFlowNode_QuestObjective::Cleanup()
 	{
 		UQuestSubsystem* QuestSubsystem = GetQuestSubsystem();
 		QuestSubsystem->OnObjectiveCompleted.Remove(ObjectiveCompletedDelegateHandle);
+		ObjectiveCompletedDelegateHandle.Reset();
 	}
-}
-
-#if WITH_EDITOR
-FString UFlowNode_QuestObjective::GetNodeDescription() const
-{
-	return ObjectiveId.ToString();
-}
-
-EDataValidationResult UFlowNode_QuestObjective::ValidateNode()
-{
-	if (!ObjectiveId.IsValid())
-	{
-		ValidationLog.Error<UFlowNode>(TEXT("ObjectiveId is invalid or not referencing a quest objective."), this);
-		return EDataValidationResult::Invalid;
-	}
-
-	return EDataValidationResult::Valid;
 }
 
 UQuestSubsystem* UFlowNode_QuestObjective::GetQuestSubsystem() const
@@ -90,5 +78,22 @@ void UFlowNode_QuestObjective::OnObjectiveCompleted(const FQuestId& QuestId, con
 	{
 		TriggerOutput(CompletedPinName, true);
 	}
+}
+
+#if WITH_EDITOR
+FString UFlowNode_QuestObjective::GetNodeDescription() const
+{
+	return ObjectiveId.ToString();
+}
+
+EDataValidationResult UFlowNode_QuestObjective::ValidateNode()
+{
+	if (!ObjectiveId.IsValid())
+	{
+		ValidationLog.Error<UFlowNode>(TEXT("ObjectiveId is invalid or not referencing a quest objective."), this);
+		return EDataValidationResult::Invalid;
+	}
+
+	return EDataValidationResult::Valid;
 }
 #endif
