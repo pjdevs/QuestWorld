@@ -42,9 +42,9 @@ void UQuestComponent::BeginPlay()
 	{
 		if (UQuestSubsystem* QuestSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<UQuestSubsystem>())
 		{
-			QuestSubsystem->OnQuestStarted.BindUObject(this, &UQuestComponent::OnQuestUpdatedServer);
-			QuestSubsystem->OnQuestCompleted.BindUObject(this, &UQuestComponent::OnQuestUpdatedServer);
-			QuestSubsystem->OnQuestUpdated.BindUObject(this, &UQuestComponent::OnQuestUpdatedServer);
+			QuestStartedDelegateHandle = QuestSubsystem->OnQuestStarted.AddUObject(this, &UQuestComponent::OnQuestUpdatedServer);
+			QuestCompletedDelegateHandle = QuestSubsystem->OnQuestCompleted.AddUObject(this, &UQuestComponent::OnQuestUpdatedServer);
+			QuestUpdatedDelegateHandle = QuestSubsystem->OnQuestUpdated.AddUObject(this, &UQuestComponent::OnQuestUpdatedServer);
 
 			for (const FQuestId& ActiveQuestId : QuestSubsystem->GetKnownQuests())
 			{
@@ -63,9 +63,9 @@ void UQuestComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	{
 		if (UQuestSubsystem* QuestSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<UQuestSubsystem>())
 		{
-			QuestSubsystem->OnQuestStarted.Unbind();
-			QuestSubsystem->OnQuestCompleted.Unbind();
-			QuestSubsystem->OnQuestUpdated.Unbind();
+			QuestSubsystem->OnQuestStarted.Remove(QuestStartedDelegateHandle);
+			QuestSubsystem->OnQuestCompleted.Remove(QuestCompletedDelegateHandle);
+			QuestSubsystem->OnQuestUpdated.Remove(QuestUpdatedDelegateHandle);
 		}
 	}
 }

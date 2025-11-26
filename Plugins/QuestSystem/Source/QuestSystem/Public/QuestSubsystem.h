@@ -14,8 +14,9 @@
 class UFlowAsset;
 class UBaseQuestEvent;
 
-DECLARE_DELEGATE(FQuestLoadedDelegate);
-DECLARE_DELEGATE_OneParam(FQuestEventDelegate, const FQuestId&);
+DECLARE_MULTICAST_DELEGATE(FQuestLoadedDelegate);
+DECLARE_MULTICAST_DELEGATE_OneParam(FQuestEventDelegate, const FQuestId& /* QuestId */);
+DECLARE_MULTICAST_DELEGATE_TwoParams(FQuestObjectiveDelegate, const FQuestId& /* QuestId */, const FGameplayTag& /* ObjectiveId */);
 
 /**
  * Core subsystem of the quest system. Only relevant on server.
@@ -85,6 +86,11 @@ public: // Delegates
 	FQuestEventDelegate OnQuestStarted;
 	FQuestEventDelegate OnQuestCompleted;
 	FQuestEventDelegate OnQuestUpdated;
+	FQuestObjectiveDelegate OnObjectiveCompleted;
+
+private:
+	void StartListenQuestEvents(FQuestState& Quest) const;
+	void StopListenQuestEvents(FQuestState& Quest) const;
 
 private:
 	UPROPERTY()

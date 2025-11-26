@@ -6,6 +6,7 @@
 #include "FastQuestDescriptionArray.h"
 #include "QuestDescription.h"
 #include "QuestId.h"
+#include "QuestSubsystem.h"
 #include "Components/ActorComponent.h"
 #include "QuestComponent.generated.h"
 
@@ -62,4 +63,8 @@ private:
 	FFastQuestDescriptionArray KnownQuests;
 
 	bool bKnownQuestsReceived;
+
+	FDelegateHandle QuestStartedDelegateHandle;
+	FDelegateHandle QuestCompletedDelegateHandle;
+	FDelegateHandle QuestUpdatedDelegateHandle;
 };

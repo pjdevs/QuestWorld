@@ -22,13 +22,13 @@ UFlowNode_QuestObjective::UFlowNode_QuestObjective(const FObjectInitializer& Obj
 
 void UFlowNode_QuestObjective::ExecuteInput(const FName& PinName)
 {
-	const UWorld* World = GetWorld();
-	ensureMsgf(World != nullptr, TEXT("World is nullptr in FlowNode_Quest"));
-	
-	UQuestSubsystem* QuestSubsystem = World->GetGameInstance()->GetSubsystem<UQuestSubsystem>();
-	ensureMsgf(World != nullptr, TEXT("QuestSubsystem is nullptr in FlowNode_Quest"));
-
+	UQuestSubsystem* QuestSubsystem = GetQuestSubsystem();
 	const FQuestId QuestId = QuestSubsystem->GetQuestIdFromFlow(GetFlowAsset());
+
+	ObjectiveCompletedDelegateHandle = QuestSubsystem->OnObjectiveCompleted.AddUObject(
+		this,
+		&UFlowNode_QuestObjective::OnObjectiveCompleted
+	);
 
 	if (PinName == StartPinName)
 	{
@@ -37,10 +37,22 @@ void UFlowNode_QuestObjective::ExecuteInput(const FName& PinName)
 	}
 	else if (PinName == CompletePinName)
 	{
+		QuestSubsystem->OnObjectiveCompleted.Remove(ObjectiveCompletedDelegateHandle);
+		ObjectiveCompletedDelegateHandle.Reset();
 		QuestSubsystem->CompleteObjective(QuestId, ObjectiveId);
-		TriggerOutput(CompletedPinName, true);
+		TriggerOutput(CompletePinName, true);
 	}
+}
 
+void UFlowNode_QuestObjective::Cleanup()
+{
+	Super::Cleanup();
+
+	if (ObjectiveCompletedDelegateHandle.IsValid())
+	{
+		UQuestSubsystem* QuestSubsystem = GetQuestSubsystem();
+		QuestSubsystem->OnObjectiveCompleted.Remove(ObjectiveCompletedDelegateHandle);
+	}
 }
 
 #if WITH_EDITOR
@@ -58,5 +70,25 @@ EDataValidationResult UFlowNode_QuestObjective::ValidateNode()
 	}
 
 	return EDataValidationResult::Valid;
+}
+
+UQuestSubsystem* UFlowNode_QuestObjective::GetQuestSubsystem() const
+{
+	const UWorld* World = GetWorld();
+	ensureMsgf(World != nullptr, TEXT("World is nullptr in FlowNode_QuestObjective"));
+	
+	UQuestSubsystem* QuestSubsystem = World->GetGameInstance()->GetSubsystem<UQuestSubsystem>();
+	ensureMsgf(World != nullptr, TEXT("QuestSubsystem is nullptr in FlowNode_QuestObjective"));
+
+	return QuestSubsystem;
+}
+
+void UFlowNode_QuestObjective::OnObjectiveCompleted(const FQuestId& QuestId, const FGameplayTag& CompletedObjectiveId)
+{
+	// for now assume unique tag per objective
+	if (CompletedObjectiveId == ObjectiveId)
+	{
+		TriggerOutput(CompletedPinName, true);
+	}
 }
 #endif

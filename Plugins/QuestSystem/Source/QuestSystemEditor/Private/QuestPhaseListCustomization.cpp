@@ -17,20 +17,14 @@ TSharedRef<IPropertyTypeCustomization> FQuestPhaseListCustomization::MakeInstanc
 void FQuestPhaseListCustomization::CustomizeHeader(
     TSharedRef<IPropertyHandle> StructHandle,
     FDetailWidgetRow& HeaderRow,
-    IPropertyTypeCustomizationUtils&)
-{
-    HeaderRow.NameContent()[StructHandle->CreatePropertyNameWidget()];
-}
-
-void FQuestPhaseListCustomization::CustomizeChildren(
-    TSharedRef<IPropertyHandle> StructHandle,
-    IDetailChildrenBuilder& ChildBuilder,
-    IPropertyTypeCustomizationUtils&)
+    IPropertyTypeCustomizationUtils& CustomizationUtils
+)
 {
     ThisStructHandle = StructHandle;
     PhasesHandle = ThisStructHandle->GetChildHandle(GET_MEMBER_NAME_CHECKED(FQuestPhaseList, Phases));
 
-    ChildBuilder.AddCustomRow(FText::FromString("Phases"))
+    //ChildBuilder.AddCustomRow(FText::FromString("Phases"))
+    HeaderRow
     .NameContent()
     [
         SNew(STextBlock).Text(FText::FromString("Phases"))
@@ -44,6 +38,15 @@ void FQuestPhaseListCustomization::CustomizeChildren(
             SNew(STextBlock).Text(this, &FQuestPhaseListCustomization::GetSummary)
         ]
     ];
+    // HeaderRow.NameContent()[StructHandle->CreatePropertyNameWidget()];
+}
+
+void FQuestPhaseListCustomization::CustomizeChildren(
+    TSharedRef<IPropertyHandle> StructHandle,
+    IDetailChildrenBuilder& ChildBuilder,
+    IPropertyTypeCustomizationUtils& CustomizationUtils
+)
+{
 }
 
 TSharedRef<SWidget> FQuestPhaseListCustomization::BuildMenu()

@@ -3,9 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Assets/QuestPhaseReference.h"
+#include "QuestId.h"
 #include "Nodes/FlowNode.h"
 #include "FlowNode_QuestObjective.generated.h"
+
+class UQuestSubsystem;
 
 /**
  * 
@@ -17,8 +19,9 @@ class QUESTSYSTEM_API UFlowNode_QuestObjective : public UFlowNode
 
 public:
 	UFlowNode_QuestObjective(const FObjectInitializer& ObjectInitializer);
-	
+
 	virtual void ExecuteInput(const FName& PinName) override;
+	virtual void Cleanup() override;
 
 #if WITH_EDITOR
 public:
@@ -26,10 +29,14 @@ public:
 	virtual EDataValidationResult ValidateNode() override;
 #endif
 
+private:
+	UQuestSubsystem* GetQuestSubsystem() const;
+	void OnObjectiveCompleted(const FQuestId& QuestId, const FGameplayTag& CompletedObjectiveId);
+
 protected:
 	UPROPERTY(EditAnywhere, Category = "Quest")
 	FGameplayTag ObjectiveId;
 
-	UPROPERTY(EditAnywhere, Instanced, Category = "Quest")
-	UQuestPhaseReference* Phase;
+private:
+	FDelegateHandle ObjectiveCompletedDelegateHandle;
 };

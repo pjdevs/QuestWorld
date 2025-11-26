@@ -9,6 +9,8 @@
 
 class UQuestDataAsset;
 
+DECLARE_DELEGATE_OneParam(FObjectiveDelegate, const FGameplayTag& /* ObjectiveId */)
+
 /**
  * Runtime representation of a currently active / started / in-progress or completed quest.
  */
@@ -39,6 +41,9 @@ public:
 	 * @return true if the event made some progression or false else.
 	 */
 	bool OnQuestEvent(UWorld* World, UBaseQuestEvent* Event);
+
+public:
+	FObjectiveDelegate OnObjectiveCompleted;
 
 private:
 	void CompleteQuestIfAllObjectivesCompleted(); 

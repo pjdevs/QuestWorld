@@ -27,13 +27,13 @@ void FQuestState::StartObjective(const FGameplayTag& ObjectiveId, UWorld* World)
 	}
 
 	const TObjectPtr<const UQuestObjective>& ObjectiveAsset = *ObjectiveAssetPtr;
-	FQuestObjectiveState& ActiveObjective = ObjectiveStates.Add(ObjectiveId, FQuestObjectiveState(ObjectiveAsset));
+	FQuestObjectiveState& ObjectiveState = ObjectiveStates.Add(ObjectiveId, FQuestObjectiveState(ObjectiveAsset));
 	
-	if (ActiveObjective.IsRetroCompletable())
+	if (ObjectiveState.IsRetroCompletable())
 	{
-		ActiveObjective.SetCurrentProgress(ObjectiveAsset->GetCompletion(World));
+		ObjectiveState.SetCurrentProgress(ObjectiveAsset->GetCompletion(World));
 
-		if (ActiveObjective.IsCompleted())
+		if (ObjectiveState.IsCompleted())
 		{
 			CompleteObjective(ObjectiveId);
 		}
@@ -59,6 +59,7 @@ void FQuestState::CompleteObjective(const FGameplayTag& ObjectiveId)
 	}
 
 	Objective->CompleteObjective();
+	OnObjectiveCompleted.ExecuteIfBound(ObjectiveId);
 	CompleteQuestIfAllObjectivesCompleted();
 }
 
@@ -97,9 +98,12 @@ bool FQuestState::OnQuestEvent(UWorld* World, UBaseQuestEvent* Event)
 		}
 		
 		bAnyObjectiveProgressed |= ObjectiveState.OnQuestEvent(World, Event);
-	}
 
-	CompleteQuestIfAllObjectivesCompleted();
+		if (ObjectiveState.IsCompleted())
+		{
+			CompleteObjective(ObjectiveId);
+		}
+	}
 
 	return bAnyObjectiveProgressed;
 }
