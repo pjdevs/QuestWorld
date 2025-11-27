@@ -29,7 +29,6 @@ class QUESTSYSTEM_API UQuestSubsystem : public UGameInstanceSubsystem, public IS
 
 public: // Subsystem
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
-	virtual bool ShouldCreateSubsystem(UObject* Outer) const override;
 
 public: // Spud
 	virtual void SpudPostRestore_Implementation(const USpudState* State) override;
@@ -71,13 +70,18 @@ public: // QuestSubsystem public interface
 	FQuestDescription GetQuestDescription(const FQuestId& QuestId);
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Quest")
-	void RestoreQuests(const FQuestSaveData& QuestSave);
+	void LoadQuestSave(const FQuestSaveData& QuestSave);
+	
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Quest")
+	void RestoreQuestsFromSave();
 
 	UFUNCTION(BlueprintPure, BlueprintAuthorityOnly, Category = "Quest")
-	FQuestSaveData GetQuestSave() const;
+	FQuestSaveData MakeQuestSave() const;
 
 	UFUNCTION(BlueprintPure, BlueprintAuthorityOnly, Category = "Quest")
 	FQuestId GetQuestIdFromFlow(UFlowAsset* QuestFlowInstance) const;
+
+	// Asset management
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Quest")
 	UQuestDataAsset* GetQuestAsset(const FQuestId& QuestId);
@@ -95,6 +99,9 @@ private:
 	void StartListeningQuestEvents(FQuestState& QuestState) const;
 	void StopListeningQuestEvents(FQuestState& QuestState) const;
 
+	UFUNCTION()
+	void OnSpudPostLoadGame(const FString& SlotName, bool bSuccess);
+
 private:
 	UPROPERTY()
 	TMap<FQuestId, TObjectPtr<UQuestDataAsset>> QuestAssetsById;
@@ -106,4 +113,7 @@ private:
 
 	UPROPERTY(SaveGame)
 	FQuestSaveData SpudQuestSaveData;
+	
+	FQuestSaveData LoadedQuestSaveData;
+	bool bHasSaveBeenLoaded;
 };

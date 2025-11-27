@@ -18,24 +18,21 @@ void UQuestSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 
 	USpudSubsystem* SpudSubsystem = Collection.InitializeDependency<USpudSubsystem>();
 	SpudSubsystem->AddPersistentGlobalObjectWithName(this, "QuestSubsystem");
-}
-
-bool UQuestSubsystem::ShouldCreateSubsystem(UObject* Outer) const
-{
-	return Super::ShouldCreateSubsystem(Outer);
+	SpudSubsystem->PostLoadGame.AddDynamic(this, &UQuestSubsystem::OnSpudPostLoadGame);
 }
 
 void UQuestSubsystem::SpudPostRestore_Implementation(const USpudState* State)
 {
-	RestoreQuests(SpudQuestSaveData);
+	LoadQuestSave(SpudQuestSaveData);
 }
 
 void UQuestSubsystem::SpudPreStore_Implementation(const USpudState* State)
 {
-	SpudQuestSaveData = GetQuestSave();
+	SpudQuestSaveData = MakeQuestSave();
 }
 
 // Quest
+
 void UQuestSubsystem::StartQuest(FQuestId QuestId)
 {
 	UE_LOG(LogQuest, Verbose, TEXT("Starting Quest %s."), *QuestId.ToString());
@@ -266,13 +263,23 @@ FQuestDescription UQuestSubsystem::GetQuestDescription(const FQuestId& QuestId)
 	};
 }
 
-// TODO Unify with start quest
-
-void UQuestSubsystem::RestoreQuests(const FQuestSaveData& QuestSave)
+void UQuestSubsystem::LoadQuestSave(const FQuestSaveData& QuestSave)
 {
 	UnloadAll();
+	LoadedQuestSaveData = QuestSave;
+	bHasSaveBeenLoaded = true;
+}
 
-	for (const FQuestStateSaveData& QuestData : QuestSave.QuestStates)
+// TODO Unify with start quest
+
+void UQuestSubsystem::RestoreQuestsFromSave()
+{
+	if (!bHasSaveBeenLoaded)
+	{
+		return;
+	}
+	
+	for (const FQuestStateSaveData& QuestData : LoadedQuestSaveData.QuestStates)
 	{
 		const FQuestId& QuestId = QuestData.QuestId;
 		const UQuestDataAsset* QuestAsset = GetQuestAsset(QuestId);
@@ -306,16 +313,23 @@ void UQuestSubsystem::RestoreQuests(const FQuestSaveData& QuestSave)
 		UFlowSubsystem* FlowSubsystem = GetGameInstance()->GetSubsystem<UFlowSubsystem>();
 		UFlowAsset* QuestFlowAsset = QuestAsset->QuestFlowAsset;
 		
-		if (!QuestData.bIsCompleted && FlowSubsystem && QuestFlowAsset)
+		if (!QuestData.bIsCompleted)
 		{
-			UFlowAsset* QuestFlowInstance = FlowSubsystem->CreateRootFlow(this, QuestFlowAsset, false);
-			QuestFlowsById.Add(QuestId, QuestFlowInstance);
-			QuestFlowInstance->LoadInstance(QuestData.QuestFlowSave);
+			if (FlowSubsystem && QuestFlowAsset)
+			{
+				UFlowAsset* QuestFlowInstance = FlowSubsystem->CreateRootFlow(this, QuestFlowAsset, false);
+				QuestFlowsById.Add(QuestId, QuestFlowInstance);
+				QuestFlowInstance->LoadInstance(QuestData.QuestFlowSave);
+			}
+
+			OnQuestUpdated.Broadcast(QuestId);
 		}
 	}
+
+	bHasSaveBeenLoaded = false;
 }
 
-FQuestSaveData UQuestSubsystem::GetQuestSave() const
+FQuestSaveData UQuestSubsystem::MakeQuestSave() const
 {
 	FQuestSaveData QuestSaveData;
 	QuestSaveData.QuestStates = TArray<FQuestStateSaveData>();
@@ -411,4 +425,12 @@ void UQuestSubsystem::StartListeningQuestEvents(FQuestState& QuestState) const
 void UQuestSubsystem::StopListeningQuestEvents(FQuestState& QuestState) const
 {
 	QuestState.OnObjectiveCompleted.Unbind();
+}
+
+void UQuestSubsystem::OnSpudPostLoadGame(const FString& SlotName, bool bSuccess)
+{
+	if (bSuccess)
+	{
+		RestoreQuestsFromSave();
+	}
 }
