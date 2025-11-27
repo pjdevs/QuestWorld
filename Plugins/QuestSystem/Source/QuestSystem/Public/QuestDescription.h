@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameplayTags.h"
 #include "QuestCompletionState.h"
+#include "QuestObjectiveCompletionState.h"
 #include "QuestId.h"
 #include "QuestDescription.generated.h"
 
@@ -26,7 +27,7 @@ struct QUESTSYSTEM_API FQuestObjectiveDescription
 	int TargetValue = 0;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Quest")
-	bool bIsCompleted = false;
+	EQuestObjectiveCompletionState CompletionState = EQuestObjectiveCompletionState::Started;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Quest")
 	bool bIsOptional = false;

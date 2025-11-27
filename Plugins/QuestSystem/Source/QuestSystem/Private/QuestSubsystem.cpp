@@ -217,7 +217,7 @@ FQuestDescription UQuestSubsystem::GetQuestDescription(const FQuestId& QuestId)
 			 .Description = ObjectiveState.GetDescription(),
 			.CurrentValue = ObjectiveState.GetCurrentProgress(),
 			.TargetValue = ObjectiveState.GetTargetProgress(),
-			.bIsCompleted = ObjectiveState.IsCompleted(),
+			.CompletionState = ObjectiveState.GetCompletionState(),
 			.bIsOptional = ObjectiveState.IsOptional()
 		});
 	}

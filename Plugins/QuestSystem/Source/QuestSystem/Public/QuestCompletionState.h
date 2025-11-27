@@ -2,7 +2,7 @@
 
 #pragma once
 
-UENUM()
+UENUM(BlueprintType)
 enum class EQuestCompletionState : uint8
 {
 	Started,
