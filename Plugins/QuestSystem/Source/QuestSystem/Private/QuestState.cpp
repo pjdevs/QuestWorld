@@ -126,16 +126,13 @@ void FQuestState::CompleteQuestIfAllObjectivesCompleted()
 		return;
 	}
 	
-	if (ObjectiveStates.Num() == ObjectiveAssets.Num())
+	for (auto& [ObjectiveId, ObjectiveState] : ObjectiveStates)
 	{
-		for (auto& [ObjectiveId, ObjectiveState] : ObjectiveStates)
+		if (!ObjectiveState.IsOptional() && !ObjectiveState.IsCompleted())
 		{
-			if (!ObjectiveState.IsCompleted())
-			{
-				return;
-			}
+			return;
 		}
-		
-		CompleteQuest();
 	}
+	
+	CompleteQuest();
 }
