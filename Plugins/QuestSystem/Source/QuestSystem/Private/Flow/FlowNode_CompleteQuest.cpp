@@ -5,8 +5,8 @@
 #include "QuestSubsystem.h"
 
 
-static const FName SucceedPinName(TEXT("Succeed"));
-static const FName FailPinName(TEXT("Fail"));
+static const FName SucceedQuestPinName(TEXT("Succeed"));
+static const FName FailQuestPinName(TEXT("Fail"));
 
 UFlowNode_CompleteQuest::UFlowNode_CompleteQuest(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -14,7 +14,7 @@ UFlowNode_CompleteQuest::UFlowNode_CompleteQuest(const FObjectInitializer& Objec
 #if WITH_EDITOR
 	Category = TEXT("Quest");
 #endif
-	InputPins = {  };
+	InputPins = { FFlowPin(SucceedQuestPinName), FFlowPin(FailQuestPinName) };
 }
 
 void UFlowNode_CompleteQuest::ExecuteInput(const FName& PinName)
@@ -27,11 +27,11 @@ void UFlowNode_CompleteQuest::ExecuteInput(const FName& PinName)
 
 	const FQuestId QuestId = QuestSubsystem->GetQuestIdFromFlow(GetFlowAsset());
 
-	if (PinName == SucceedPinName)
+	if (PinName == SucceedQuestPinName)
 	{
 		QuestSubsystem->SucceedQuest(QuestId);
 	}
-	else if (PinName == FailPinName)
+	else if (PinName == FailQuestPinName)
 	{
 		QuestSubsystem->FailQuest(QuestId);
 	}

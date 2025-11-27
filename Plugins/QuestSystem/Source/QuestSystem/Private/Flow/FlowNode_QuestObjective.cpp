@@ -5,11 +5,11 @@
 #include "QuestSubsystem.h"
 
 
-static const FName StartPinName(TEXT("Start"));
-static const FName SucceedPinName(TEXT("Succeed"));
-static const FName FailPinName(TEXT("Fail"));
-static const FName CompletedPinName(TEXT("Completed"));
-static const FName StartedPinName(TEXT("Started"));
+static const FName StartObjectivePinName(TEXT("Start"));
+static const FName SucceedObjectivePinName(TEXT("Succeed"));
+static const FName FailObjectivePinName(TEXT("Fail"));
+static const FName ObjectiveCompletedPinName(TEXT("Completed"));
+static const FName ObjectiveStartedPinName(TEXT("Started"));
 
 UFlowNode_QuestObjective::UFlowNode_QuestObjective(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -17,8 +17,8 @@ UFlowNode_QuestObjective::UFlowNode_QuestObjective(const FObjectInitializer& Obj
 #if WITH_EDITOR
 	Category = TEXT("Quest");
 #endif
-	InputPins = { FFlowPin(StartPinName), FFlowPin(SucceedPinName), FFlowPin(FailPinName) };
-	OutputPins = { FFlowPin(CompletedPinName), FFlowPin(StartedPinName) };
+	InputPins = { FFlowPin(StartObjectivePinName), FFlowPin(SucceedObjectivePinName), FFlowPin(FailObjectivePinName) };
+	OutputPins = { FFlowPin(ObjectiveCompletedPinName), FFlowPin(ObjectiveStartedPinName) };
 }
 
 void UFlowNode_QuestObjective::ExecuteInput(const FName& PinName)
@@ -26,7 +26,7 @@ void UFlowNode_QuestObjective::ExecuteInput(const FName& PinName)
 	UQuestSubsystem* QuestSubsystem = GetQuestSubsystem();
 	const FQuestId QuestId = QuestSubsystem->GetQuestIdFromFlow(GetFlowAsset());
 
-	if (PinName == StartPinName)
+	if (PinName == StartObjectivePinName)
 	{
 		ObjectiveCompletedDelegateHandle = QuestSubsystem->OnObjectiveCompleted.AddUObject(
 			this,
@@ -34,9 +34,9 @@ void UFlowNode_QuestObjective::ExecuteInput(const FName& PinName)
 		);
 
 		QuestSubsystem->StartObjective(QuestId, ObjectiveRef.ObjectiveId);
-		TriggerOutput(StartedPinName);
+		TriggerOutput(ObjectiveStartedPinName);
 	}
-	else if (PinName == SucceedPinName || PinName == FailPinName)
+	else if (PinName == SucceedObjectivePinName || PinName == FailObjectivePinName)
 	{
 		if (ObjectiveCompletedDelegateHandle.IsValid())
 		{
@@ -44,7 +44,7 @@ void UFlowNode_QuestObjective::ExecuteInput(const FName& PinName)
 			ObjectiveCompletedDelegateHandle.Reset();
 		}
 
-		if (PinName == SucceedPinName)
+		if (PinName == SucceedObjectivePinName)
 		{
 			QuestSubsystem->SucceedObjective(QuestId, ObjectiveRef.ObjectiveId);
 		}
@@ -53,7 +53,7 @@ void UFlowNode_QuestObjective::ExecuteInput(const FName& PinName)
 			QuestSubsystem->FailObjective(QuestId, ObjectiveRef.ObjectiveId);
 		}
 
-		TriggerOutput(CompletedPinName, true);
+		TriggerOutput(ObjectiveCompletedPinName, true);
 	}
 }
 
@@ -77,7 +77,7 @@ void UFlowNode_QuestObjective::OnLoad_Implementation()
 	
 	if (QuestSubsystem->IsObjectiveCompleted(QuestId, ObjectiveId))
 	{
-		TriggerOutput(CompletedPinName, true);
+		TriggerOutput(ObjectiveCompletedPinName, true);
 	}
 	else
 	{
@@ -111,7 +111,7 @@ void UFlowNode_QuestObjective::OnObjectiveCompleted(
 	// for now assume unique tag per objective
 	if (ThisQuestId == QuestId && CompletedObjectiveId == ObjectiveRef.ObjectiveId)
 	{
-		TriggerOutput(CompletedPinName, true);
+		TriggerOutput(ObjectiveCompletedPinName, true);
 	}
 }
 
