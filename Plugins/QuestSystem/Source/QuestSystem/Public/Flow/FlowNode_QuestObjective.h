@@ -3,10 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "QuestId.h"
+#include "Assets/QuestObjectiveReference.h"
 #include "Nodes/FlowNode.h"
 #include "FlowNode_QuestObjective.generated.h"
 
+struct FQuestId;
 class UQuestSubsystem;
 
 /**
@@ -22,6 +23,7 @@ public:
 
 	virtual void ExecuteInput(const FName& PinName) override;
 	virtual void Cleanup() override;
+	virtual void OnLoad_Implementation() override;
 
 #if WITH_EDITOR
 public:
@@ -35,7 +37,7 @@ private:
 
 protected:
 	UPROPERTY(EditAnywhere, Category = "Quest")
-	FGameplayTag ObjectiveId;
+	FQuestObjectiveReference ObjectiveRef;
 
 private:
 	FDelegateHandle ObjectiveCompletedDelegateHandle;

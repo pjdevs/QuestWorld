@@ -21,10 +21,13 @@ struct QUESTSYSTEM_API FQuestObjectiveDescription
 	int CurrentValue = 0;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Quest")
-	int TargetValue = 1;
+	int TargetValue = 0;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Quest")
 	bool bIsCompleted = false;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Quest")
+	bool bIsOptional = false;
 };
 
 /**

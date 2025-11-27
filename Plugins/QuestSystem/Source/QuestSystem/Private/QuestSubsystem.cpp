@@ -214,6 +214,16 @@ bool UQuestSubsystem::IsQuestCompleted(const FQuestId& QuestId) const
 	return false;
 }
 
+bool UQuestSubsystem::IsObjectiveCompleted(const FQuestId& QuestId, const FGameplayTag& ObjectiveId) const
+{
+	if (const FQuestState* QuestState = QuestStatesById.Find(QuestId))
+	{
+		return QuestState->IsObjectiveCompleted(ObjectiveId);
+	}
+
+	return false;
+}
+
 FQuestDescription UQuestSubsystem::GetQuestDescription(const FQuestId& QuestId)
 {
 	const FQuestState* QuestState = QuestStatesById.Find(QuestId);
@@ -238,10 +248,11 @@ FQuestDescription UQuestSubsystem::GetQuestDescription(const FQuestId& QuestId)
 	{
 		QuestObjectiveDescriptions.Add(FQuestObjectiveDescription
 		{
-			ObjectiveState.GetDescription(),
-			ObjectiveState.GetCurrentProgress(),
-			ObjectiveState.GetTargetProgress(),
-			ObjectiveState.IsCompleted()
+			 .Description = ObjectiveState.GetDescription(),
+			.CurrentValue = ObjectiveState.GetCurrentProgress(),
+			.TargetValue = ObjectiveState.GetTargetProgress(),
+			.bIsCompleted = ObjectiveState.IsCompleted(),
+			.bIsOptional = ObjectiveState.IsOptional()
 		});
 	}
 
@@ -298,8 +309,8 @@ void UQuestSubsystem::RestoreQuests(const FQuestSaveData& QuestSave)
 		if (!QuestData.bIsCompleted && FlowSubsystem && QuestFlowAsset)
 		{
 			UFlowAsset* QuestFlowInstance = FlowSubsystem->CreateRootFlow(this, QuestFlowAsset, false);
-			QuestFlowInstance->LoadInstance(QuestData.QuestFlowSave);
 			QuestFlowsById.Add(QuestId, QuestFlowInstance);
+			QuestFlowInstance->LoadInstance(QuestData.QuestFlowSave);
 		}
 	}
 }

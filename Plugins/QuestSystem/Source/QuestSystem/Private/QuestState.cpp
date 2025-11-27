@@ -16,6 +16,16 @@ FQuestState::FQuestState(const FQuestId& QuestId, const UQuestDataAsset* QuestAs
 	}
 }
 
+bool FQuestState::IsObjectiveCompleted(const FGameplayTag& ObjectiveId) const
+{
+	if (const FQuestObjectiveState* Objective = ObjectiveStates.Find(ObjectiveId))
+	{
+		return Objective->IsCompleted();
+	}
+
+	return false;
+}
+
 void FQuestState::StartObjective(const FGameplayTag& ObjectiveId, UWorld* World)
 {
 	const TObjectPtr<const UQuestObjective>* ObjectiveAssetPtr = ObjectiveAssets.Find(ObjectiveId);
@@ -35,6 +45,7 @@ void FQuestState::StartObjective(const FGameplayTag& ObjectiveId, UWorld* World)
 
 		if (ObjectiveState.IsCompleted())
 		{
+			ObjectiveState.SetCurrentProgress(ObjectiveAsset->GetTargetValue());
 			CompleteObjective(ObjectiveId);
 		}
 	}

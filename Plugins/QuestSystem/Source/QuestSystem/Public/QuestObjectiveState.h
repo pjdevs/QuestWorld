@@ -23,6 +23,7 @@ public:
 	const FText& GetDescription() const { return ObjectiveAsset->ObjectiveDescription; }
 	bool IsRetroCompletable() const { return ObjectiveAsset->bIsRetroCompletable; } 
 	bool IsCompleted() const { return bIsCompleted; }
+	bool IsOptional() const { return ObjectiveAsset->bIsOptional; }
 
 	int GetCurrentProgress() const { return CurrentProgress; }
 	int GetTargetProgress() const { return ObjectiveAsset->GetTargetValue(); }

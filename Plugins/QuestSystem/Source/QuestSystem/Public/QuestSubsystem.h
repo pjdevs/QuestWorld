@@ -65,6 +65,9 @@ public: // QuestSubsystem public interface
 	bool IsQuestCompleted(const FQuestId& QuestId) const;
 
 	UFUNCTION(BlueprintPure, BlueprintAuthorityOnly, Category = "Quest")
+	bool IsObjectiveCompleted(const FQuestId& QuestId, const FGameplayTag& ObjectiveId) const;
+
+	UFUNCTION(BlueprintPure, BlueprintAuthorityOnly, Category = "Quest")
 	FQuestDescription GetQuestDescription(const FQuestId& QuestId);
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Quest")

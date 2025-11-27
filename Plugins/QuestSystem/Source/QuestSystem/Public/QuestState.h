@@ -26,7 +26,9 @@ public:
 	const FQuestId& GetQuestId() const { return QuestId; }
 	const UQuestDataAsset* GetQuestAsset() const { return QuestAsset; }
 	bool IsCompleted() const { return bQuestCompleted; }
+	
 	const TMap<FGameplayTag, FQuestObjectiveState>& GetObjectives() const { return ObjectiveStates; }
+	bool IsObjectiveCompleted(const FGameplayTag& ObjectiveId) const;
 	
 	void StartObjective(const FGameplayTag& ObjectiveId, UWorld* World);
 	void CompleteObjective(const FGameplayTag& ObjectiveId);

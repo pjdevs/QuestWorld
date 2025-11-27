@@ -24,6 +24,7 @@ void UFlowNode_QuestObjective::ExecuteInput(const FName& PinName)
 {
 	UQuestSubsystem* QuestSubsystem = GetQuestSubsystem();
 	const FQuestId QuestId = QuestSubsystem->GetQuestIdFromFlow(GetFlowAsset());
+	const FGameplayTag& ObjectiveId = ObjectiveRef.GetObjectiveId();
 
 	if (PinName == StartPinName)
 	{
@@ -60,6 +61,25 @@ void UFlowNode_QuestObjective::Cleanup()
 	}
 }
 
+void UFlowNode_QuestObjective::OnLoad_Implementation()
+{
+	UQuestSubsystem* QuestSubsystem = GetQuestSubsystem();
+	const FQuestId QuestId = QuestSubsystem->GetQuestIdFromFlow(GetFlowAsset());
+	const FGameplayTag& ObjectiveId = ObjectiveRef.GetObjectiveId();
+	
+	if (QuestSubsystem->IsObjectiveCompleted(QuestId, ObjectiveId))
+	{
+		TriggerOutput(CompletedPinName, true);
+	}
+	else
+	{
+		ObjectiveCompletedDelegateHandle = QuestSubsystem->OnObjectiveCompleted.AddUObject(
+			this,
+			&UFlowNode_QuestObjective::OnObjectiveCompleted
+		);
+	}
+}
+
 UQuestSubsystem* UFlowNode_QuestObjective::GetQuestSubsystem() const
 {
 	const UWorld* World = GetWorld();
@@ -74,7 +94,7 @@ UQuestSubsystem* UFlowNode_QuestObjective::GetQuestSubsystem() const
 void UFlowNode_QuestObjective::OnObjectiveCompleted(const FQuestId& QuestId, const FGameplayTag& CompletedObjectiveId)
 {
 	// for now assume unique tag per objective
-	if (CompletedObjectiveId == ObjectiveId)
+	if (CompletedObjectiveId == ObjectiveRef.GetObjectiveId())
 	{
 		TriggerOutput(CompletedPinName, true);
 	}
@@ -83,14 +103,14 @@ void UFlowNode_QuestObjective::OnObjectiveCompleted(const FQuestId& QuestId, con
 #if WITH_EDITOR
 FString UFlowNode_QuestObjective::GetNodeDescription() const
 {
-	return ObjectiveId.ToString();
+	return ObjectiveRef.ObjectiveIdName.ToString();
 }
 
 EDataValidationResult UFlowNode_QuestObjective::ValidateNode()
 {
-	if (!ObjectiveId.IsValid())
+	if (!ObjectiveRef.IsValid())
 	{
-		ValidationLog.Error<UFlowNode>(TEXT("ObjectiveId is invalid or not referencing a quest objective."), this);
+		ValidationLog.Error<UFlowNode>(TEXT("ObjectiveRef is invalid or not referencing a quest objective."), this);
 		return EDataValidationResult::Invalid;
 	}
 
