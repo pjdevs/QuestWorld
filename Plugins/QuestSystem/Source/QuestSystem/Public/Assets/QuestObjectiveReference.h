@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
+#include "QuestDataAsset.h"
 #include "QuestObjectiveReference.generated.h"
 
 class UQuestDataAsset;
@@ -22,15 +23,32 @@ struct QUESTSYSTEM_API FQuestObjectiveReference
 #endif
 	
 	UPROPERTY(EditAnywhere, meta = (EditCondition = "QuestRef.IsValid()"))
-	FName ObjectiveIdName;
-
-public:
-	FGameplayTag GetObjectiveId() const { return FGameplayTag::RequestGameplayTag(ObjectiveIdName); }
+	FName ObjectiveId;
 
 #if WITH_EDITOR
 	bool IsValid() const
 	{
-		return !QuestRef.IsNull() && FGameplayTag::RequestGameplayTag(ObjectiveIdName, false).IsValid();
+		if (QuestRef.IsNull() || !ObjectiveId.IsValid() || ObjectiveId == NAME_None)
+		{
+			return false;
+		}
+
+		UQuestDataAsset* QuestAsset = QuestRef.LoadSynchronous();
+
+		if (QuestAsset == nullptr)
+		{
+			return false;
+		}
+
+		for (const TObjectPtr<UQuestObjective>& ObjectiveAsset : QuestAsset->Objectives)
+		{
+			if (ObjectiveId == ObjectiveAsset->ObjectiveId)
+			{
+				return true;
+			}
+		}
+
+		return false;
 	}
 #endif
 };

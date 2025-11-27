@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "QuestOwnedObjectInterface.h"
-#include "QuestPhaseList.h"
+#include "QuestPhaseReferences.h"
 #include "UObject/Object.h"
 #include "QuestPhaseReference.generated.h"
 
@@ -24,7 +24,7 @@ class QUESTSYSTEM_API UQuestPhaseReference : public UObject, public IQuestOwnedO
 #endif
 	
 	UPROPERTY(EditAnywhere)
-	FQuestPhaseList Phases;
+	FQuestPhaseReferences Phases;
 
 #if WITH_EDITOR
 public:

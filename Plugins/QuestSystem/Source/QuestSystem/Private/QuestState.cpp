@@ -8,7 +8,7 @@
 
 
 FQuestState::FQuestState(const FQuestId& QuestId, const UQuestDataAsset* QuestAsset)
-	: QuestId(QuestId), QuestAsset(QuestAsset), bQuestCompleted(false)
+	: QuestId(QuestId), QuestAsset(QuestAsset), State(EQuestCompletionState::Started)
 {
 	for (const TObjectPtr<UQuestObjective>& ObjectiveAsset : QuestAsset->Objectives)
 	{
@@ -16,7 +16,7 @@ FQuestState::FQuestState(const FQuestId& QuestId, const UQuestDataAsset* QuestAs
 	}
 }
 
-bool FQuestState::IsObjectiveCompleted(const FGameplayTag& ObjectiveId) const
+bool FQuestState::IsObjectiveCompleted(const FName& ObjectiveId) const
 {
 	if (const FQuestObjectiveState* Objective = ObjectiveStates.Find(ObjectiveId))
 	{
@@ -26,8 +26,13 @@ bool FQuestState::IsObjectiveCompleted(const FGameplayTag& ObjectiveId) const
 	return false;
 }
 
-void FQuestState::StartObjective(const FGameplayTag& ObjectiveId, UWorld* World)
+void FQuestState::StartObjective(const FName& ObjectiveId, UWorld* World)
 {
+	if (IsCompleted())
+	{
+		return;
+	}
+
 	const TObjectPtr<const UQuestObjective>* ObjectiveAssetPtr = ObjectiveAssets.Find(ObjectiveId);
 	
 	if (!ObjectiveAssetPtr)
@@ -46,15 +51,23 @@ void FQuestState::StartObjective(const FGameplayTag& ObjectiveId, UWorld* World)
 		if (ObjectiveState.IsCompleted())
 		{
 			ObjectiveState.SetCurrentProgress(ObjectiveAsset->GetTargetValue());
-			CompleteObjective(ObjectiveId);
+			CompleteObjective(ObjectiveId, EQuestObjectiveCompletionState::Succeeded);
 		}
 	}
 }
 
-void FQuestState::CompleteObjective(const FGameplayTag& ObjectiveId)
+void FQuestState::CompleteObjective(const FName& ObjectiveId, EQuestObjectiveCompletionState CompletionState)
 {
+	if (IsCompleted())
+	{
+		return;
+	}
+
+	ensure(CompletionState != EQuestObjectiveCompletionState::Started);
+
 	FQuestObjectiveState* Objective = ObjectiveStates.Find(ObjectiveId);
 
+	// Make a new objective state if it has not been started already
 	if (!Objective)
 	{
 		const TObjectPtr<const UQuestObjective>* ObjectiveAssetPtr = ObjectiveAssets.Find(ObjectiveId);
@@ -69,13 +82,18 @@ void FQuestState::CompleteObjective(const FGameplayTag& ObjectiveId)
 		Objective = &ObjectiveStates.Add(ObjectiveId, FQuestObjectiveState(ObjectiveAsset));
 	}
 
-	Objective->CompleteObjective();
-	OnObjectiveCompleted.ExecuteIfBound(ObjectiveId);
+	Objective->SetCompletionState(CompletionState);
+	OnObjectiveCompleted.ExecuteIfBound(ObjectiveId, CompletionState);
 	CompleteQuestIfAllObjectivesCompleted();
 }
 
-void FQuestState::ProgressObjective(const FGameplayTag& ObjectiveId, int Progress)
+void FQuestState::ProgressObjective(const FName& ObjectiveId, int Progress)
 {
+	if (IsCompleted())
+	{
+		return;
+	}
+
 	FQuestObjectiveState* Objective = ObjectiveStates.Find(ObjectiveId);
 
 	if (!Objective)
@@ -87,17 +105,18 @@ void FQuestState::ProgressObjective(const FGameplayTag& ObjectiveId, int Progres
 	Objective->ProgressObjective(Progress);
 }
 
-void FQuestState::CompleteQuest()
+void FQuestState::SetCompletionState(EQuestCompletionState CompletionState)
 {
-	bQuestCompleted = true;
+	State = CompletionState;
 }
 
 bool FQuestState::OnQuestEvent(UWorld* World, UBaseQuestEvent* Event)
 {
-	if (bQuestCompleted)
+	if (IsCompleted())
 	{
 		return false;
 	}
+	
 	
 	bool bAnyObjectiveProgressed = false;
 
@@ -112,7 +131,7 @@ bool FQuestState::OnQuestEvent(UWorld* World, UBaseQuestEvent* Event)
 
 		if (ObjectiveState.IsCompleted())
 		{
-			CompleteObjective(ObjectiveId);
+			CompleteObjective(ObjectiveId, EQuestObjectiveCompletionState::Succeeded);
 		}
 	}
 
@@ -121,6 +140,11 @@ bool FQuestState::OnQuestEvent(UWorld* World, UBaseQuestEvent* Event)
 
 void FQuestState::CompleteQuestIfAllObjectivesCompleted()
 {
+	if (IsCompleted())
+	{
+		return;
+	}
+
 	if (!QuestAsset->bShouldAutocomplete)
 	{
 		return;
@@ -134,5 +158,5 @@ void FQuestState::CompleteQuestIfAllObjectivesCompleted()
 		}
 	}
 	
-	CompleteQuest();
+	SetCompletionState(EQuestCompletionState::Succeeded);
 }

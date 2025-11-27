@@ -3,9 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameplayTagContainer.h"
 #include "UObject/Object.h"
-#include "QuestPhaseList.generated.h"
+#include "QuestPhaseReferences.generated.h"
 
 class UQuestDataAsset;
 
@@ -13,12 +12,12 @@ class UQuestDataAsset;
  * 
  */
 USTRUCT(BlueprintType)
-struct QUESTSYSTEM_API FQuestPhaseList
+struct QUESTSYSTEM_API FQuestPhaseReferences
 {
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere)
-	FGameplayTagContainer Phases;
+	TSet<FName> Phases;
 
 #if WITH_EDITOR
 public:

@@ -5,7 +5,7 @@
 #include "Assets/QuestObjective.h"
 
 FQuestObjectiveState::FQuestObjectiveState(const UQuestObjective* ObjectiveAsset)
-	: ObjectiveAsset(ObjectiveAsset), CurrentProgress(0), bIsCompleted(false)
+	: ObjectiveAsset(ObjectiveAsset), State(EQuestObjectiveCompletionState::Started), CurrentProgress(0)
 {
 	ensureMsgf(ObjectiveAsset != nullptr, TEXT("ObjectiveAsset should not be null"));
 }
@@ -16,7 +16,7 @@ void FQuestObjectiveState::SetCurrentProgress(int Progress)
 
 	if (CurrentProgress >= ObjectiveAsset->GetTargetValue())
 	{
-		bIsCompleted = true;
+		State = EQuestObjectiveCompletionState::Succeeded;
 	}
 }
 
@@ -32,9 +32,9 @@ void FQuestObjectiveState::ProgressObjective(int Progress)
 	}
 }
 
-void FQuestObjectiveState::CompleteObjective()
+void FQuestObjectiveState::SetCompletionState(EQuestObjectiveCompletionState CompletionState)
 {
-	bIsCompleted = true;
+	State = CompletionState;
 }
 
 bool FQuestObjectiveState::OnQuestEvent(UWorld* World, UBaseQuestEvent* Event)

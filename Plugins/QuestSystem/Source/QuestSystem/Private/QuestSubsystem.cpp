@@ -69,42 +69,17 @@ void UQuestSubsystem::StartQuest(FQuestId QuestId)
 	OnQuestStarted.Broadcast(QuestId);
 }
 
-void UQuestSubsystem::CompleteQuest(FQuestId QuestId)
+void UQuestSubsystem::SucceedQuest(FQuestId QuestId)
 {
-	UE_LOG(LogQuest, Verbose, TEXT("Completing Quest %s."), *QuestId.ToString());
-
-	if (!QuestStatesById.Contains(QuestId))
-	{
-		UE_LOG(LogQuest, Verbose, TEXT("Quest not even started."));
-		return;
-	}
-
-	FQuestState& QuestState = QuestStatesById[QuestId];
-	
-	if (QuestState.IsCompleted())
-	{
-		UE_LOG(LogQuest, Verbose, TEXT("Quest already completed."));
-		return;
-	}
-
-	QuestState.CompleteQuest();
-	StopListeningQuestEvents(QuestState);
-	
-	if (UFlowSubsystem* FlowSubsystem = GetGameInstance()->GetSubsystem<UFlowSubsystem>())
-	{
-		if (UFlowAsset* QuestFlowAsset = QuestState.GetQuestAsset()->QuestFlowAsset)
-		{
-			FlowSubsystem->FinishRootFlow(this, QuestFlowAsset, EFlowFinishPolicy::Abort);
-			QuestFlowsById.Remove(QuestId);
-		}
-	}
-
-	UE_LOG(LogQuest, Verbose, TEXT("Quest %s completed."), *QuestId.ToString());
-
-	OnQuestCompleted.Broadcast(QuestId);
+	CompleteQuest(QuestId, EQuestCompletionState::Succeeded);
 }
 
-void UQuestSubsystem::StartObjective(FQuestId QuestId, const FGameplayTag& ObjectiveId)
+void UQuestSubsystem::FailQuest(const FQuestId& QuestId)
+{
+	CompleteQuest(QuestId, EQuestCompletionState::Failed);
+}
+
+void UQuestSubsystem::StartObjective(FQuestId QuestId, const FName& ObjectiveId)
 {
 	UE_LOG(LogQuest, Verbose, TEXT("Starting objective %s."), *ObjectiveId.ToString());
 	
@@ -122,25 +97,17 @@ void UQuestSubsystem::StartObjective(FQuestId QuestId, const FGameplayTag& Objec
 	OnQuestUpdated.Broadcast(QuestId);
 }
 
-void UQuestSubsystem::CompleteObjective(FQuestId QuestId, const FGameplayTag& ObjectiveId)
+void UQuestSubsystem::SucceedObjective(FQuestId QuestId, const FName& ObjectiveId)
 {
-	UE_LOG(LogQuest, Verbose, TEXT("Completing objective %s."), *ObjectiveId.ToString());
-	
-	if (!QuestStatesById.Contains(QuestId))
-	{
-		UE_LOG(LogQuest, Verbose, TEXT("Quest not even started."));
-		return;
-	}
-
-	FQuestState& Quest = QuestStatesById[QuestId];
-	Quest.CompleteObjective(ObjectiveId);
-
-	UE_LOG(LogQuest, Verbose, TEXT("Objective completed."));
-
-	OnQuestUpdated.Broadcast(QuestId);
+	CompleteObjective(QuestId, ObjectiveId, EQuestObjectiveCompletionState::Succeeded);
 }
 
-void UQuestSubsystem::ProgressObjective(FQuestId QuestId, const FGameplayTag& ObjectiveId, int Progress)
+void UQuestSubsystem::FailObjective(FQuestId QuestId, const FName& ObjectiveId)
+{
+	CompleteObjective(QuestId, ObjectiveId, EQuestObjectiveCompletionState::Failed);
+}
+
+void UQuestSubsystem::ProgressObjective(FQuestId QuestId, const FName& ObjectiveId, int Progress)
 {
 	if (!QuestStatesById.Contains(QuestId))
 	{
@@ -156,6 +123,7 @@ void UQuestSubsystem::ProgressObjective(FQuestId QuestId, const FGameplayTag& Ob
 
 void UQuestSubsystem::SubmitQuestEvent(UBaseQuestEvent* Event)
 {
+	// Handle auto complete
 	TArray<FQuestId> QuestToCompleteIds;
 	
 	for (auto& [QuestId, Quest] : QuestStatesById)
@@ -176,9 +144,10 @@ void UQuestSubsystem::SubmitQuestEvent(UBaseQuestEvent* Event)
 		}
 	}
 
+	// Complete quest
 	for (const FQuestId& QuestId : QuestToCompleteIds)
 	{
-		CompleteQuest(QuestId);
+		HandleQuestCompleted(QuestStatesById[QuestId]);
 	}
 }
 
@@ -211,7 +180,7 @@ bool UQuestSubsystem::IsQuestCompleted(const FQuestId& QuestId) const
 	return false;
 }
 
-bool UQuestSubsystem::IsObjectiveCompleted(const FQuestId& QuestId, const FGameplayTag& ObjectiveId) const
+bool UQuestSubsystem::IsObjectiveCompleted(const FQuestId& QuestId, const FName& ObjectiveId) const
 {
 	if (const FQuestState* QuestState = QuestStatesById.Find(QuestId))
 	{
@@ -255,11 +224,12 @@ FQuestDescription UQuestSubsystem::GetQuestDescription(const FQuestId& QuestId)
 
 	return FQuestDescription
 	{
-		QuestId,
-		QuestDataAsset->Title,
-		QuestDataAsset->Description,
-		QuestObjectiveDescriptions,
-		QuestState->IsCompleted()
+		.QuestId = QuestId,
+		.QuestType = QuestDataAsset->QuestType,
+		.Title = QuestDataAsset->Title,
+		.Description = QuestDataAsset->Description,
+		.Objectives = QuestObjectiveDescriptions,
+		.CompletionState = QuestState->GetCompletionState()
 	};
 }
 
@@ -290,15 +260,15 @@ void UQuestSubsystem::RestoreQuestsFromSave()
 			QuestState.StartObjective(ObjectiveData.ObjectiveId, GetWorld());
 			QuestState.ProgressObjective(ObjectiveData.ObjectiveId, ObjectiveData.CurrentProgress);
 
-			if (ObjectiveData.bIsCompleted)
+			if (ObjectiveData.CompletionState != EQuestObjectiveCompletionState::Started)
 			{
-				QuestState.CompleteObjective(ObjectiveData.ObjectiveId);
+				QuestState.CompleteObjective(ObjectiveData.ObjectiveId, ObjectiveData.CompletionState);
 			}
 		}
 
-		if (QuestData.bIsCompleted)
+		if (QuestData.CompletionState != EQuestCompletionState::Started)
 		{
-			QuestState.CompleteQuest();
+			QuestState.SetCompletionState(QuestData.CompletionState);
 		}
 		else
 		{
@@ -313,7 +283,7 @@ void UQuestSubsystem::RestoreQuestsFromSave()
 		UFlowSubsystem* FlowSubsystem = GetGameInstance()->GetSubsystem<UFlowSubsystem>();
 		UFlowAsset* QuestFlowAsset = QuestAsset->QuestFlowAsset;
 		
-		if (!QuestData.bIsCompleted)
+		if (!QuestState.IsCompleted())
 		{
 			if (FlowSubsystem && QuestFlowAsset)
 			{
@@ -340,7 +310,7 @@ FQuestSaveData UQuestSubsystem::MakeQuestSave() const
 		{
 			.QuestId = QuestId,
 			.ObjectiveStates = TArray<FQuestObjectiveSateSaveData>(),
-			.bIsCompleted = Quest.IsCompleted()
+			.CompletionState = Quest.GetCompletionState()
 		};
 
 		for (auto& [ObjectiveId, Objective] : Quest.GetObjectives())
@@ -349,7 +319,7 @@ FQuestSaveData UQuestSubsystem::MakeQuestSave() const
 			{
 				.ObjectiveId = Objective.GetObjectiveId(), 
 				.CurrentProgress = Objective.GetCurrentProgress(),
-				.bIsCompleted = Objective.IsCompleted(),
+				.CompletionState = Objective.GetCompletionState(),
 			};
 			QuestStateData.ObjectiveStates.Add(ObjectiveStateData);
 		}
@@ -413,13 +383,83 @@ void UQuestSubsystem::UnloadAll()
 	QuestFlowsById.Empty();
 }
 
+void UQuestSubsystem::CompleteQuest(const FQuestId& QuestId, EQuestCompletionState CompletionState)
+{
+	ensureAlways(CompletionState != EQuestCompletionState::Started);
+	
+	UE_LOG(LogQuest, Verbose, TEXT("Completing Quest %s. State: %d."), *QuestId.ToString(), CompletionState);
+
+	if (!QuestStatesById.Contains(QuestId))
+	{
+		UE_LOG(LogQuest, Verbose, TEXT("Quest not even started."));
+		return;
+	}
+
+	FQuestState& QuestState = QuestStatesById[QuestId];
+	
+	if (QuestState.IsCompleted())
+	{
+		UE_LOG(LogQuest, Verbose, TEXT("Quest already completed."));
+		return;
+	}
+	
+	QuestState.SetCompletionState(CompletionState);
+	HandleQuestCompleted(QuestState);
+
+	UE_LOG(LogQuest, Verbose, TEXT("Quest %s completed."), *QuestId.ToString());
+}
+
+void UQuestSubsystem::CompleteObjective(
+	const FQuestId& QuestId,
+	const FName& ObjectiveId,
+	EQuestObjectiveCompletionState CompletionState
+)
+{
+	UE_LOG(LogQuest, Verbose, TEXT("Completing objective %s."), *ObjectiveId.ToString());
+	
+	if (!QuestStatesById.Contains(QuestId))
+	{
+		UE_LOG(LogQuest, Verbose, TEXT("Quest not even started."));
+		return;
+	}
+
+	FQuestState& Quest = QuestStatesById[QuestId];
+	Quest.CompleteObjective(ObjectiveId, CompletionState);
+
+	UE_LOG(LogQuest, Verbose, TEXT("Objective completed."));
+
+	OnQuestUpdated.Broadcast(QuestId);
+}
+
+void UQuestSubsystem::HandleQuestCompleted(FQuestState& QuestState)
+{
+	const FQuestId& QuestId = QuestState.GetQuestId();
+	
+	StopListeningQuestEvents(QuestState);
+	
+	if (UFlowSubsystem* FlowSubsystem = GetGameInstance()->GetSubsystem<UFlowSubsystem>())
+	{
+		if (UFlowAsset* QuestFlowAsset = QuestState.GetQuestAsset()->QuestFlowAsset)
+		{
+			FlowSubsystem->FinishRootFlow(this, QuestFlowAsset, EFlowFinishPolicy::Abort);
+			QuestFlowsById.Remove(QuestId);
+		}
+	}
+
+	UE_LOG(LogQuest, Verbose, TEXT("Quest %s completed."), *QuestId.ToString());
+
+	OnQuestCompleted.Broadcast(QuestId);
+}
+
 void UQuestSubsystem::StartListeningQuestEvents(FQuestState& QuestState) const
 {
 	const FQuestId& QuestId = QuestState.GetQuestId();
-	QuestState.OnObjectiveCompleted.BindLambda([this, QuestId](const FGameplayTag& ObjectiveId)
-	{
-		OnObjectiveCompleted.Broadcast(QuestId, ObjectiveId);
-	});
+	QuestState.OnObjectiveCompleted.BindLambda(
+		[this, QuestId](const FName& ObjectiveId, EQuestObjectiveCompletionState CompletionState)
+		{
+			OnObjectiveCompleted.Broadcast(QuestId, ObjectiveId, CompletionState);
+		}
+	);
 }
 
 void UQuestSubsystem::StopListeningQuestEvents(FQuestState& QuestState) const

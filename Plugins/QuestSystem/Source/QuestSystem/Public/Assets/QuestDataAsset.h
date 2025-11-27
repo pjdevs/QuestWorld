@@ -28,13 +28,13 @@ public:
 
 public:
 	UPROPERTY(EditDefaultsOnly, Category = "Quest")
-	FGameplayTag QuestIdTag;
+	FGameplayTag QuestType;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Quest")
+	FGameplayTagContainer QuestTags;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Quest")
-	TArray<FGameplayTag> Phases;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Quest")
-	TSet<FName> PhaseNames;
+	TSet<FName> Phases;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Quest")
 	FText Title;
@@ -46,8 +46,8 @@ public:
 	TArray<TObjectPtr<UQuestObjective>> Objectives;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Quest")
-	bool bShouldAutocomplete;
+	UFlowAsset* QuestFlowAsset;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Quest")
-	UFlowAsset* QuestFlowAsset;
+	bool bShouldAutocomplete;
 };

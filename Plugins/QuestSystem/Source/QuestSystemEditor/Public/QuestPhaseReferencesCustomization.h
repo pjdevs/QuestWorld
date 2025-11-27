@@ -10,7 +10,7 @@ class UQuestDataAsset;
 /**
  * Customization to allow only parent quest phase selection.
  */
-class FQuestPhaseListCustomization : public IPropertyTypeCustomization
+class FQuestPhaseReferencesCustomization : public IPropertyTypeCustomization
 {
 public:
 	static TSharedRef<IPropertyTypeCustomization> MakeInstance();
@@ -31,10 +31,10 @@ private:
 
 private:
 	TSharedRef<SWidget> BuildMenu();
-	void TogglePhase(FGameplayTag Phase) const;
+	void TogglePhase(FName Phase) const;
 	FText GetSummary() const;
 
-	FGameplayTagContainer* GetCurrentPhases() const;
+	TSet<FName>* GetCurrentPhases() const;
 	UQuestDataAsset* GetOwnerQuestAsset() const;
 	
 private:

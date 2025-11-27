@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
 #include "QuestOwnedObjectInterface.h"
-#include "QuestPhaseList.h"
+#include "QuestPhaseReferences.h"
 #include "UObject/Object.h"
 #include "QuestObjective.generated.h"
 
@@ -57,13 +57,13 @@ public:
 	 * Id of the objective.
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Objective")
-	FGameplayTag ObjectiveId;
+	FName ObjectiveId;
 
 	/**
 	 * Quest phases in which objective should be active.
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Objective")
-	FQuestPhaseList Phases;
+	FQuestPhaseReferences Phases;
 
 	/**
 	 * Can the objective be completed before this quest objective start and hence be checked right after it started.

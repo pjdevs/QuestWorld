@@ -3,13 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "QuestCompletionState.h"
 #include "QuestId.h"
 #include "QuestObjectiveState.h"
 #include "QuestState.generated.h"
 
 class UQuestDataAsset;
 
-DECLARE_DELEGATE_OneParam(FObjectiveDelegate, const FGameplayTag& /* ObjectiveId */)
+DECLARE_DELEGATE_TwoParams(FObjectiveDelegate, const FName& /* ObjectiveId */, EQuestObjectiveCompletionState /* CompletionState */)
 
 /**
  * Runtime representation of a currently active / started / in-progress or completed quest.
@@ -25,16 +26,17 @@ public:
 
 	const FQuestId& GetQuestId() const { return QuestId; }
 	const UQuestDataAsset* GetQuestAsset() const { return QuestAsset; }
-	bool IsCompleted() const { return bQuestCompleted; }
+	EQuestCompletionState GetCompletionState() const { return State; }
+	bool IsCompleted() const { return State != EQuestCompletionState::Started; }
 	
-	const TMap<FGameplayTag, FQuestObjectiveState>& GetObjectives() const { return ObjectiveStates; }
-	bool IsObjectiveCompleted(const FGameplayTag& ObjectiveId) const;
+	const TMap<FName, FQuestObjectiveState>& GetObjectives() const { return ObjectiveStates; }
+	bool IsObjectiveCompleted(const FName& ObjectiveId) const;
 	
-	void StartObjective(const FGameplayTag& ObjectiveId, UWorld* World);
-	void CompleteObjective(const FGameplayTag& ObjectiveId);
-	void ProgressObjective(const FGameplayTag& ObjectiveId, int Progress);
+	void StartObjective(const FName& ObjectiveId, UWorld* World);
+	void CompleteObjective(const FName& ObjectiveId, EQuestObjectiveCompletionState CompletionState);
+	void ProgressObjective(const FName& ObjectiveId, int Progress);
 
-	void CompleteQuest();
+	void SetCompletionState(EQuestCompletionState CompletionState);
 	
 	/**
 	 * Notify the quest of an emitted quest event.
@@ -57,9 +59,9 @@ private:
 	TObjectPtr<const UQuestDataAsset> QuestAsset;
 
 	UPROPERTY()
-	TMap<FGameplayTag, const TObjectPtr<const UQuestObjective>> ObjectiveAssets;
+	TMap<FName, const TObjectPtr<const UQuestObjective>> ObjectiveAssets;
 
-	TMap<FGameplayTag, FQuestObjectiveState> ObjectiveStates;
+	TMap<FName, FQuestObjectiveState> ObjectiveStates;
 	
-	bool bQuestCompleted;
+	EQuestCompletionState State;
 };

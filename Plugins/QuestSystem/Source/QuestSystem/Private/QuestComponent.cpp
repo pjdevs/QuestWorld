@@ -22,13 +22,13 @@ UQuestComponent::UQuestComponent()
 	{
 		if (bKnownQuestsReceived)
 		{
-			if (QuestDescription.bIsCompleted)
+			if (QuestDescription.CompletionState == EQuestCompletionState::Started)
 			{
-				OnQuestCompleted.Broadcast(QuestDescription);
+				OnQuestUpdated.Broadcast(QuestDescription);
 			}
 			else
 			{
-				OnQuestUpdated.Broadcast(QuestDescription);
+				OnQuestCompleted.Broadcast(QuestDescription);
 			}
 		}
 	});

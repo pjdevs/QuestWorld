@@ -3,6 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayTags.h"
+#include "QuestCompletionState.h"
 #include "QuestId.h"
 #include "QuestDescription.generated.h"
 
@@ -42,6 +44,9 @@ struct QUESTSYSTEM_API FQuestDescription
 	FQuestId QuestId = FQuestId();
 
 	UPROPERTY(BlueprintReadOnly, Category = "Quest")
+	FGameplayTag QuestType;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Quest")
 	FText Title = FText();
 
 	UPROPERTY(BlueprintReadOnly, Category = "Quest")
@@ -51,5 +56,5 @@ struct QUESTSYSTEM_API FQuestDescription
 	TArray<FQuestObjectiveDescription> Objectives = TArray<FQuestObjectiveDescription>();
 
 	UPROPERTY(BlueprintReadOnly, Category = "Quest")
-	bool bIsCompleted = false;
+	EQuestCompletionState CompletionState = EQuestCompletionState::Started;
 };

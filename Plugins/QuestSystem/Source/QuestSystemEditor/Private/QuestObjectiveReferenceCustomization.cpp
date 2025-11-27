@@ -1,12 +1,12 @@
 ﻿// Copyright pjdevs. All Rights Reserved.
 
 
-#include "Assets/QuestObjectiveReference.h"
-
 #include "QuestObjectiveReferenceCustomization.h"
+
+#include "Assets/QuestDataAsset.h"
+#include "Assets/QuestObjectiveReference.h"
 #include "DetailWidgetRow.h"
 #include "IDetailChildrenBuilder.h"
-#include "Assets/QuestDataAsset.h"
 
 
 template<typename T>
@@ -29,7 +29,7 @@ void FQuestObjectiveReferenceCustomization::CustomizeHeader(
 )
 {
     QuestRefHandle = StructHandle->GetChildHandle(GET_MEMBER_NAME_CHECKED(FQuestObjectiveReference, QuestRef));
-    ObjectiveIdNameHandle = StructHandle->GetChildHandle(GET_MEMBER_NAME_CHECKED(FQuestObjectiveReference, ObjectiveIdName));
+    ObjectiveIdHandle = StructHandle->GetChildHandle(GET_MEMBER_NAME_CHECKED(FQuestObjectiveReference, ObjectiveId));
 
     HeaderRow.NameContent()[StructHandle->CreatePropertyNameWidget()];
 }
@@ -83,18 +83,16 @@ TSharedRef<SWidget> FQuestObjectiveReferenceCustomization::BuildMenu()
 
     for (const TObjectPtr<UQuestObjective>& Objective : QuestAsset->Objectives)
     {
-        FName ObjectiveIdName = Objective->ObjectiveId.GetTagName();
-        
         FUIAction Action(
             FExecuteAction::CreateSP(
                 this,
-                &FQuestObjectiveReferenceCustomization::SetObjectiveIdName,
-                ObjectiveIdName
+                &FQuestObjectiveReferenceCustomization::SetObjectiveId,
+                Objective->ObjectiveId
             )
         );
         
         Menu.AddMenuEntry(
-            FText::FromName(ObjectiveIdName),
+            FText::FromName(Objective->ObjectiveId),
             FText::GetEmpty(),
             FSlateIcon(),
             Action
@@ -104,19 +102,19 @@ TSharedRef<SWidget> FQuestObjectiveReferenceCustomization::BuildMenu()
     return Menu.MakeWidget();
 }
 
-void FQuestObjectiveReferenceCustomization::SetObjectiveIdName(FName ObjectiveIdName) const
+void FQuestObjectiveReferenceCustomization::SetObjectiveId(FName ObjectiveId) const
 {
-    ObjectiveIdNameHandle->NotifyPreChange();
+    ObjectiveIdHandle->NotifyPreChange();
     
-    FName* ObjectiveIdNamePtr = GetHandleValue<FName>(ObjectiveIdNameHandle);
-    *ObjectiveIdNamePtr = ObjectiveIdName;
+    FName* ObjectiveIdPtr = GetHandleValue<FName>(ObjectiveIdHandle);
+    *ObjectiveIdPtr = ObjectiveId;
 
-    ObjectiveIdNameHandle->NotifyPostChange(EPropertyChangeType::ValueSet);
-    ObjectiveIdNameHandle->NotifyFinishedChangingProperties();
+    ObjectiveIdHandle->NotifyPostChange(EPropertyChangeType::ValueSet);
+    ObjectiveIdHandle->NotifyFinishedChangingProperties();
 }
 
 FText FQuestObjectiveReferenceCustomization::GetSummary() const
 {
-    const FName* ObjectiveIdNamePtr = GetHandleValue<FName>(ObjectiveIdNameHandle);
-    return FText::FromName(*ObjectiveIdNamePtr);
+    const FName* ObjectiveIdPtr = GetHandleValue<FName>(ObjectiveIdHandle);
+    return FText::FromName(*ObjectiveIdPtr);
 }

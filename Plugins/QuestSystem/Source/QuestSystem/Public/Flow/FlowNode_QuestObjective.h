@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "QuestObjectiveCompletionState.h"
 #include "Assets/QuestObjectiveReference.h"
 #include "Nodes/FlowNode.h"
 #include "FlowNode_QuestObjective.generated.h"
@@ -33,7 +34,11 @@ public:
 
 private:
 	UQuestSubsystem* GetQuestSubsystem() const;
-	void OnObjectiveCompleted(const FQuestId& QuestId, const FGameplayTag& CompletedObjectiveId);
+	void OnObjectiveCompleted(
+		const FQuestId& QuestId,
+		const FName& CompletedObjectiveId,
+		EQuestObjectiveCompletionState CompletionState
+	);
 
 protected:
 	UPROPERTY(EditAnywhere, Category = "Quest")

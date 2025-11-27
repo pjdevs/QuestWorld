@@ -30,10 +30,10 @@ private:
 
 private:
 	TSharedRef<SWidget> BuildMenu();
-	void SetObjectiveIdName(FName ObjectiveIdName) const;
+	void SetObjectiveId(FName ObjectiveIdName) const;
 	FText GetSummary() const;
 	
 private:
 	TSharedPtr<IPropertyHandle> QuestRefHandle;
-	TSharedPtr<IPropertyHandle> ObjectiveIdNameHandle;
+	TSharedPtr<IPropertyHandle> ObjectiveIdHandle;
 };

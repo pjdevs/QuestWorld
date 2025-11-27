@@ -14,9 +14,9 @@
 class UFlowAsset;
 class UBaseQuestEvent;
 
-DECLARE_MULTICAST_DELEGATE(FQuestLoadedDelegate);
 DECLARE_MULTICAST_DELEGATE_OneParam(FQuestEventDelegate, const FQuestId& /* QuestId */);
-DECLARE_MULTICAST_DELEGATE_TwoParams(FQuestObjectiveDelegate, const FQuestId& /* QuestId */, const FGameplayTag& /* ObjectiveId */);
+DECLARE_MULTICAST_DELEGATE_TwoParams(FQuestCompletedEventDelegate, const FQuestId& /* QuestId */, EQuestCompletionState /* CompletionState */);
+DECLARE_MULTICAST_DELEGATE_ThreeParams(FQuestObjectiveCompletedDelegate, const FQuestId& /* QuestId */, const FName& /* ObjectiveId */, EQuestObjectiveCompletionState /* CompletionState */);
 
 /**
  * Core subsystem of the quest system. Only relevant on server.
@@ -33,24 +33,30 @@ public: // Subsystem
 public: // Spud
 	virtual void SpudPostRestore_Implementation(const USpudState* State) override;
 	virtual void SpudPreStore_Implementation(const USpudState* State) override;
-	
+
 public: // QuestSubsystem public interface
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Quest")
 	void StartQuest(FQuestId QuestId);
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Quest")
-	void CompleteQuest(FQuestId QuestId);
+	void SucceedQuest(FQuestId QuestId);
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Quest")
-	void StartObjective(FQuestId QuestId, const FGameplayTag& ObjectiveId);
-
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Quest")
-	void CompleteObjective(FQuestId QuestId, const FGameplayTag& ObjectiveId);
-
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Quest")
-	void ProgressObjective(FQuestId QuestId, const FGameplayTag& ObjectiveId, int Progress);
+	void FailQuest(const FQuestId& QuestId);
 	
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Quest")
+	void StartObjective(FQuestId QuestId, const FName& ObjectiveId);
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Quest")
+	void SucceedObjective(FQuestId QuestId, const FName& ObjectiveId);
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Quest")
+	void FailObjective(FQuestId QuestId, const FName& ObjectiveId);
+	
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Quest")
+	void ProgressObjective(FQuestId QuestId, const FName& ObjectiveId, int Progress);
+
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Quest")
 	void SubmitQuestEvent(UBaseQuestEvent* Event);
 
@@ -64,14 +70,14 @@ public: // QuestSubsystem public interface
 	bool IsQuestCompleted(const FQuestId& QuestId) const;
 
 	UFUNCTION(BlueprintPure, BlueprintAuthorityOnly, Category = "Quest")
-	bool IsObjectiveCompleted(const FQuestId& QuestId, const FGameplayTag& ObjectiveId) const;
+	bool IsObjectiveCompleted(const FQuestId& QuestId, const FName& ObjectiveId) const;
 
 	UFUNCTION(BlueprintPure, BlueprintAuthorityOnly, Category = "Quest")
 	FQuestDescription GetQuestDescription(const FQuestId& QuestId);
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Quest")
 	void LoadQuestSave(const FQuestSaveData& QuestSave);
-	
+
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Quest")
 	void RestoreQuestsFromSave();
 
@@ -93,9 +99,18 @@ public: // Delegates
 	FQuestEventDelegate OnQuestStarted;
 	FQuestEventDelegate OnQuestCompleted;
 	FQuestEventDelegate OnQuestUpdated;
-	FQuestObjectiveDelegate OnObjectiveCompleted;
+	FQuestObjectiveCompletedDelegate OnObjectiveCompleted;
 
 private:
+	void CompleteQuest(const FQuestId& QuestId, EQuestCompletionState CompletionState);
+	void CompleteObjective(
+		const FQuestId& QuestId,
+		const FName& ObjectiveId,
+		EQuestObjectiveCompletionState CompletionState
+	);
+
+	void HandleQuestCompleted(FQuestState& QuestState);
+	
 	void StartListeningQuestEvents(FQuestState& QuestState) const;
 	void StopListeningQuestEvents(FQuestState& QuestState) const;
 

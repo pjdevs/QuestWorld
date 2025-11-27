@@ -4,8 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "FlowSave.h"
-#include "GameplayTags.h"
 #include "QuestId.h"
+#include "QuestObjectiveCompletionState.h"
 #include "QuestSave.generated.h"
 
 USTRUCT(Blueprintable, BlueprintType)
@@ -14,13 +14,13 @@ struct QUESTSYSTEM_API FQuestObjectiveSateSaveData
 	GENERATED_BODY()
 
 	UPROPERTY(SaveGame)
-	FGameplayTag ObjectiveId = FGameplayTag::EmptyTag;
+	FName ObjectiveId = NAME_None;
 
 	UPROPERTY(SaveGame)
 	int CurrentProgress = 0;
 
 	UPROPERTY(SaveGame)
-	bool bIsCompleted = false;
+	EQuestObjectiveCompletionState CompletionState = EQuestObjectiveCompletionState::Started;
 };
 
 USTRUCT(Blueprintable, BlueprintType)
@@ -38,7 +38,7 @@ struct QUESTSYSTEM_API FQuestStateSaveData
 	FFlowAssetSaveData QuestFlowSave = FFlowAssetSaveData();
 
 	UPROPERTY(SaveGame)
-	bool bIsCompleted = false;
+	EQuestCompletionState CompletionState = EQuestCompletionState::Started;
 };
 
 USTRUCT(Blueprintable, BlueprintType)

@@ -2,6 +2,8 @@
 
 
 #include "UI/Mission/QIPMissionWidgetController.h"
+
+#include "QuestCompletionState.h"
 #include "QuestComponent.h"
 #include "GameFramework/GameStateBase.h"
 
@@ -40,7 +42,7 @@ void UQIPMissionWidgetController::TryUpdateFirstMission() const
 {
 	const TArray<FQuestDescription>& Quests = QuestComponent->GetKnownQuests();
 
-	if (Quests.Num() > 0 && !Quests[0].bIsCompleted)
+	if (Quests.Num() > 0 && Quests[0].CompletionState == EQuestCompletionState::Started)
 	{
 		OnMissionUpdated.Broadcast(Quests[0]);
 	}
