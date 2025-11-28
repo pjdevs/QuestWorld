@@ -26,6 +26,26 @@ bool FQuestState::IsObjectiveCompleted(const FName& ObjectiveId) const
 	return false;
 }
 
+bool FQuestState::IsObjectiveSucceeded(const FName& ObjectiveId) const
+{
+	if (const FQuestObjectiveState* Objective = ObjectiveStates.Find(ObjectiveId))
+	{
+		return Objective->GetCompletionState() == EQuestObjectiveCompletionState::Succeeded;
+	}
+
+	return false;
+}
+
+bool FQuestState::IsObjectiveFailed(const FName& ObjectiveId) const
+{
+	if (const FQuestObjectiveState* Objective = ObjectiveStates.Find(ObjectiveId))
+	{
+		return Objective->GetCompletionState() == EQuestObjectiveCompletionState::Failed;
+	}
+
+	 return false;
+}
+
 void FQuestState::StartObjective(const FName& ObjectiveId, UWorld* World)
 {
 	if (IsCompleted())
@@ -51,7 +71,7 @@ void FQuestState::StartObjective(const FName& ObjectiveId, UWorld* World)
 		if (ObjectiveState.IsCompleted())
 		{
 			ObjectiveState.SetCurrentProgress(ObjectiveAsset->GetTargetValue());
-			CompleteObjective(ObjectiveId, EQuestObjectiveCompletionState::Succeeded);
+			HandleObjectiveCompletion(ObjectiveState);
 		}
 	}
 }
@@ -65,10 +85,10 @@ void FQuestState::CompleteObjective(const FName& ObjectiveId, EQuestObjectiveCom
 
 	ensure(CompletionState != EQuestObjectiveCompletionState::Started);
 
-	FQuestObjectiveState* Objective = ObjectiveStates.Find(ObjectiveId);
+	FQuestObjectiveState* ObjectiveState = ObjectiveStates.Find(ObjectiveId);
 
 	// Make a new objective state if it has not been started already
-	if (!Objective)
+	if (!ObjectiveState)
 	{
 		const TObjectPtr<const UQuestObjective>* ObjectiveAssetPtr = ObjectiveAssets.Find(ObjectiveId);
 
@@ -79,12 +99,11 @@ void FQuestState::CompleteObjective(const FName& ObjectiveId, EQuestObjectiveCom
 		}
 
 		const TObjectPtr<const UQuestObjective>& ObjectiveAsset = *ObjectiveAssetPtr;
-		Objective = &ObjectiveStates.Add(ObjectiveId, FQuestObjectiveState(ObjectiveAsset));
+		ObjectiveState = &ObjectiveStates.Add(ObjectiveId, FQuestObjectiveState(ObjectiveAsset));
 	}
 
-	Objective->SetCompletionState(CompletionState);
-	OnObjectiveCompleted.ExecuteIfBound(ObjectiveId, CompletionState);
-	CompleteQuestIfAllObjectivesCompleted();
+	ObjectiveState->SetCompletionState(CompletionState);
+	HandleObjectiveCompletion(*ObjectiveState);
 }
 
 void FQuestState::ProgressObjective(const FName& ObjectiveId, int Progress)
@@ -138,6 +157,16 @@ bool FQuestState::OnQuestEvent(UWorld* World, UBaseQuestEvent* Event)
 	return bAnyObjectiveProgressed;
 }
 
+void FQuestState::HandleObjectiveCompletion(const FQuestObjectiveState& ObjectiveState)
+{
+	OnObjectiveCompleted.ExecuteIfBound(ObjectiveState.GetObjectiveId(), ObjectiveState.GetCompletionState());
+
+	if (ObjectiveState.GetCompletionState() == EQuestObjectiveCompletionState::Succeeded)
+	{
+		CompleteQuestIfAllObjectivesCompleted();
+	}
+}
+
 void FQuestState::CompleteQuestIfAllObjectivesCompleted()
 {
 	if (IsCompleted())
@@ -152,7 +181,7 @@ void FQuestState::CompleteQuestIfAllObjectivesCompleted()
 	
 	for (auto& [ObjectiveId, ObjectiveState] : ObjectiveStates)
 	{
-		if (!ObjectiveState.IsOptional() && !ObjectiveState.IsCompleted())
+		if (!ObjectiveState.IsOptional() && ObjectiveState.GetCompletionState() == EQuestObjectiveCompletionState::Succeeded)
 		{
 			return;
 		}

@@ -27,27 +27,27 @@ public:
 #endif
 
 public:
-	UPROPERTY(EditDefaultsOnly, Category = "Quest")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Quest")
 	FGameplayTag QuestType;
 	
-	UPROPERTY(EditDefaultsOnly, Category = "Quest")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Quest")
 	FGameplayTagContainer QuestTags;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Quest")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Quest")
 	TSet<FName> Phases;
 	
-	UPROPERTY(EditDefaultsOnly, Category = "Quest")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Quest")
 	FText Title;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Quest")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Quest")
 	FText Description;
 	
-	UPROPERTY(EditDefaultsOnly, Instanced, Category = "Quest")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Instanced, Category = "Quest")
 	TArray<TObjectPtr<UQuestObjective>> Objectives;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Quest")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Quest")
 	UFlowAsset* QuestFlowAsset;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Quest")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Quest")
 	bool bShouldAutocomplete;
 };

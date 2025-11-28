@@ -180,11 +180,51 @@ bool UQuestSubsystem::IsQuestCompleted(const FQuestId& QuestId) const
 	return false;
 }
 
+bool UQuestSubsystem::IsQuestSucceeded(const FQuestId& QuestId) const
+{
+	if (const FQuestState* QuestState = QuestStatesById.Find(QuestId))
+	{
+		return QuestState->GetCompletionState() == EQuestCompletionState::Succeeded;
+	}
+
+	return false;
+}
+
+bool UQuestSubsystem::IsQuestFailed(const FQuestId& QuestId) const
+{
+	if (const FQuestState* QuestState = QuestStatesById.Find(QuestId))
+	{
+		return QuestState->GetCompletionState() == EQuestCompletionState::Failed;
+	}
+
+	return false;
+}
+
 bool UQuestSubsystem::IsObjectiveCompleted(const FQuestId& QuestId, const FName& ObjectiveId) const
 {
 	if (const FQuestState* QuestState = QuestStatesById.Find(QuestId))
 	{
 		return QuestState->IsObjectiveCompleted(ObjectiveId);
+	}
+
+	return false;
+}
+
+bool UQuestSubsystem::IsObjectiveSucceeded(const FQuestId& QuestId, const FName& ObjectiveId) const
+{
+	if (const FQuestState* QuestState = QuestStatesById.Find(QuestId))
+	{
+		return QuestState->IsObjectiveSucceeded(ObjectiveId);
+	}
+
+	return false;
+}
+
+bool UQuestSubsystem::IsObjectiveFailed(const FQuestId& QuestId, const FName& ObjectiveId) const
+{
+	if (const FQuestState* QuestState = QuestStatesById.Find(QuestId))
+	{
+		return QuestState->IsObjectiveFailed(ObjectiveId);
 	}
 
 	return false;

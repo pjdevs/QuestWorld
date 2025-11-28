@@ -56,25 +56,25 @@ public:
 	/**
 	 * Id of the objective.
 	 */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Objective")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Objective")
 	FName ObjectiveId;
 
 	/**
 	 * Quest phases in which objective should be active.
 	 */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Objective")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Objective")
 	FQuestPhaseReferences Phases;
 
 	/**
 	 * Can the objective be completed before this quest objective start and hence be checked right after it started.
 	 */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Objective")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Objective")
 	FText ObjectiveDescription;
 	
 	/**
 	 * Is the objective optional. UI only for now.
 	 */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Objective")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Objective")
 	bool bIsOptional = false;
 	
 	/**

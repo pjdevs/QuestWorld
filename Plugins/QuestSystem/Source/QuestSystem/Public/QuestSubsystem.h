@@ -61,7 +61,7 @@ public: // QuestSubsystem public interface
 	void SubmitQuestEvent(UBaseQuestEvent* Event);
 
 	UFUNCTION(BlueprintPure, BlueprintAuthorityOnly, Category = "Quest")
-	TArray<FQuestId>GetKnownQuests() const;
+	TArray<FQuestId> GetKnownQuests() const;
 
 	UFUNCTION(BlueprintPure, BlueprintAuthorityOnly, Category = "Quest")
 	bool IsQuestStarted(const FQuestId& QuestId) const;
@@ -70,7 +70,19 @@ public: // QuestSubsystem public interface
 	bool IsQuestCompleted(const FQuestId& QuestId) const;
 
 	UFUNCTION(BlueprintPure, BlueprintAuthorityOnly, Category = "Quest")
+	bool IsQuestSucceeded(const FQuestId& QuestId) const;
+
+	UFUNCTION(BlueprintPure, BlueprintAuthorityOnly, Category = "Quest")
+	bool IsQuestFailed(const FQuestId& QuestId) const;
+
+	UFUNCTION(BlueprintPure, BlueprintAuthorityOnly, Category = "Quest")
 	bool IsObjectiveCompleted(const FQuestId& QuestId, const FName& ObjectiveId) const;
+
+	UFUNCTION(BlueprintPure, BlueprintAuthorityOnly, Category = "Quest")
+	bool IsObjectiveSucceeded(const FQuestId& QuestId, const FName& ObjectiveId) const;
+
+	UFUNCTION(BlueprintPure, BlueprintAuthorityOnly, Category = "Quest")
+	bool IsObjectiveFailed(const FQuestId& QuestId, const FName& ObjectiveId) const;
 
 	UFUNCTION(BlueprintPure, BlueprintAuthorityOnly, Category = "Quest")
 	FQuestDescription GetQuestDescription(const FQuestId& QuestId);

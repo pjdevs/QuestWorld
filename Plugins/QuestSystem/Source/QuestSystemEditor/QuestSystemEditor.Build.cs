@@ -19,7 +19,8 @@ public class QuestSystemEditor : ModuleRules
                 "CoreUObject",
                 "Engine",
                 "Slate",
-                "SlateCore"
+                "SlateCore",
+                "UnrealEd"
             ]
         );
     }

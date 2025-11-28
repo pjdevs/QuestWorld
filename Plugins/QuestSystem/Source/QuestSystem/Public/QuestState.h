@@ -31,7 +31,9 @@ public:
 	
 	const TMap<FName, FQuestObjectiveState>& GetObjectives() const { return ObjectiveStates; }
 	bool IsObjectiveCompleted(const FName& ObjectiveId) const;
-	
+	bool IsObjectiveSucceeded(const FName& ObjectiveId) const;
+	bool IsObjectiveFailed(const FName& ObjectiveId) const;
+
 	void StartObjective(const FName& ObjectiveId, UWorld* World);
 	void CompleteObjective(const FName& ObjectiveId, EQuestObjectiveCompletionState CompletionState);
 	void ProgressObjective(const FName& ObjectiveId, int Progress);
@@ -50,6 +52,7 @@ public:
 	FObjectiveDelegate OnObjectiveCompleted;
 
 private:
+	void HandleObjectiveCompletion(const FQuestObjectiveState& ObjectiveState);
 	void CompleteQuestIfAllObjectivesCompleted(); 
 	
 private:
