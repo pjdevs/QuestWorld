@@ -20,10 +20,10 @@ UFlowNode_CompleteQuest::UFlowNode_CompleteQuest(const FObjectInitializer& Objec
 void UFlowNode_CompleteQuest::ExecuteInput(const FName& PinName)
 {
 	const UWorld* World = GetWorld();
-	ensureMsgf(World != nullptr, TEXT("World is nullptr in FlowNode_Quest"));
+	ensureMsgf(World != nullptr, TEXT("World is nullptr in UFlowNode_CompleteQuest"));
 	
 	UQuestSubsystem* QuestSubsystem = World->GetGameInstance()->GetSubsystem<UQuestSubsystem>();
-	ensureMsgf(World != nullptr, TEXT("QuestSubsystem is nullptr in FlowNode_Quest"));
+	ensureMsgf(World != nullptr, TEXT("QuestSubsystem is nullptr in UFlowNode_CompleteQuest"));
 
 	const FQuestId QuestId = QuestSubsystem->GetQuestIdFromFlow(GetFlowAsset());
 

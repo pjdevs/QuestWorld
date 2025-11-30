@@ -9,6 +9,7 @@
 #include "SpudSubsystem.h"
 #include "Assets/QuestDataAsset.h"
 #include "Engine/AssetManager.h"
+#include "Nodes/Graph/FlowNode_SubGraph.h"
 
 // Subsystem
 
@@ -422,6 +423,11 @@ FQuestSaveData UQuestSubsystem::MakeQuestSave() const
 
 FQuestId UQuestSubsystem::GetQuestIdFromFlow(UFlowAsset* QuestFlowInstance) const
 {
+	if (const UFlowNode_SubGraph* QuestSubFlow = QuestFlowInstance->GetNodeOwningThisAssetInstance())
+	{
+		return GetQuestIdFromFlow(QuestSubFlow->GetFlowAsset());	
+	}
+	
 	const FQuestId* QuestIdPtr = QuestFlowsById.FindKey(QuestFlowInstance);
 	return QuestIdPtr != nullptr ? *QuestIdPtr : FQuestId();
 }

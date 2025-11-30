@@ -30,10 +30,10 @@ void UFlowNode_StartQuestPhase::ExecuteInput(const FName& PinName)
 UQuestSubsystem* UFlowNode_StartQuestPhase::GetQuestSubsystem() const
 {
 	const UWorld* World = GetWorld();
-	ensureMsgf(World != nullptr, TEXT("World is nullptr in FlowNode_QuestObjective"));
+	ensureMsgf(World != nullptr, TEXT("World is nullptr in UFlowNode_StartQuestPhase"));
 	
 	UQuestSubsystem* QuestSubsystem = World->GetGameInstance()->GetSubsystem<UQuestSubsystem>();
-	ensureMsgf(World != nullptr, TEXT("QuestSubsystem is nullptr in FlowNode_QuestObjective"));
+	ensureMsgf(World != nullptr, TEXT("QuestSubsystem is nullptr in UFlowNode_StartQuestPhase"));
 
 	return QuestSubsystem;
 }

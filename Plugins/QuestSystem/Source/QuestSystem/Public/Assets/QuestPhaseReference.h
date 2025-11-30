@@ -20,7 +20,7 @@ class QUESTSYSTEM_API UQuestPhaseReference : public UObject, public IQuestOwnedO
 
 public:
 #if WITH_EDITORONLY_DATA
-	UPROPERTY(EditAnywhere, Transient)
+	UPROPERTY(EditAnywhere)
 	TSoftObjectPtr<UQuestDataAsset> QuestRef;
 #endif
 	
