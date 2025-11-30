@@ -31,6 +31,9 @@ struct QUESTSYSTEM_API FQuestObjectiveDescription
 
 	UPROPERTY(BlueprintReadOnly, Category = "Quest")
 	bool bIsOptional = false;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Quest")
+	bool bIsActiveInPhase = false;
 };
 
 /**

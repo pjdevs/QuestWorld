@@ -63,9 +63,9 @@ TSharedRef<SWidget> FQuestPhaseReferencesCustomization::BuildMenu()
 
     for (const FName& Phase : OwnerQuestAsset->Phases)
     {
-        const TSet<FName>* CurrentPhases = GetCurrentPhases();
+        const FQuestPhaseReferences* CurrentPhases = GetCurrentPhases();
         TAttribute<bool> bIsPhaseSelected = TAttribute<bool>::Create(
-            [CurrentPhases, Phase] { return CurrentPhases->Contains(Phase); }
+            [CurrentPhases, Phase] { return CurrentPhases->Phases.Contains(Phase); }
         );
         
         FUIAction Action(
@@ -89,17 +89,17 @@ TSharedRef<SWidget> FQuestPhaseReferencesCustomization::BuildMenu()
 
 void FQuestPhaseReferencesCustomization::TogglePhase(FName Phase) const
 {
-    TSet<FName>* CurrentPhases = GetCurrentPhases();
+    FQuestPhaseReferences* CurrentPhases = GetCurrentPhases();
 
     PhasesHandle->NotifyPreChange();
     
-    if (CurrentPhases->Contains(Phase))
+    if (CurrentPhases->Phases.Contains(Phase))
     {
-        CurrentPhases->Remove(Phase);
+        CurrentPhases->Phases.Remove(Phase);
     }
     else
     {
-        CurrentPhases->Add(Phase);
+        CurrentPhases->Phases.Add(Phase);
     }
 
     PhasesHandle->NotifyPostChange(EPropertyChangeType::ValueSet);
@@ -108,29 +108,21 @@ void FQuestPhaseReferencesCustomization::TogglePhase(FName Phase) const
 
 FText FQuestPhaseReferencesCustomization::GetSummary() const
 {
-    TSet<FName>* CurrentPhases = GetCurrentPhases();
+    FQuestPhaseReferences* CurrentPhases = GetCurrentPhases();
 
-    if (CurrentPhases->IsEmpty())
+    if (CurrentPhases->Phases.IsEmpty())
     {
         return FText::FromString("None");
     }
-
-    FString SummaryString;
-
-    for (const FName& Phase : *CurrentPhases)
-    {
-        SummaryString += Phase.ToString();
-        SummaryString += "\n";
-    }
     
-    return FText::FromString(SummaryString);
+    return FText::FromString(CurrentPhases->ToString());
 }
 
-TSet<FName>* FQuestPhaseReferencesCustomization::GetCurrentPhases() const
+FQuestPhaseReferences* FQuestPhaseReferencesCustomization::GetCurrentPhases() const
 {
     void* CurrentPtr;
-    PhasesHandle->GetValueData(CurrentPtr);
-    return static_cast<TSet<FName>*>(CurrentPtr);
+    ThisStructHandle->GetValueData(CurrentPtr);
+    return static_cast<FQuestPhaseReferences*>(CurrentPtr);
 }
 
 UQuestDataAsset* FQuestPhaseReferencesCustomization::GetOwnerQuestAsset() const

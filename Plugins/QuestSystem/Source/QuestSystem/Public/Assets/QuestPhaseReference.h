@@ -18,21 +18,21 @@ class QUESTSYSTEM_API UQuestPhaseReference : public UObject, public IQuestOwnedO
 {
 	GENERATED_BODY()
 
+public:
 #if WITH_EDITORONLY_DATA
 	UPROPERTY(EditAnywhere, Transient)
-	TSoftObjectPtr<UQuestDataAsset> Quest;
+	TSoftObjectPtr<UQuestDataAsset> QuestRef;
 #endif
 	
 	UPROPERTY(EditAnywhere)
 	FQuestPhaseReferences Phases;
 
-#if WITH_EDITOR
 public:
-	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent) override;
-#endif
+	bool IsValid() const;
 	
 #if WITH_EDITOR
 public:
+	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent) override;
 	virtual UQuestDataAsset* GetOwningQuest() const override;
 #endif
 };

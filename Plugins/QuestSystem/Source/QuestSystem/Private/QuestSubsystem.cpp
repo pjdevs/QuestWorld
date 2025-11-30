@@ -79,9 +79,41 @@ void UQuestSubsystem::FailQuest(const FQuestId& QuestId)
 	CompleteQuest(QuestId, EQuestCompletionState::Failed);
 }
 
+void UQuestSubsystem::StartQuestPhase(FQuestId QuestId, const FName& Phase)
+{
+	UE_LOG(LogQuest, Verbose, TEXT("Starting phase %s for quest %s."), *Phase.ToString(), *QuestId.ToString());
+	
+	if (!QuestStatesById.Contains(QuestId))
+	{
+		UE_LOG(LogQuest, Verbose, TEXT("Quest not even started."));
+		return;
+	}
+
+	FQuestState& Quest = QuestStatesById[QuestId];
+	Quest.StartPhase(Phase);
+
+	OnQuestUpdated.Broadcast(QuestId);
+}
+
+void UQuestSubsystem::CompleteQuestActivePhase(FQuestId QuestId)
+{
+	UE_LOG(LogQuest, Verbose, TEXT("Completing active phase for quest %s."), *QuestId.ToString());
+	
+	if (!QuestStatesById.Contains(QuestId))
+	{
+		UE_LOG(LogQuest, Verbose, TEXT("Quest not even started."));
+		return;
+	}
+
+	FQuestState& Quest = QuestStatesById[QuestId];
+	Quest.CompleteActivePhase();
+
+	OnQuestUpdated.Broadcast(QuestId);
+}
+
 void UQuestSubsystem::StartObjective(FQuestId QuestId, const FName& ObjectiveId)
 {
-	UE_LOG(LogQuest, Verbose, TEXT("Starting objective %s."), *ObjectiveId.ToString());
+	UE_LOG(LogQuest, Verbose, TEXT("Starting objective %s for quest %s."), *ObjectiveId.ToString(), *QuestId.ToString());
 	
 	if (!QuestStatesById.Contains(QuestId))
 	{
@@ -258,7 +290,8 @@ FQuestDescription UQuestSubsystem::GetQuestDescription(const FQuestId& QuestId)
 			.CurrentValue = ObjectiveState.GetCurrentProgress(),
 			.TargetValue = ObjectiveState.GetTargetProgress(),
 			.CompletionState = ObjectiveState.GetCompletionState(),
-			.bIsOptional = ObjectiveState.IsOptional()
+			.bIsOptional = ObjectiveState.IsOptional(),
+			.bIsActiveInPhase = ObjectiveState.IsActiveInPhase(QuestState->GetActivePhase())
 		});
 	}
 
@@ -306,6 +339,13 @@ void UQuestSubsystem::RestoreQuestsFromSave()
 			}
 		}
 
+		QuestState.RestoreCompletedPhases(QuestData.CompletedPhases);
+
+		if (QuestData.ActivePhase != NAME_None)
+		{
+			QuestState.StartPhase(QuestData.ActivePhase);
+		}
+
 		if (QuestData.CompletionState != EQuestCompletionState::Started)
 		{
 			QuestState.SetCompletionState(QuestData.CompletionState);
@@ -350,7 +390,9 @@ FQuestSaveData UQuestSubsystem::MakeQuestSave() const
 		{
 			.QuestId = QuestId,
 			.ObjectiveStates = TArray<FQuestObjectiveSateSaveData>(),
-			.CompletionState = Quest.GetCompletionState()
+			.CompletionState = Quest.GetCompletionState(),
+			.ActivePhase = Quest.GetActivePhase(),
+			.CompletedPhases = Quest.GetCompletedPhases()
 		};
 
 		for (auto& [ObjectiveId, Objective] : Quest.GetObjectives())

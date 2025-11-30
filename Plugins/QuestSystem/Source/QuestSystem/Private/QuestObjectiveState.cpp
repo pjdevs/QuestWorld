@@ -10,6 +10,11 @@ FQuestObjectiveState::FQuestObjectiveState(const UQuestObjective* ObjectiveAsset
 	ensureMsgf(ObjectiveAsset != nullptr, TEXT("ObjectiveAsset should not be null"));
 }
 
+bool FQuestObjectiveState::IsActiveInPhase(const FName& Phase) const
+{
+	return ObjectiveAsset->Phases.Phases.IsEmpty() || ObjectiveAsset->Phases.Phases.Contains(Phase);
+}
+
 void FQuestObjectiveState::SetCurrentProgress(int Progress)
 {
 	CurrentProgress = Progress;

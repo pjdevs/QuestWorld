@@ -46,6 +46,35 @@ bool FQuestState::IsObjectiveFailed(const FName& ObjectiveId) const
 	 return false;
 }
 
+const FName& FQuestState::GetActivePhase() const
+{
+	return ActivePhase;
+}
+
+const TArray<FName>& FQuestState::GetCompletedPhases() const
+{
+	return CompletedPhases;
+}
+
+void FQuestState::StartPhase(const FName& Phase)
+{
+	if (ActivePhase == NAME_None && !CompletedPhases.Contains(Phase))
+	{
+		ActivePhase = Phase;
+	}
+}
+
+void FQuestState::CompleteActivePhase()
+{
+	CompletedPhases.Add(ActivePhase);
+	ActivePhase = NAME_None;
+}
+
+void FQuestState::RestoreCompletedPhases(const TArray<FName>& InCompletedPhases)
+{
+	CompletedPhases = InCompletedPhases;
+}
+
 void FQuestState::StartObjective(const FName& ObjectiveId, UWorld* World)
 {
 	if (IsCompleted())

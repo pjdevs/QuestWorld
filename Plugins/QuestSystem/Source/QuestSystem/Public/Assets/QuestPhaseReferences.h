@@ -16,8 +16,11 @@ struct QUESTSYSTEM_API FQuestPhaseReferences
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TSet<FName> Phases;
+
+public:
+	FString ToString() const;
 
 #if WITH_EDITOR
 public:

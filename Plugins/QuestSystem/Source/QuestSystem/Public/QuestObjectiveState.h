@@ -26,6 +26,7 @@ public:
 	EQuestObjectiveCompletionState GetCompletionState() const { return State; }
 	bool IsCompleted() const { return State != EQuestObjectiveCompletionState::Started; }
 	bool IsOptional() const { return ObjectiveAsset->bIsOptional; }
+	bool IsActiveInPhase(const FName& Phase) const;
 
 	int GetCurrentProgress() const { return CurrentProgress; }
 	int GetTargetProgress() const { return ObjectiveAsset->GetTargetValue(); }

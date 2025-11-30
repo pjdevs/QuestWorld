@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameplayTagContainer.h"
+#include "Assets/QuestPhaseReferences.h"
 
 class UQuestDataAsset;
 
@@ -34,7 +34,7 @@ private:
 	void TogglePhase(FName Phase) const;
 	FText GetSummary() const;
 
-	TSet<FName>* GetCurrentPhases() const;
+	FQuestPhaseReferences* GetCurrentPhases() const;
 	UQuestDataAsset* GetOwnerQuestAsset() const;
 	
 private:

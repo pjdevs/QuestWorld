@@ -39,6 +39,12 @@ struct QUESTSYSTEM_API FQuestStateSaveData
 
 	UPROPERTY(SaveGame)
 	EQuestCompletionState CompletionState = EQuestCompletionState::Started;
+
+	UPROPERTY(SaveGame)
+	FName ActivePhase = NAME_None;
+
+	UPROPERTY(SaveGame)
+	TArray<FName> CompletedPhases = TArray<FName>();
 };
 
 USTRUCT(Blueprintable, BlueprintType)

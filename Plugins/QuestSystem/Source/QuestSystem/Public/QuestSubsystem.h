@@ -44,6 +44,12 @@ public: // QuestSubsystem public interface
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Quest")
 	void FailQuest(const FQuestId& QuestId);
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Quest")
+	void StartQuestPhase(FQuestId QuestId, const FName& Phase);
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Quest")
+	void CompleteQuestActivePhase(FQuestId QuestId);
 	
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Quest")
 	void StartObjective(FQuestId QuestId, const FName& ObjectiveId);

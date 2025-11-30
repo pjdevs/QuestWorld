@@ -34,9 +34,16 @@ public:
 	bool IsObjectiveSucceeded(const FName& ObjectiveId) const;
 	bool IsObjectiveFailed(const FName& ObjectiveId) const;
 
+	const FName& GetActivePhase() const;
+	const TArray<FName>& GetCompletedPhases() const;
+
 	void StartObjective(const FName& ObjectiveId, UWorld* World);
 	void CompleteObjective(const FName& ObjectiveId, EQuestObjectiveCompletionState CompletionState);
 	void ProgressObjective(const FName& ObjectiveId, int Progress);
+
+	void StartPhase(const FName& Phase);
+	void CompleteActivePhase();
+	void RestoreCompletedPhases(const TArray<FName>& InCompletedPhases);
 
 	void SetCompletionState(EQuestCompletionState CompletionState);
 	
@@ -57,14 +64,15 @@ private:
 	
 private:
 	FQuestId QuestId;
-
 	UPROPERTY()
 	TObjectPtr<const UQuestDataAsset> QuestAsset;
 
 	UPROPERTY()
 	TMap<FName, const TObjectPtr<const UQuestObjective>> ObjectiveAssets;
-
 	TMap<FName, FQuestObjectiveState> ObjectiveStates;
-	
+
 	EQuestCompletionState State;
+
+	FName ActivePhase;
+	TArray<FName> CompletedPhases;
 };
