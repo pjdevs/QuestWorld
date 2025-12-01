@@ -9,6 +9,8 @@
 #include "SpudSubsystem.h"
 #include "Assets/QuestDataAsset.h"
 #include "Engine/AssetManager.h"
+#include "Flow/FlowNode_QuestObjective.h"
+#include "Kismet/GameplayStatics.h"
 #include "Nodes/Graph/FlowNode_SubGraph.h"
 
 // Subsystem
@@ -311,14 +313,14 @@ void UQuestSubsystem::LoadQuestSave(const FQuestSaveData& QuestSave)
 {
 	UnloadAll();
 	LoadedQuestSaveData = QuestSave;
-	bHasSaveBeenLoaded = true;
+	bIsLoadedSavePendingRestore = true;
 }
 
 // TODO Unify with start quest
 
 void UQuestSubsystem::RestoreQuestsFromSave()
 {
-	if (!bHasSaveBeenLoaded)
+	if (!bIsLoadedSavePendingRestore)
 	{
 		return;
 	}
@@ -368,16 +370,45 @@ void UQuestSubsystem::RestoreQuestsFromSave()
 		{
 			if (FlowSubsystem && QuestFlowAsset)
 			{
+				// Trick to make subgraph saved data available 
+				UFlowSaveGame* FlowSaveGame = FlowSubsystem->GetLoadedSaveGame();
+
+				if (FlowSaveGame == nullptr)
+				{
+					FlowSaveGame =  Cast<UFlowSaveGame>(
+						UGameplayStatics::CreateSaveGameObject(UFlowSaveGame::StaticClass())
+					);
+				}
+
+				for (FFlowAssetSaveData FlowAssetSaveData : QuestData.QuestFlowInstancesSave)
+				{
+					FlowSaveGame->FlowInstances.Add(FlowAssetSaveData);
+				}
+
+				FlowSubsystem->OnGameLoaded(FlowSaveGame);
+				// end trick
+				
 				UFlowAsset* QuestFlowInstance = FlowSubsystem->CreateRootFlow(this, QuestFlowAsset, false);
 				QuestFlowsById.Add(QuestId, QuestFlowInstance);
-				QuestFlowInstance->LoadInstance(QuestData.QuestFlowSave);
+
+				const FFlowAssetSaveData* FlowInstanceSaveData = QuestData.QuestFlowInstancesSave.FindByPredicate(
+					[QuestFlowInstance](const FFlowAssetSaveData& SaveData)
+					{
+						return SaveData.InstanceName == QuestFlowInstance->GetFName().ToString();
+					}
+				);
+
+				if (FlowInstanceSaveData)
+				{
+					QuestFlowInstance->LoadInstance(*FlowInstanceSaveData);
+				}
 			}
 
 			OnQuestUpdated.Broadcast(QuestId);
 		}
 	}
 
-	bHasSaveBeenLoaded = false;
+	bIsLoadedSavePendingRestore = false;
 }
 
 FQuestSaveData UQuestSubsystem::MakeQuestSave() const
@@ -409,10 +440,7 @@ FQuestSaveData UQuestSubsystem::MakeQuestSave() const
 
 		if (const TObjectPtr<UFlowAsset>* QuestFlowInstancePtr = QuestFlowsById.Find(QuestId))
 		{
-			TArray<FFlowAssetSaveData> Records;
-			Records.Reserve(1);
-			QuestFlowInstancePtr->Get()->SaveInstance(Records);
-			QuestStateData.QuestFlowSave = Records[0];
+			QuestFlowInstancePtr->Get()->SaveInstance(QuestStateData.QuestFlowInstancesSave);
 		}
 
 		QuestSaveData.QuestStates.Add(QuestStateData);

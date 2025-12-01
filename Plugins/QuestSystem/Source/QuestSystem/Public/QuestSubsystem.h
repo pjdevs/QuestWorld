@@ -148,5 +148,5 @@ private:
 	FQuestSaveData SpudQuestSaveData;
 	
 	FQuestSaveData LoadedQuestSaveData;
-	bool bHasSaveBeenLoaded;
+	bool bIsLoadedSavePendingRestore;
 };

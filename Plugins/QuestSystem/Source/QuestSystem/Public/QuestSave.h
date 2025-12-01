@@ -35,7 +35,7 @@ struct QUESTSYSTEM_API FQuestStateSaveData
 	TArray<FQuestObjectiveSateSaveData> ObjectiveStates = TArray<FQuestObjectiveSateSaveData>();
 
 	UPROPERTY(SaveGame)
-	FFlowAssetSaveData QuestFlowSave = FFlowAssetSaveData();
+	TArray<FFlowAssetSaveData> QuestFlowInstancesSave = TArray<FFlowAssetSaveData>();
 
 	UPROPERTY(SaveGame)
 	EQuestCompletionState CompletionState = EQuestCompletionState::Started;
