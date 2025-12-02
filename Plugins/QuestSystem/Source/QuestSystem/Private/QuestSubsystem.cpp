@@ -9,7 +9,7 @@
 #include "SpudSubsystem.h"
 #include "Assets/QuestDataAsset.h"
 #include "Engine/AssetManager.h"
-#include "Flow/FlowNode_QuestObjective.h"
+#include "Flow/QuestFlowNode_QuestObjective.h"
 #include "Kismet/GameplayStatics.h"
 #include "Nodes/Graph/FlowNode_SubGraph.h"
 

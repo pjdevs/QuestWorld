@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "QuestId.generated.h"
 
+class UQuestDataAsset;
+
 /**
  * 
  */
@@ -16,6 +18,7 @@ struct QUESTSYSTEM_API FQuestId
 public:
 	FQuestId();
 	FQuestId(const FName& QuestName);
+	FQuestId(const TSoftObjectPtr<UQuestDataAsset> QuestRef);
 
 	bool IsValid() const;
 	FString ToString() const { return QuestAssetId.ToString(); }

@@ -1,5 +1,6 @@
 ﻿#include "QuestSystemEditor.h"
 
+#include "IAssetTools.h"
 #include "QuestObjectiveReferenceCustomization.h"
 #include "QuestPhaseReferencesCustomization.h"
 
@@ -7,6 +8,15 @@
 
 void FQuestSystemEditorModule::StartupModule()
 {
+	// Register custom asset
+	IAssetTools& AssetToolsModule = IAssetTools::Get();
+
+	const EAssetTypeCategories::Type QuestFlowAssetCategoryType = AssetToolsModule.RegisterAdvancedAssetCategory(
+		FName("Quest"),
+		FText::FromString("Quest")
+	);
+	
+	// Register custom property editors
 	FPropertyEditorModule& PropertyModule = FModuleManager::LoadModuleChecked<FPropertyEditorModule>("PropertyEditor");
 
 	PropertyModule.RegisterCustomPropertyTypeLayout(

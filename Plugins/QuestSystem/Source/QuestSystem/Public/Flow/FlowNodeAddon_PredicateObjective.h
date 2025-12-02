@@ -30,9 +30,9 @@ public:
 	virtual bool EvaluatePredicate_Implementation() const override;
 
 protected:
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Quest")
 	EObjectiveCompletionBehavior Behavior;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Quest", meta = (QuestReference = "GetOwningQuestAsset"))
 	FQuestObjectiveReference ObjectiveRef;
 };

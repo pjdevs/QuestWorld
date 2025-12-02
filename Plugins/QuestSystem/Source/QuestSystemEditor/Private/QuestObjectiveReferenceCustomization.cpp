@@ -6,7 +6,6 @@
 #include "Assets/QuestDataAsset.h"
 #include "Assets/QuestObjectiveReference.h"
 #include "DetailWidgetRow.h"
-#include "IDetailChildrenBuilder.h"
 
 
 template<typename T>
@@ -15,6 +14,13 @@ T* GetHandleValue(TSharedPtr<IPropertyHandle> Handle)
     void* CurrentPtr;
     Handle->GetValueData(CurrentPtr);
     return static_cast<T*>(CurrentPtr);
+}
+
+template<typename T>
+void SetHandleValue(TSharedPtr<IPropertyHandle> Handle, const T& Value)
+{
+    T* ValuePtr = GetHandleValue<T>(Handle);
+    *ValuePtr = Value;
 }
 
 TSharedRef<IPropertyTypeCustomization> FQuestObjectiveReferenceCustomization::MakeInstance()
@@ -31,7 +37,64 @@ void FQuestObjectiveReferenceCustomization::CustomizeHeader(
     QuestRefHandle = StructHandle->GetChildHandle(GET_MEMBER_NAME_CHECKED(FQuestObjectiveReference, QuestRef));
     ObjectiveIdHandle = StructHandle->GetChildHandle(GET_MEMBER_NAME_CHECKED(FQuestObjectiveReference, ObjectiveId));
 
-    HeaderRow.NameContent()[StructHandle->CreatePropertyNameWidget()];
+    TSoftObjectPtr<UQuestDataAsset> QuestRef = nullptr;
+    
+    UObject* Owner = nullptr;
+    TArray<UObject*> OuterObjects;
+    StructHandle->GetOuterObjects(OuterObjects);
+    if (OuterObjects.Num() > 0)
+    {
+        Owner = OuterObjects[0];
+    }
+
+    FString GetQuestRefFuncName = StructHandle->GetProperty()->GetMetaData("QuestReference");
+    if (!GetQuestRefFuncName.IsEmpty() && Owner)
+    {
+        if (UFunction* GetQuestRefFunc = Owner->FindFunction(FName(*GetQuestRefFuncName)))
+        {
+            struct FReturn { TSoftObjectPtr<UQuestDataAsset> QuestRef; } ReturnValue;
+            Owner->ProcessEvent(GetQuestRefFunc, &ReturnValue);
+            QuestRef = ReturnValue.QuestRef;
+        }
+    }
+
+    FQuestObjectiveReference* ObjectiveRef = GetHandleValue<FQuestObjectiveReference>(StructHandle);
+
+    if (!ObjectiveRef->IsValid() || ObjectiveRef->QuestRef != QuestRef)
+    {
+        StructHandle->NotifyPreChange();
+        SetHandleValue(QuestRefHandle, QuestRef);
+        ObjectiveRef->FixupReference();
+        StructHandle->NotifyPostChange(EPropertyChangeType::ValueSet);
+        StructHandle->NotifyFinishedChangingProperties();
+    }
+
+    ObjectiveIds.Empty();
+
+    if (const UQuestDataAsset* QuestAsset = QuestRef.LoadSynchronous())
+    {
+        for (const UQuestObjective* Objective : QuestAsset->Objectives)
+        {
+            ObjectiveIds.Add(Objective->ObjectiveId);   
+        }
+    }
+    
+    HeaderRow
+        .NameContent()[StructHandle->CreatePropertyNameWidget()]
+        .ValueContent()
+        [
+            SAssignNew(ComboBox, SComboBox<FName>)
+                .OptionsSource(&ObjectiveIds)
+                .Content()
+                [
+                    SNew(STextBlock)
+                        .Font(FAppStyle::GetFontStyle("PropertyWindow.NormalFont"))
+                        .Text(this, &FQuestObjectiveReferenceCustomization::GetContentText)
+                ]
+                .OnGenerateWidget_Raw(this, &FQuestObjectiveReferenceCustomization::GenerateWidget)
+                .OnSelectionChanged_Raw(this, &FQuestObjectiveReferenceCustomization::OnSelectionChanged)
+                .InitiallySelectedItem(ObjectiveRef->ObjectiveId)
+        ];
 }
 
 void FQuestObjectiveReferenceCustomization::CustomizeChildren(
@@ -40,81 +103,24 @@ void FQuestObjectiveReferenceCustomization::CustomizeChildren(
     IPropertyTypeCustomizationUtils& CustomizationUtils
 )
 {
-    ChildBuilder.AddProperty(QuestRefHandle.ToSharedRef());
-    
-    ChildBuilder
-        .AddCustomRow(FText::FromString("Objective"))
-        .NameContent()
-        [
-            SNew(STextBlock)
-                .Text(FText::FromString("Objective"))
-                .Font(FAppStyle::GetFontStyle("PropertyWindow.NormalFont"))
-        ]
-        .ValueContent()
-        [
-            SNew(SComboButton)
-                .OnGetMenuContent(this, &FQuestObjectiveReferenceCustomization::BuildMenu)
-                .ButtonContent()
-                [
-                    SNew(STextBlock)
-                        .Text(this, &FQuestObjectiveReferenceCustomization::GetSummary)
-                        .Font(FAppStyle::GetFontStyle("PropertyWindow.NormalFont"))
-                ]
-        ];
 }
 
-TSharedRef<SWidget> FQuestObjectiveReferenceCustomization::BuildMenu()
+FText FQuestObjectiveReferenceCustomization::GetContentText() const
 {
-    FMenuBuilder Menu(true, nullptr);
-
-    const TSoftObjectPtr<UQuestDataAsset>* QuestRef = GetHandleValue<TSoftObjectPtr<UQuestDataAsset>>(QuestRefHandle);
-    
-    if (QuestRef->IsNull())
-    {
-        return Menu.MakeWidget();
-    }
-
-    UQuestDataAsset* QuestAsset = QuestRef->LoadSynchronous();
-
-    if (!QuestAsset)
-    {
-        return Menu.MakeWidget();
-    }
-
-    for (const TObjectPtr<UQuestObjective>& Objective : QuestAsset->Objectives)
-    {
-        FUIAction Action(
-            FExecuteAction::CreateSP(
-                this,
-                &FQuestObjectiveReferenceCustomization::SetObjectiveId,
-                Objective->ObjectiveId
-            )
-        );
-        
-        Menu.AddMenuEntry(
-            FText::FromName(Objective->ObjectiveId),
-            FText::GetEmpty(),
-            FSlateIcon(),
-            Action
-        );
-    }
-
-    return Menu.MakeWidget();
+    return FText::FromName(ComboBox->GetSelectedItem());
 }
 
-void FQuestObjectiveReferenceCustomization::SetObjectiveId(FName ObjectiveId) const
+TSharedRef<SWidget> FQuestObjectiveReferenceCustomization::GenerateWidget(FName Name) const
+{
+    return SNew(STextBlock)
+        .Text(FText::FromName(Name))
+        .Font(FAppStyle::GetFontStyle("PropertyWindow.NormalFont"));
+}
+
+void FQuestObjectiveReferenceCustomization::OnSelectionChanged(FName SelectedObjectiveId, ESelectInfo::Type SelectionType) const
 {
     ObjectiveIdHandle->NotifyPreChange();
-    
-    FName* ObjectiveIdPtr = GetHandleValue<FName>(ObjectiveIdHandle);
-    *ObjectiveIdPtr = ObjectiveId;
-
+    SetHandleValue(ObjectiveIdHandle, SelectedObjectiveId);
     ObjectiveIdHandle->NotifyPostChange(EPropertyChangeType::ValueSet);
     ObjectiveIdHandle->NotifyFinishedChangingProperties();
-}
-
-FText FQuestObjectiveReferenceCustomization::GetSummary() const
-{
-    const FName* ObjectiveIdPtr = GetHandleValue<FName>(ObjectiveIdHandle);
-    return FText::FromName(*ObjectiveIdPtr);
 }

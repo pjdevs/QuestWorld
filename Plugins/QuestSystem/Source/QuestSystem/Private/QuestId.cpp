@@ -2,6 +2,8 @@
 
 
 #include "QuestId.h"
+
+#include "Assets/QuestDataAsset.h"
 #include "PrimaryAssetTypes.h"
 
 
@@ -13,7 +15,11 @@ FQuestId::FQuestId()
 FQuestId::FQuestId(const FName& QuestName)
 	: QuestAssetId(PrimaryAssetTypes::Quest, QuestName)
 {
-		
+}
+
+FQuestId::FQuestId(const TSoftObjectPtr<UQuestDataAsset> QuestRef)
+	: FQuestId(QuestRef.ToSoftObjectPath().GetAssetFName())
+{
 }
 
 bool FQuestId::IsValid() const

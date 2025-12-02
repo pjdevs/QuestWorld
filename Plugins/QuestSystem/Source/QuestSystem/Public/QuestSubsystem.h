@@ -8,6 +8,7 @@
 #include "QuestDescription.h"
 #include "QuestId.h"
 #include "QuestSave.h"
+#include "Interfaces/FlowOwnerInterface.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "QuestSubsystem.generated.h"
 
@@ -23,7 +24,11 @@ DECLARE_MULTICAST_DELEGATE_ThreeParams(FQuestObjectiveCompletedDelegate, const F
  * For UI replication of quests state, see QuestComponent.
  */
 UCLASS()
-class QUESTSYSTEM_API UQuestSubsystem : public UGameInstanceSubsystem, public ISpudObject, public ISpudObjectCallback
+class QUESTSYSTEM_API UQuestSubsystem :
+	public UGameInstanceSubsystem,
+	public ISpudObject,
+	public ISpudObjectCallback,
+	public IFlowOwnerInterface
 {
 	GENERATED_BODY()
 

@@ -27,13 +27,16 @@ private:
 		IPropertyTypeCustomizationUtils& CustomizationUtils
 	) override;
 
-
 private:
-	TSharedRef<SWidget> BuildMenu();
-	void SetObjectiveId(FName ObjectiveIdName) const;
-	FText GetSummary() const;
-	
+	FText GetContentText() const;
+	TSharedRef<SWidget> GenerateWidget(FName Name) const;
+	void OnSelectionChanged(FName SelectedObjectiveId, ESelectInfo::Type SelectionType) const;
+
 private:
 	TSharedPtr<IPropertyHandle> QuestRefHandle;
 	TSharedPtr<IPropertyHandle> ObjectiveIdHandle;
+
+	TArray<FName> ObjectiveIds;
+
+	TSharedPtr<SComboBox<FName>> ComboBox;
 };

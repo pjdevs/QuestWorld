@@ -10,7 +10,9 @@ public class QuestSystemEditor : ModuleRules
             [
                 "Core",
                 "QuestSystem",
-                "GameplayTags"
+                "GameplayTags",
+                "UnrealEd",
+                "AssetDefinition"
             ]
         );
 
@@ -20,7 +22,9 @@ public class QuestSystemEditor : ModuleRules
                 "Engine",
                 "Slate",
                 "SlateCore",
-                "UnrealEd"
+                "FlowEditor",
+                "AssetTools",
+                "InputCore"
             ]
         );
     }
