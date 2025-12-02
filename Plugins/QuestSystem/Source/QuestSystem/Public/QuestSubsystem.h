@@ -12,7 +12,7 @@
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "QuestSubsystem.generated.h"
 
-class UFlowAsset;
+class UQuestFlowAsset;
 class UBaseQuestEvent;
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FQuestEventDelegate, const FQuestId& /* QuestId */);
@@ -108,7 +108,7 @@ public: // QuestSubsystem public interface
 	FQuestSaveData MakeQuestSave() const;
 
 	UFUNCTION(BlueprintPure, BlueprintAuthorityOnly, Category = "Quest")
-	FQuestId GetQuestIdFromFlow(UFlowAsset* QuestFlowInstance) const;
+	FQuestId GetQuestIdFromFlow(UQuestFlowAsset* QuestFlowInstance) const;
 
 	// Asset management
 
@@ -147,7 +147,7 @@ private:
 	TMap<FQuestId, FQuestState> QuestStatesById;
 
 	UPROPERTY()
-	TMap<FQuestId, TObjectPtr<UFlowAsset>> QuestFlowsById;
+	TMap<FQuestId, TObjectPtr<UQuestFlowAsset>> QuestFlowsById;
 
 	UPROPERTY(SaveGame)
 	FQuestSaveData SpudQuestSaveData;

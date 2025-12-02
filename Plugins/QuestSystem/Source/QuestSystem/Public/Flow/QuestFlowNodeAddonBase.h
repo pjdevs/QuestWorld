@@ -4,30 +4,28 @@
 
 #include "CoreMinimal.h"
 #include "QuestId.h"
-#include "Nodes/FlowNode.h"
-#include "QuestFlowNodeBase.generated.h"
+#include "AddOns/FlowNodeAddOn.h"
+#include "QuestFlowNodeAddonBase.generated.h"
 
+class UQuestDataAsset;
 class UQuestSubsystem;
 
 /**
- * Base class for nodes of quest flow graph.
+ * 
  */
 UCLASS(Abstract, NotBlueprintable, BlueprintType, HideCategories = Object)
-class QUESTSYSTEM_API UQuestFlowNodeBase : public UFlowNode
+class QUESTSYSTEM_API UQuestFlowNodeAddonBase : public UFlowNodeAddOn
 {
 	GENERATED_BODY()
 
 public:
-	UQuestFlowNodeBase(const FObjectInitializer& ObjectInitializer);
-	
+	UQuestFlowNodeAddonBase();
+
 protected:
 	UQuestSubsystem& GetQuestSubsystem() const;
 	FQuestId GetOwningQuestId() const;
 
 #if WITH_EDITOR
-public:
-	virtual void OnOwningQuestChanged();
-	
 protected:
 	UFUNCTION()
 	TSoftObjectPtr<UQuestDataAsset> GetOwningQuestAsset() const;

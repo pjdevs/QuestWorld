@@ -7,7 +7,7 @@
 #include "Engine/DataAsset.h"
 #include "QuestDataAsset.generated.h"
 
-class UFlowAsset;
+class UQuestFlowAsset;
 class UQuestObjective;
 
 /**
@@ -46,7 +46,7 @@ public:
 	TArray<TObjectPtr<UQuestObjective>> Objectives;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Quest")
-	UFlowAsset* QuestFlowAsset;
+	TSoftObjectPtr<UQuestFlowAsset> QuestFlowAsset;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Quest")
 	bool bShouldAutocomplete;

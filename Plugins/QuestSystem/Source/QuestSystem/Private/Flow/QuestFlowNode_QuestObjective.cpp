@@ -23,9 +23,8 @@ UQuestFlowNode_QuestObjective::UQuestFlowNode_QuestObjective(const FObjectInitia
 
 void UQuestFlowNode_QuestObjective::ExecuteInput(const FName& PinName)
 {
+	const FQuestId& QuestId = GetOwningQuestId();
 	UQuestSubsystem& QuestSubsystem = GetQuestSubsystem();
-	const FQuestId QuestId = QuestSubsystem.GetQuestIdFromFlow(GetFlowAsset());
-
 	if (PinName == StartObjectivePinName)
 	{
 		ObjectiveCompletedDelegateHandle = QuestSubsystem.OnObjectiveCompleted.AddUObject(
@@ -72,7 +71,7 @@ void UQuestFlowNode_QuestObjective::Cleanup()
 void UQuestFlowNode_QuestObjective::OnLoad_Implementation()
 {
 	UQuestSubsystem& QuestSubsystem = GetQuestSubsystem();
-	const FQuestId QuestId = QuestSubsystem.GetQuestIdFromFlow(GetFlowAsset());
+	const FQuestId& QuestId = GetOwningQuestId();
 	const FName& ObjectiveId = ObjectiveRef.ObjectiveId;
 	
 	if (QuestSubsystem.IsObjectiveCompleted(QuestId, ObjectiveId))
@@ -95,7 +94,7 @@ void UQuestFlowNode_QuestObjective::OnObjectiveCompleted(
 )
 {
 	UQuestSubsystem& QuestSubsystem = GetQuestSubsystem();
-	const FQuestId& ThisQuestId = QuestSubsystem.GetQuestIdFromFlow(GetFlowAsset());
+	const FQuestId& ThisQuestId = GetOwningQuestId();
 	
 	// for now assume unique tag per objective
 	if (ThisQuestId == QuestId && CompletedObjectiveId == ObjectiveRef.ObjectiveId)

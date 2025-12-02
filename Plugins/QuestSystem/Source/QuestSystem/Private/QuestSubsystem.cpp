@@ -9,9 +9,11 @@
 #include "SpudSubsystem.h"
 #include "Assets/QuestDataAsset.h"
 #include "Engine/AssetManager.h"
+#include "Flow/QuestFlowAsset.h"
 #include "Flow/QuestFlowNode_QuestObjective.h"
+#include "Flow/QuestFlowNode_SubGraph.h"
 #include "Kismet/GameplayStatics.h"
-#include "Nodes/Graph/FlowNode_SubGraph.h"
+
 
 // Subsystem
 
@@ -59,9 +61,11 @@ void UQuestSubsystem::StartQuest(FQuestId QuestId)
 
 	if (UFlowSubsystem* FlowSubsystem = GetGameInstance()->GetSubsystem<UFlowSubsystem>())
 	{
-		if (UFlowAsset* QuestFlowAsset = QuestDataAsset->QuestFlowAsset)
+		if (UQuestFlowAsset* QuestFlowAsset = QuestDataAsset->QuestFlowAsset.LoadSynchronous())
 		{
-			UFlowAsset* QuestFlowInstance = FlowSubsystem->CreateRootFlow(this, QuestFlowAsset, false);
+			UQuestFlowAsset* QuestFlowInstance = Cast<UQuestFlowAsset>(
+				FlowSubsystem->CreateRootFlow(this, QuestFlowAsset, false)
+			);
 			QuestFlowsById.Add(QuestId, QuestFlowInstance);
 			QuestFlowInstance->StartFlow();
 		}
@@ -364,7 +368,7 @@ void UQuestSubsystem::RestoreQuestsFromSave()
 		);
 
 		UFlowSubsystem* FlowSubsystem = GetGameInstance()->GetSubsystem<UFlowSubsystem>();
-		UFlowAsset* QuestFlowAsset = QuestAsset->QuestFlowAsset;
+		UQuestFlowAsset* QuestFlowAsset = QuestAsset->QuestFlowAsset.LoadSynchronous();
 		
 		if (!QuestState.IsCompleted())
 		{
@@ -388,7 +392,9 @@ void UQuestSubsystem::RestoreQuestsFromSave()
 				FlowSubsystem->OnGameLoaded(FlowSaveGame);
 				// end trick
 				
-				UFlowAsset* QuestFlowInstance = FlowSubsystem->CreateRootFlow(this, QuestFlowAsset, false);
+				UQuestFlowAsset* QuestFlowInstance = Cast<UQuestFlowAsset>(
+					FlowSubsystem->CreateRootFlow(this, QuestFlowAsset, false)
+				);
 				QuestFlowsById.Add(QuestId, QuestFlowInstance);
 
 				const FFlowAssetSaveData* FlowInstanceSaveData = QuestData.QuestFlowInstancesSave.FindByPredicate(
@@ -438,7 +444,7 @@ FQuestSaveData UQuestSubsystem::MakeQuestSave() const
 			QuestStateData.ObjectiveStates.Add(ObjectiveStateData);
 		}
 
-		if (const TObjectPtr<UFlowAsset>* QuestFlowInstancePtr = QuestFlowsById.Find(QuestId))
+		if (const TObjectPtr<UQuestFlowAsset>* QuestFlowInstancePtr = QuestFlowsById.Find(QuestId))
 		{
 			QuestFlowInstancePtr->Get()->SaveInstance(QuestStateData.QuestFlowInstancesSave);
 		}
@@ -449,11 +455,20 @@ FQuestSaveData UQuestSubsystem::MakeQuestSave() const
 	return QuestSaveData;
 }
 
-FQuestId UQuestSubsystem::GetQuestIdFromFlow(UFlowAsset* QuestFlowInstance) const
+FQuestId UQuestSubsystem::GetQuestIdFromFlow(UQuestFlowAsset* QuestFlowInstance) const
 {
-	if (const UFlowNode_SubGraph* QuestSubFlow = QuestFlowInstance->GetNodeOwningThisAssetInstance())
+	if (!QuestFlowInstance)
 	{
-		return GetQuestIdFromFlow(QuestSubFlow->GetFlowAsset());	
+		return FQuestId();
+	}
+	
+	if (
+		const UQuestFlowNode_SubGraph* QuestSubFlow = Cast<UQuestFlowNode_SubGraph>(
+			QuestFlowInstance->GetNodeOwningThisAssetInstance()
+		)
+	)
+	{
+		return GetQuestIdFromFlow(Cast<UQuestFlowAsset>(QuestSubFlow->GetFlowAsset()));	
 	}
 	
 	const FQuestId* QuestIdPtr = QuestFlowsById.FindKey(QuestFlowInstance);
@@ -555,8 +570,9 @@ void UQuestSubsystem::HandleQuestCompleted(FQuestState& QuestState)
 	
 	if (UFlowSubsystem* FlowSubsystem = GetGameInstance()->GetSubsystem<UFlowSubsystem>())
 	{
-		if (UFlowAsset* QuestFlowAsset = QuestState.GetQuestAsset()->QuestFlowAsset)
+		if (QuestState.GetQuestAsset()->QuestFlowAsset.ToSoftObjectPath().IsValid())
 		{
+			UQuestFlowAsset* QuestFlowAsset = QuestFlowsById[QuestId];
 			FlowSubsystem->FinishRootFlow(this, QuestFlowAsset, EFlowFinishPolicy::Abort);
 			QuestFlowsById.Remove(QuestId);
 		}

@@ -3,8 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Nodes/FlowNode.h"
-#include "FlowNode_StartQuestPhase.generated.h"
+#include "QuestFlowNodeBase.h"
+#include "QuestFlowNode_StartQuestPhase.generated.h"
 
 class UQuestPhaseReference;
 struct FQuestId;
@@ -14,12 +14,12 @@ class UQuestSubsystem;
  * 
  */
 UCLASS(NotBlueprintable, meta = (DisplayName = "Start Quest Phase"))
-class QUESTSYSTEM_API UFlowNode_StartQuestPhase : public UFlowNode
+class QUESTSYSTEM_API UQuestFlowNode_StartQuestPhase : public UQuestFlowNodeBase
 {
 	GENERATED_BODY()
 
 public:
-	UFlowNode_StartQuestPhase(const FObjectInitializer& ObjectInitializer);
+	UQuestFlowNode_StartQuestPhase(const FObjectInitializer& ObjectInitializer);
 
 	virtual void ExecuteInput(const FName& PinName) override;
 
@@ -28,9 +28,6 @@ public:
 	virtual FString GetNodeDescription() const override;
 	virtual EDataValidationResult ValidateNode() override;
 #endif
-
-protected:
-	UQuestSubsystem* GetQuestSubsystem() const;
 
 protected:
 	UPROPERTY(EditAnywhere, Instanced, Category = "Quest", meta = (AllowNone = false))

@@ -12,7 +12,8 @@ public class QuestSystemEditor : ModuleRules
                 "QuestSystem",
                 "GameplayTags",
                 "UnrealEd",
-                "AssetDefinition"
+                "AssetDefinition",
+                "DataValidation"
             ]
         );
 

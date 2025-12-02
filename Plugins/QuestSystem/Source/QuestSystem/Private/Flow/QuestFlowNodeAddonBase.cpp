@@ -1,38 +1,36 @@
 ﻿// Copyright pjdevs. All Rights Reserved.
 
 
-#include "Flow/QuestFlowNodeBase.h"
+#include "Flow/QuestFlowNodeAddonBase.h"
 
 #include "QuestSubsystem.h"
 #include "Flow/QuestFlowAsset.h"
 #include "Flow/QuestFlowStatics.h"
 
-UQuestFlowNodeBase::UQuestFlowNodeBase(const FObjectInitializer& ObjectInitializer)
-	: Super(ObjectInitializer)
+
+UQuestFlowNodeAddonBase::UQuestFlowNodeAddonBase()
 {
-#if WITH_EDITORONLY_DATA
-	AllowedAssetClasses = { UQuestFlowAsset::StaticClass() };
+#if WITH_EDITOR
+	NodeDisplayStyle = FlowNodeStyle::AddOn_PerSpawnedActor;
+	Category = TEXT("Quest");
 #endif
 }
 
-UQuestSubsystem& UQuestFlowNodeBase::GetQuestSubsystem() const
+UQuestSubsystem& UQuestFlowNodeAddonBase::GetQuestSubsystem() const
 {
 	return FQuestFlowStatics::GetQuestSubsystemFromFlowNodeBase(this);
 }
 
-FQuestId UQuestFlowNodeBase::GetOwningQuestId() const
+FQuestId UQuestFlowNodeAddonBase::GetOwningQuestId() const
 {
 	UQuestFlowAsset* QuestFlowInstance = Cast<UQuestFlowAsset>(GetFlowAsset());
 	ensureAlwaysMsgf(QuestFlowInstance != nullptr, TEXT("UQuestFlowNodeBase should be in a UQuestFlowAsset."));
 	return GetQuestSubsystem().GetQuestIdFromFlow(QuestFlowInstance);
 }
 
-void UQuestFlowNodeBase::OnOwningQuestChanged()
-{
-	
-}
-
-TSoftObjectPtr<UQuestDataAsset> UQuestFlowNodeBase::GetOwningQuestAsset() const
+#if WITH_EDITOR
+TSoftObjectPtr<UQuestDataAsset> UQuestFlowNodeAddonBase::GetOwningQuestAsset() const
 {
 	return FQuestFlowStatics::GetOwningQuestAssetFromFlowNodeBase(this);
 }
+#endif

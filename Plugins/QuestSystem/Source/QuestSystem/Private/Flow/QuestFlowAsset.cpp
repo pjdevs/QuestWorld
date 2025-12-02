@@ -5,13 +5,16 @@
 
 #include "QuestSubsystem.h"
 #include "Flow/QuestFlowNodeBase.h"
-#include "Nodes/Graph/FlowNode_Finish.h"
+#include "Flow/QuestFlowNode_SubGraph.h"
+#include "Nodes/Graph/FlowNode_SubGraph.h"
 
 UQuestFlowAsset::UQuestFlowAsset(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
-	DeniedNodeClasses.Add(UFlowNode_Finish::StaticClass());
+	bWorldBound = false;
 	ExpectedOwnerClass = UQuestSubsystem::StaticClass();
+	AllowedNodeClasses.Add(UQuestFlowNode_SubGraph::StaticClass());
+	DeniedNodeClasses.Add(UFlowNode_SubGraph::StaticClass());
 }
 
 EDataValidationResult UQuestFlowAsset::ValidateAsset(FFlowMessageLog& MessageLog)
