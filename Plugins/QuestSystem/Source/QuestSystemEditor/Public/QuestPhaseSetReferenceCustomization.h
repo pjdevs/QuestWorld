@@ -32,7 +32,6 @@ private:
 	void TogglePhase(FName Phase) const;
 	FText GetSummary() const;
 
-	FQuestPhaseSetReference* GetCurrentPhases() const;
 	const UQuestDataAsset* GetOwnerQuestAsset() const;
 	
 private:

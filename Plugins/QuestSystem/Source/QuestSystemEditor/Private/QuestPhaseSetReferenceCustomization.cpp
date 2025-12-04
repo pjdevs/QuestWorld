@@ -6,6 +6,7 @@
 #include "DetailWidgetRow.h"
 #include "Assets/QuestDataAsset.h"
 #include "Assets/QuestPhaseSetReference.h"
+#include "PropertyHandleUtils.h"
 
 
 TSharedRef<IPropertyTypeCustomization> FQuestPhaseSetReferenceCustomization::MakeInstance()
@@ -63,7 +64,7 @@ TSharedRef<SWidget> FQuestPhaseSetReferenceCustomization::BuildMenu()
 
     for (const FName& Phase : OwnerQuestAsset->Phases)
     {
-        const FQuestPhaseSetReference* CurrentPhases = GetCurrentPhases();
+        const FQuestPhaseSetReference* CurrentPhases = GetHandleValue<FQuestPhaseSetReference>(ThisStructHandle);
         TAttribute<bool> bIsPhaseSelected = TAttribute<bool>::Create(
             [CurrentPhases, Phase] { return CurrentPhases->Phases.Contains(Phase); }
         );
@@ -89,7 +90,7 @@ TSharedRef<SWidget> FQuestPhaseSetReferenceCustomization::BuildMenu()
 
 void FQuestPhaseSetReferenceCustomization::TogglePhase(FName Phase) const
 {
-    FQuestPhaseSetReference* CurrentPhases = GetCurrentPhases();
+    FQuestPhaseSetReference* CurrentPhases = GetHandleValue<FQuestPhaseSetReference>(ThisStructHandle);
 
     PhasesHandle->NotifyPreChange();
     
@@ -108,7 +109,7 @@ void FQuestPhaseSetReferenceCustomization::TogglePhase(FName Phase) const
 
 FText FQuestPhaseSetReferenceCustomization::GetSummary() const
 {
-    FQuestPhaseSetReference* CurrentPhases = GetCurrentPhases();
+    const FQuestPhaseSetReference* CurrentPhases = GetHandleValue<FQuestPhaseSetReference>(ThisStructHandle);
 
     if (CurrentPhases->Phases.IsEmpty())
     {
@@ -116,13 +117,6 @@ FText FQuestPhaseSetReferenceCustomization::GetSummary() const
     }
     
     return FText::FromString(CurrentPhases->ToString());
-}
-
-FQuestPhaseSetReference* FQuestPhaseSetReferenceCustomization::GetCurrentPhases() const
-{
-    void* CurrentPtr;
-    ThisStructHandle->GetValueData(CurrentPtr);
-    return static_cast<FQuestPhaseSetReference*>(CurrentPtr);
 }
 
 const UQuestDataAsset* FQuestPhaseSetReferenceCustomization::GetOwnerQuestAsset() const

@@ -315,7 +315,6 @@ FQuestDescription UQuestSubsystem::GetQuestDescription(const FQuestId& QuestId)
 
 void UQuestSubsystem::LoadQuestSave(const FQuestSaveData& QuestSave)
 {
-	UnloadAll();
 	LoadedQuestSaveData = QuestSave;
 	bIsLoadedSavePendingRestore = true;
 }
@@ -328,6 +327,8 @@ void UQuestSubsystem::RestoreQuestsFromSave()
 	{
 		return;
 	}
+
+	UnloadAll();
 	
 	for (const FQuestStateSaveData& QuestData : LoadedQuestSaveData.QuestStates)
 	{
@@ -397,6 +398,8 @@ void UQuestSubsystem::RestoreQuestsFromSave()
 				const FFlowAssetSaveData* FlowInstanceSaveData = QuestData.QuestFlowInstancesSave.FindByPredicate(
 					[QuestFlowInstance](const FFlowAssetSaveData& SaveData)
 					{
+						// TODO Fix bug where new flow instance can be XXXX_1/2/3/... and saved data is XXXX_0
+						// so the instance is not found
 						return SaveData.InstanceName == QuestFlowInstance->GetFName().ToString();
 					}
 				);
@@ -507,7 +510,7 @@ void UQuestSubsystem::UnloadAll()
 	}
 
 	QuestAssetsById.Empty();
-	QuestAssetsById.Empty();
+	QuestStatesById.Empty();
 	QuestFlowsById.Empty();
 }
 
