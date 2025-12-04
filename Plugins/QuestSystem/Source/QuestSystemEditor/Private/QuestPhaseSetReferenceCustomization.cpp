@@ -1,26 +1,26 @@
 ﻿// Copyright pjdevs. All Rights Reserved.
 
 
-#include "QuestPhaseReferencesCustomization.h"
+#include "QuestPhaseSetReferenceCustomization.h"
 
 #include "DetailWidgetRow.h"
 #include "Assets/QuestDataAsset.h"
-#include "Assets/QuestPhaseReferences.h"
+#include "Assets/QuestPhaseSetReference.h"
 
 
-TSharedRef<IPropertyTypeCustomization> FQuestPhaseReferencesCustomization::MakeInstance()
+TSharedRef<IPropertyTypeCustomization> FQuestPhaseSetReferenceCustomization::MakeInstance()
 {
-    return MakeShareable(new FQuestPhaseReferencesCustomization());
+    return MakeShareable(new FQuestPhaseSetReferenceCustomization());
 }
 
-void FQuestPhaseReferencesCustomization::CustomizeHeader(
+void FQuestPhaseSetReferenceCustomization::CustomizeHeader(
     TSharedRef<IPropertyHandle> StructHandle,
     FDetailWidgetRow& HeaderRow,
     IPropertyTypeCustomizationUtils& CustomizationUtils
 )
 {
     ThisStructHandle = StructHandle;
-    PhasesHandle = ThisStructHandle->GetChildHandle(GET_MEMBER_NAME_CHECKED(FQuestPhaseReferences, Phases));
+    PhasesHandle = ThisStructHandle->GetChildHandle(GET_MEMBER_NAME_CHECKED(FQuestPhaseSetReference, Phases));
 
     HeaderRow
         .NameContent()
@@ -32,17 +32,17 @@ void FQuestPhaseReferencesCustomization::CustomizeHeader(
         .ValueContent()
         [
             SNew(SComboButton)
-                .OnGetMenuContent(this, &FQuestPhaseReferencesCustomization::BuildMenu)
+                .OnGetMenuContent(this, &FQuestPhaseSetReferenceCustomization::BuildMenu)
                 .ButtonContent()
                 [
                     SNew(STextBlock)
-                        .Text(this, &FQuestPhaseReferencesCustomization::GetSummary)
+                        .Text(this, &FQuestPhaseSetReferenceCustomization::GetSummary)
                         .Font(FAppStyle::GetFontStyle("PropertyWindow.NormalFont"))
                 ]
         ];
 }
 
-void FQuestPhaseReferencesCustomization::CustomizeChildren(
+void FQuestPhaseSetReferenceCustomization::CustomizeChildren(
     TSharedRef<IPropertyHandle> StructHandle,
     IDetailChildrenBuilder& ChildBuilder,
     IPropertyTypeCustomizationUtils& CustomizationUtils
@@ -50,11 +50,11 @@ void FQuestPhaseReferencesCustomization::CustomizeChildren(
 {
 }
 
-TSharedRef<SWidget> FQuestPhaseReferencesCustomization::BuildMenu()
+TSharedRef<SWidget> FQuestPhaseSetReferenceCustomization::BuildMenu()
 {
     FMenuBuilder Menu(true, nullptr);
 
-    UQuestDataAsset* OwnerQuestAsset = GetOwnerQuestAsset();
+    const UQuestDataAsset* OwnerQuestAsset = GetOwnerQuestAsset();
     
     if (!OwnerQuestAsset)
     {
@@ -63,13 +63,13 @@ TSharedRef<SWidget> FQuestPhaseReferencesCustomization::BuildMenu()
 
     for (const FName& Phase : OwnerQuestAsset->Phases)
     {
-        const FQuestPhaseReferences* CurrentPhases = GetCurrentPhases();
+        const FQuestPhaseSetReference* CurrentPhases = GetCurrentPhases();
         TAttribute<bool> bIsPhaseSelected = TAttribute<bool>::Create(
             [CurrentPhases, Phase] { return CurrentPhases->Phases.Contains(Phase); }
         );
         
         FUIAction Action(
-            FExecuteAction::CreateSP(this, &FQuestPhaseReferencesCustomization::TogglePhase, Phase),
+            FExecuteAction::CreateSP(this, &FQuestPhaseSetReferenceCustomization::TogglePhase, Phase),
             FCanExecuteAction(),
             FIsActionChecked::CreateLambda([bIsPhaseSelected] { return bIsPhaseSelected.Get(); })
         );
@@ -87,9 +87,9 @@ TSharedRef<SWidget> FQuestPhaseReferencesCustomization::BuildMenu()
     return Menu.MakeWidget();
 }
 
-void FQuestPhaseReferencesCustomization::TogglePhase(FName Phase) const
+void FQuestPhaseSetReferenceCustomization::TogglePhase(FName Phase) const
 {
-    FQuestPhaseReferences* CurrentPhases = GetCurrentPhases();
+    FQuestPhaseSetReference* CurrentPhases = GetCurrentPhases();
 
     PhasesHandle->NotifyPreChange();
     
@@ -106,9 +106,9 @@ void FQuestPhaseReferencesCustomization::TogglePhase(FName Phase) const
     PhasesHandle->NotifyFinishedChangingProperties();
 }
 
-FText FQuestPhaseReferencesCustomization::GetSummary() const
+FText FQuestPhaseSetReferenceCustomization::GetSummary() const
 {
-    FQuestPhaseReferences* CurrentPhases = GetCurrentPhases();
+    FQuestPhaseSetReference* CurrentPhases = GetCurrentPhases();
 
     if (CurrentPhases->Phases.IsEmpty())
     {
@@ -118,23 +118,23 @@ FText FQuestPhaseReferencesCustomization::GetSummary() const
     return FText::FromString(CurrentPhases->ToString());
 }
 
-FQuestPhaseReferences* FQuestPhaseReferencesCustomization::GetCurrentPhases() const
+FQuestPhaseSetReference* FQuestPhaseSetReferenceCustomization::GetCurrentPhases() const
 {
     void* CurrentPtr;
     ThisStructHandle->GetValueData(CurrentPtr);
-    return static_cast<FQuestPhaseReferences*>(CurrentPtr);
+    return static_cast<FQuestPhaseSetReference*>(CurrentPtr);
 }
 
-UQuestDataAsset* FQuestPhaseReferencesCustomization::GetOwnerQuestAsset() const
+const UQuestDataAsset* FQuestPhaseSetReferenceCustomization::GetOwnerQuestAsset() const
 {
     TArray<UObject*> Outers;
     ThisStructHandle->GetOuterObjects(Outers);
 
     if (Outers.Num() > 0)
     {
-        if (const IQuestOwnedObjectInterface* QuestOwnedObject = Cast<IQuestOwnedObjectInterface>(Outers[0]))
+        if (const UQuestDataAsset* OwningQuest = Cast<UQuestDataAsset>(Outers[0]->GetOuter()))
         {
-            return QuestOwnedObject->GetOwningQuest();
+            return OwningQuest;
         }
     }
 

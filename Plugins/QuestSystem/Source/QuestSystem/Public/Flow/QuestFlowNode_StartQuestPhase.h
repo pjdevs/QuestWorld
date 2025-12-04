@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "QuestFlowNodeBase.h"
+#include "Assets/QuestPhaseReference.h"
 #include "QuestFlowNode_StartQuestPhase.generated.h"
 
 class UQuestPhaseReference;
@@ -27,9 +28,10 @@ public:
 public:
 	virtual FString GetNodeDescription() const override;
 	virtual EDataValidationResult ValidateNode() override;
+	virtual void OnOwningQuestChanged() override;
 #endif
 
 protected:
-	UPROPERTY(EditAnywhere, Instanced, Category = "Quest", meta = (AllowNone = false))
-	TObjectPtr<UQuestPhaseReference> PhaseRef;
+	UPROPERTY(EditAnywhere, Category = "Quest", meta = (QuestReference = "GetOwningQuestAsset"))
+	FQuestPhaseReference PhaseRef;
 };

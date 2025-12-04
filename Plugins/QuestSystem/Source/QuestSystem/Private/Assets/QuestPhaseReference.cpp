@@ -7,40 +7,43 @@
 
 
 #if WITH_EDITOR
-bool UQuestPhaseReference::IsValid() const
+void FQuestPhaseReference::FixupReference()
 {
-	if (QuestRef.IsNull() || Phases.Phases.Num() != 1)
+	if (IsValid())
+	{
+		return;
+	}
+
+	if (QuestRef.ToSoftObjectPath().IsValid())
+	{
+		if (const UQuestDataAsset* QuestAsset = QuestRef.LoadSynchronous())
+		{
+			if (QuestAsset->Phases.Num() > 0)
+			{
+				Phase = *QuestAsset->Phases.begin();
+				return;
+			}
+		}
+	}
+
+	QuestRef = nullptr;
+	Phase = NAME_None;
+}
+	
+bool FQuestPhaseReference::IsValid() const
+{
+	if (!QuestRef.ToSoftObjectPath().IsValid() || !Phase.IsValid() || Phase == NAME_None)
 	{
 		return false;
 	}
 
 	const UQuestDataAsset* QuestAsset = QuestRef.LoadSynchronous();
-	
-	for (const FName& Phase : Phases.Phases)
+
+	if (QuestAsset == nullptr)
 	{
-		if (!QuestAsset->Phases.Contains(Phase))
-		{
-			return false;
-		}
+		return false;
 	}
 
-	return true;
-}
-
-void UQuestPhaseReference::PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent)
-{
-	Super::PostEditChangeChainProperty(PropertyChangedEvent);
-
-	const FName PropertyName = PropertyChangedEvent.Property ? PropertyChangedEvent.Property->GetFName() : NAME_None;
-
-	if (PropertyName == GET_MEMBER_NAME_CHECKED(UQuestPhaseReference, QuestRef))
-	{
-		Phases.OnOwningQuestChanged(GetOwningQuest());
-	}
-}
-
-UQuestDataAsset* UQuestPhaseReference::GetOwningQuest() const
-{
-	return QuestRef.LoadSynchronous();
+	return QuestAsset->Phases.Contains(Phase);
 }
 #endif

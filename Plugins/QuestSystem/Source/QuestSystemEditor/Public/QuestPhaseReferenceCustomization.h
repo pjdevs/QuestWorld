@@ -3,14 +3,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Assets/QuestPhaseReferences.h"
 
 class UQuestDataAsset;
 
 /**
  * Customization to allow only parent quest phase selection.
  */
-class FQuestPhaseReferencesCustomization : public IPropertyTypeCustomization
+class FQuestPhaseReferenceCustomization : public IPropertyTypeCustomization
 {
 public:
 	static TSharedRef<IPropertyTypeCustomization> MakeInstance();
@@ -28,16 +27,16 @@ private:
 		IPropertyTypeCustomizationUtils& CustomizationUtils
 	) override;
 
+private:
+	FText GetContentText() const;
+	TSharedRef<SWidget> GenerateWidget(FName Name) const;
+	void OnSelectionChanged(FName SelectedObjectiveId, ESelectInfo::Type SelectionType) const;
 
 private:
-	TSharedRef<SWidget> BuildMenu();
-	void TogglePhase(FName Phase) const;
-	FText GetSummary() const;
+	TSharedPtr<IPropertyHandle> QuestRefHandle;
+	TSharedPtr<IPropertyHandle> PhaseHandle;
 
-	FQuestPhaseReferences* GetCurrentPhases() const;
-	UQuestDataAsset* GetOwnerQuestAsset() const;
-	
-private:
-	TSharedPtr<IPropertyHandle> ThisStructHandle;
-	TSharedPtr<IPropertyHandle> PhasesHandle;
+	TArray<FName> Phases;
+
+	TSharedPtr<SComboBox<FName>> ComboBox;
 };

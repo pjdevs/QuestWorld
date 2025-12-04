@@ -1,12 +1,12 @@
 ﻿// Copyright pjdevs. All Rights Reserved.
 
 
-#include "Assets/QuestPhaseReferences.h"
+#include "Assets/QuestPhaseSetReference.h"
 
 #include "Assets/QuestDataAsset.h"
 
 
-FString FQuestPhaseReferences::ToString() const
+FString FQuestPhaseSetReference::ToString() const
 {
 	FString SummaryString;
 	int Count = 0;
@@ -27,7 +27,7 @@ FString FQuestPhaseReferences::ToString() const
 }
 
 #if WITH_EDITOR
-void FQuestPhaseReferences::OnOwningQuestChanged(const UQuestDataAsset* OwningQuestAsset)
+void FQuestPhaseSetReference::OnOwningQuestChanged(const UQuestDataAsset* OwningQuestAsset)
 {
 	TSet<FName> ValidPhases;
 

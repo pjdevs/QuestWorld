@@ -377,14 +377,9 @@ void UQuestSubsystem::RestoreQuestsFromSave()
 				// Trick to make subgraph saved data available
 				// TODO add subgraphs saves in parent quest graph and override sub quest sub graph node onload function
 				// to load the node from the parent graph instead of the flow subsystem 
-				UFlowSaveGame* FlowSaveGame = FlowSubsystem->GetLoadedSaveGame();
-
-				if (FlowSaveGame == nullptr)
-				{
-					FlowSaveGame =  Cast<UFlowSaveGame>(
-						UGameplayStatics::CreateSaveGameObject(UFlowSaveGame::StaticClass())
-					);
-				}
+				UFlowSaveGame* FlowSaveGame = Cast<UFlowSaveGame>(
+					UGameplayStatics::CreateSaveGameObject(UFlowSaveGame::StaticClass())
+				);
 
 				for (FFlowAssetSaveData FlowAssetSaveData : QuestData.QuestFlowInstancesSave)
 				{

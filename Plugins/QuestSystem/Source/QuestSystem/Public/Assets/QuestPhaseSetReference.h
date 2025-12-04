@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Object.h"
-#include "QuestPhaseReferences.generated.h"
+#include "QuestPhaseSetReference.generated.h"
 
 class UQuestDataAsset;
 
@@ -12,7 +12,7 @@ class UQuestDataAsset;
  * 
  */
 USTRUCT(BlueprintType)
-struct QUESTSYSTEM_API FQuestPhaseReferences
+struct QUESTSYSTEM_API FQuestPhaseSetReference
 {
 	GENERATED_BODY()
 
