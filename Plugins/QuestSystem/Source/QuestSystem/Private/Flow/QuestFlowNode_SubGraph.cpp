@@ -11,5 +11,6 @@ UQuestFlowNode_SubGraph::UQuestFlowNode_SubGraph(const FObjectInitializer& Objec
 #if WITH_EDITOR
 	Category = TEXT("Quest");
 	AllowedAssetClasses = { UQuestFlowAsset::StaticClass() };
+	AllowedAssignedAssetClasses = { UQuestFlowAsset::StaticClass() };
 #endif
 }

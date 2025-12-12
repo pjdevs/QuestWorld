@@ -64,7 +64,7 @@ void UQuestSubsystem::StartQuest(FQuestId QuestId)
 		if (UQuestFlowAsset* QuestFlowAsset = QuestDataAsset->QuestFlowAsset.LoadSynchronous())
 		{
 			UQuestFlowAsset* QuestFlowInstance = Cast<UQuestFlowAsset>(
-				FlowSubsystem->CreateRootFlow(this, QuestFlowAsset, false)
+				FlowSubsystem->CreateRootFlow(this, QuestFlowAsset, false, QuestId.ToString())
 			);
 			QuestFlowsById.Add(QuestId, QuestFlowInstance);
 			QuestFlowInstance->StartFlow();
@@ -391,16 +391,16 @@ void UQuestSubsystem::RestoreQuestsFromSave()
 				// end trick
 				
 				UQuestFlowAsset* QuestFlowInstance = Cast<UQuestFlowAsset>(
-					FlowSubsystem->CreateRootFlow(this, QuestFlowAsset, false)
+					FlowSubsystem->CreateRootFlow(this, QuestFlowAsset, false, QuestId.ToString())
 				);
 				QuestFlowsById.Add(QuestId, QuestFlowInstance);
 
 				const FFlowAssetSaveData* FlowInstanceSaveData = QuestData.QuestFlowInstancesSave.FindByPredicate(
-					[QuestFlowInstance](const FFlowAssetSaveData& SaveData)
+					[QuestId](const FFlowAssetSaveData& SaveData)
 					{
 						// TODO Fix bug where new flow instance can be XXXX_1/2/3/... and saved data is XXXX_0
 						// so the instance is not found
-						return SaveData.InstanceName == QuestFlowInstance->GetFName().ToString();
+						return SaveData.InstanceName == QuestId.ToString();
 					}
 				);
 
