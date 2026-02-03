@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
 #include "UObject/WeakInterfacePtr.h"
 #include "Components/ActorComponent.h"
 #include "IPInteractorComponent.generated.h"
@@ -160,24 +161,42 @@ private:
 		UIPInteractiveComponent* NewMostRelevantInteractive
 	);
 
+	/**
+	 * Check if the interactive is even relevant (for blocked tags etc.)
+	 * if not do not even display any widgets.
+	 */
+	bool IsInteractiveRelevant(const UIPInteractiveComponent* Interactive) const;
+
 private:
 	/**
 	 * Maximum interaction distance. Will discard interactives further than this distance, even if in trigger zone.
 	 */
-	UPROPERTY(EditDefaultsOnly, Category = Interaction, meta = (AllowPrivateAccess = true))
+	UPROPERTY(EditDefaultsOnly, Category = "Interaction", meta = (AllowPrivateAccess = true))
 	float MaxInteractionDistance;
 
 	/**
 	 * Maximum interaction angle. Will discard interactives with greater angle from look vector, even if in trigger zone.
 	 */
-	UPROPERTY(EditDefaultsOnly, Category = Interaction, meta = (AllowPrivateAccess = true))
+	UPROPERTY(EditDefaultsOnly, Category = "Interaction", meta = (AllowPrivateAccess = true))
 	float MaxInteractionAngleDegrees;
 
 	/**
 	 * Input Action used to interact, to show in interaction widget.
 	 */
-	UPROPERTY(EditDefaultsOnly, Category = Interaction, meta = (AllowPrivateAccess = true))
+	UPROPERTY(EditDefaultsOnly, Category = "Interaction", meta = (AllowPrivateAccess = true))
 	TObjectPtr<UInputAction> InteractionAction;
+
+	/**
+	 * Required tag on interactive for the interaction to be possible
+	 */
+	UPROPERTY(EditAnywhere, Category = "Interaction", meta = (AllowPrivateAccess = true))
+	FGameplayTagContainer NeededTags;
+
+	/**
+	 * Tags that block interaction with interactive if any present on it
+	 */
+	UPROPERTY(EditAnywhere, Category = "Interaction", meta = (AllowPrivateAccess = true))
+	FGameplayTagContainer BlockedTags;
 	
 private:
 	/**

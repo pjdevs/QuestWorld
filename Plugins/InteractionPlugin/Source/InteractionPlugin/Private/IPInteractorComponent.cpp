@@ -254,6 +254,11 @@ UIPInteractiveComponent* UIPInteractorComponent::FindNewMostRelevantActor() cons
 
 	for (const TWeakObjectPtr<UIPInteractiveComponent>& Interactive : PossibleInteractives)
 	{
+		if (!IsInteractiveRelevant(Interactive.Get()))
+		{
+			continue;
+		}
+
 		const FIPInteractionScore Score = ComputeInteractionScore(*Interactive, EyesLocation, LookDirection);
 
 		if (Score.AngleFromTarget >= MaxInteractionAngleDegrees || Score.DistanceFromTarget >= MaxInteractionDistance)
@@ -300,6 +305,24 @@ void UIPInteractorComponent::OnMostRelevantInteractiveChanged(
 			ShowInteractionWidgetClient(NewMostRelevantInteractive);
 		}
 	}
+}
+
+bool UIPInteractorComponent::IsInteractiveRelevant(const UIPInteractiveComponent* Interactive) const
+{
+	FGameplayTagContainer InteractiveOwnedTags;
+	Interactive->GetOwnedGameplayTags(InteractiveOwnedTags);
+
+	if (!NeededTags.IsEmpty() && !InteractiveOwnedTags.HasAllExact(NeededTags))
+	{
+		return false;
+	}
+
+	if (!BlockedTags.IsEmpty() && InteractiveOwnedTags.HasAnyExact(BlockedTags))
+	{
+		return false;
+	}
+
+	return true;
 }
 
 FIPInteractionScore UIPInteractorComponent::ComputeInteractionScore(
@@ -386,6 +409,11 @@ void UIPInteractorComponent::ShowIndicationWidgetClient(UIPInteractiveComponent*
 	}
 
 	if (!Interactive)
+	{
+		return;
+	}
+
+	if (!IsInteractiveRelevant(Interactive))
 	{
 		return;
 	}

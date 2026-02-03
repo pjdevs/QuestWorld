@@ -238,6 +238,11 @@ void UIPInteractiveComponent::NotifyStatusChanged()
 	}
 }
 
+void UIPInteractiveComponent::GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const
+{
+	TagContainer.AppendTags(OwnedTags);
+}
+
 void UIPInteractiveComponent::HandleInteractionTriggerBeginOverlap(
 	UPrimitiveComponent* OverlappedComponent,
 	AActor* OtherActor,
@@ -287,7 +292,7 @@ void UIPInteractiveComponent::HandleInteractionTriggerEndOverlap(
 	PossibleInteractors.Remove(Interactor);
 	Interactor->RemoveInteractive(this);
 
-	// End interaction if was interacting with this actor and he left the zone
+	// End interaction if it was interacting with this actor and he left the zone
 	if (GetOwnerRole() == ROLE_Authority)
 	{
 		if (CurrentInteractorActor == OtherActor)

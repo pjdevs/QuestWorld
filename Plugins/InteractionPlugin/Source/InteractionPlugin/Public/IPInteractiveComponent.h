@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayTagAssetInterface.h"
 #include "IPInteractiveActor.h"
 #include "Components/ActorComponent.h"
 #include "IPInteractiveComponent.generated.h"
@@ -12,7 +13,7 @@ class UIPInteractorComponent;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FIPInteractionDelegate, AActor*, InteractionInstigator);
 
 UCLASS(ClassGroup=(Interaction), meta=(BlueprintSpawnableComponent))
-class INTERACTIONPLUGIN_API UIPInteractiveComponent : public UActorComponent
+class INTERACTIONPLUGIN_API UIPInteractiveComponent : public UActorComponent, public IGameplayTagAssetInterface
 {
 	GENERATED_BODY()
 
@@ -128,6 +129,9 @@ public: // UIPInteractiveComponent public interface
 	UFUNCTION(BlueprintCallable, Category = "Interaction")
 	void NotifyStatusChanged();
 
+public: //~IGameplayTagAssetInterface
+	virtual void GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const override;
+
 public:
 	/* Called when component has been interacted */
 	UPROPERTY(BlueprintAssignable, Category = "Interaction")
@@ -171,7 +175,7 @@ protected:
 	);
 
 	void PurgeInvalidInteractors();
-	
+
 protected:
 	/**
 	 * Class of the interaction widget.
@@ -209,6 +213,12 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Interaction")
 	bool bIsAutoInteractive;
 
+	/**
+	 * Required tag on interactive for the interaction to be possible
+	 */
+	UPROPERTY(EditAnywhere, Category = "Interaction")
+	FGameplayTagContainer OwnedTags;
+
 protected:
 	/**
 	 * Trigger component used for interaction.
@@ -241,5 +251,5 @@ protected:
 	/**
 	 * Current interactor that began interaction input.
 	 */
-	TWeakObjectPtr<AActor> CurrentInteractorActor; 
+	TWeakObjectPtr<AActor> CurrentInteractorActor;
 };

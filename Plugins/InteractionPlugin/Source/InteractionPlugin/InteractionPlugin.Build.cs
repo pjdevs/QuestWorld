@@ -15,7 +15,8 @@ public class InteractionPlugin : ModuleRules
 				"UMG",
 				"Slate",
 				"SlateCore",
-				"EnhancedInput"
+				"EnhancedInput",
+				"GameplayTags"
 			]
 		);
 		
